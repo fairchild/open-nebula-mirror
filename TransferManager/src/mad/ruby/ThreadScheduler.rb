@@ -1,23 +1,29 @@
-# --------------------------------------------------------------------------
-# Copyright 2002-2008, Distributed Systems Architecture Group, Universidad
-# Complutense de Madrid (dsa-research.org)
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#---------------------------------------------------------------------------
 
 require 'thread'
 
+=begin rdoc
+Copyright 2002-2008, Distributed Systems Architecture Group, Universidad Complutense de Madrid (dsa-research.org)
+
+This class manages a pool of threads with a maximun number of concurrent running jobs.
+
+== Example
+
+Creates 1000 threads that sleep 1 second and executes them with a concurrency of 100.
+
+    th=ThreadScheduler.new(100)
+
+    1000.times {
+        th.new_thread {
+            sleep 1
+        }
+    }
+=end
+
 class ThreadScheduler
+    # Creates a new thread pool
+    #
+    # +concurrent_number+ is the maximun number of threads that can run
+    # at the same time
     def initialize(concurrent_number=10)
         @concurrent_number=concurrent_number
         @jobs_queue=Array.new
@@ -27,21 +33,28 @@ class ThreadScheduler
         start_thread_runner
     end
     
+    # Creates a new job that will be placed on the queue. It will be scheduled
+    # when there is room at the selected concurrency level. Job is a block.
     def new_thread(&block)
         @threads_mutex.synchronize {
             @jobs_queue<<block
             
-            # Tell thread runner that the thread has finished
+            # Awakes thread runner
             @threads_cond.signal
         }
     end
     
+    # Kills the thread that manages job queues. Should be called before
+    # exiting
     def shutdown
         @thread_runner.kill!
     end
     
     private
     
+    # Selects new jobs to be run as threads
+    #
+    # NOTE: should be called inside a syncronize block
     def run_new_jobs
         if @threads.size<@concurrent_number
             number=@concurrent_number-@threads.size
@@ -64,7 +77,9 @@ class ThreadScheduler
         end
     end
     
-    # Takes out finished threads from the pool
+    # Takes out finished threads from the pool.
+    #
+    # NOTE: should be called inside a syncronize block
     def delete_stopped_threads
         stopped_threads=@threads.select {|t| !t.alive? }
         @threads-=stopped_threads
