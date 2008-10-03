@@ -2,6 +2,7 @@
 require 'pp'
 require 'open3'
 require 'thread'
+require 'ThreadScheduler'
 
 
 class SSHCommand
@@ -19,7 +20,9 @@ class SSHCommand
     end
     
     def exec_callback(num)
-        @callback.call(self, num) if @callback
+        if @callback
+            @callback.call(self, num)
+        end
     end
     
     # Gets exit code from STDERR
@@ -83,7 +86,8 @@ class SSHAction
         @finished
     end
     
-    def run(action_mutex, action_cond)
+    def run
+=begin
         @thread=Thread.new {
             run_actions
             @finished=true
@@ -91,6 +95,9 @@ class SSHAction
                 action_cond.signal
             }
         }
+=end
+        run_actions
+        @finished=true
     end
     
     def run_actions
@@ -104,7 +111,9 @@ class SSHAction
             a.exec_callback(@number)
         }
         
-        @callback.call(@actions, @number) if @callback
+        if @callback
+            @callback.call(@actions, @number)
+        end
     end
     
     
@@ -117,25 +126,38 @@ end
 module SSHActionController
     
     def init_actions
+=begin
         @actions=Array.new
         @action_mutex=Mutex.new
         @action_cond=ConditionVariable.new
         start_action_thread
+=end
+        @thread_scheduler=ThreadScheduler.new(10)
     end
     
     def send_ssh_action(number, host, action)
+=begin        
         @action_mutex.synchronize {
             action.run(@action_mutex, @action_cond)
             @actions << action
         }
+=end
+        @thread_scheduler.new_thread {
+            action.run
+            action.exec_callbacks
+        }
     end
     
     def action_finalize(args)
+=begin
         @action_thread.kill!
+=end
+        @thread_scheduler.shutdown
         super(args)
     end
     
     def start_action_thread
+=begin        
         @action_thread=Thread.new {
             while true
                 done_actions=nil
@@ -149,6 +171,7 @@ module SSHActionController
                 end
             end
         }
+=end
     end
 end
 
