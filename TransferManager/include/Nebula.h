@@ -121,7 +121,7 @@ public:
     // Environment & Configuration
     // -------------------------------------------------------------- 
     
-    string& get_nebula_location()
+    const string& get_nebula_location()
     {
         return nebula_location;
     };
