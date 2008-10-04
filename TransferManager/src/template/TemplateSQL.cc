@@ -253,7 +253,7 @@ int TemplateSQL::replace_attribute(
     multimap<string, Attribute *>::const_iterator	i;
     Attribute *		attribute;
     
-    if ( id == -1 || name.empty() || name.empty() )
+    if ( id == -1 || name.empty() || value.empty() )
     {
         return -1;
     }
