@@ -250,34 +250,49 @@ public:
     };
 
     /**
-     *  Returns the deployment filename (local path). The hasHistory()
-     *  function MUST be called before this one.
-     *    @return the deployment filename
+     *  Returns the transfer filename. The transfer file is in the form: 
+     *  		$ONE_LOCATION/var/$VM_ID/transfer.$SEQ
+     *  The hasHistory() function MUST be called before this one.
+     *    @return the transfer filename
      */ 
-    const string & get_deployment_lfile() const
+    const string & get_transfer_file() const
     {
-        return history->deployment_lfile;
+        return history->transfer_file;
     };
 
     /**
-     *  Returns the deployment filename for the current host (remote). The 
-     *  hasHistory() function MUST be called before this one.
+     *  Returns the deployment filename. The deployment file is in the form:
+     *  		$ONE_LOCATION/var/$VM_ID/deployment.$SEQ 
+     *  The hasHistory() function MUST be called before this one.
      *    @return the deployment filename
      */ 
-    const string & get_deployment_rfile() const
+    const string & get_deployment_file() const
     {
-        return history->deployment_rfile;
+        return history->deployment_file;
     };
         
     /**
-     *  Returns the checkpoint filename for the current host (remote). The 
-     *  hasHistory() function MUST be called before this one.
+     *  Returns the checkpoint filename for the current host. The checkpoint file 
+     *  is in the form: 
+     *  		$VM_DIR/$VM_ID/checkpoint  
+     *  The hasHistory() function MUST be called before this one.
      *    @return the checkpoint filename
      */ 
     const string & get_checkpoint_file() const
     {
         return history->checkpoint_file;
     };
+    
+    /**
+     *  Returns the remote VM directory. The VM remote dir is in the form: 
+     *  		$VM_DIR/$VM_ID/  
+     *  The hasHistory() function MUST be called before this one.
+     *    @return the remote directory
+     */ 
+    const string & get_remote_dir() const
+    {
+        return history->vm_rhome;
+    };    
 
     /**
      *  Returns the hostname for the current host. The hasHistory()
