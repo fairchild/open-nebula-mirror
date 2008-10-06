@@ -115,7 +115,7 @@ private:
     int     seq;
 
     string  hostname;
-    string  vm_rdir;
+    string  vm_dir;
     
     int     hid;
 
@@ -137,14 +137,12 @@ private:
     MigrationReason reason;
 
     //Non-persistent history fields
-    string  vm_lhome;
+    string  transfer_file;
+    string  deployment_file;
+    
     string  vm_rhome;
-    
-    string  deployment_lfile;
-    string  deployment_rfile;
-    
     string  checkpoint_file;
-
+    
     friend int history_select_cb (
         void *                  _history,
         int                     num,

@@ -16,6 +16,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "VirtualMachine.h"
+#include "Nebula.h"
 
 #include <iostream>
 #include <sstream>
@@ -43,7 +44,7 @@ History::History(
         oid(_oid),
         seq(_seq),
         hostname(""),
-        vm_rdir(""),
+        vm_dir(""),
         hid(-1),
         vmm_mad_name(""),
         tm_mad_name(""),
@@ -64,13 +65,13 @@ History::History(
     int     		_seq,
     int     		_hid,
     string& 		_hostname,
-    string& 		_vm_rdir,
+    string& 		_vm_dir,
     string& 		_vmm,
     string& 		_tm):
         oid(_oid),
         seq(_seq),
         hostname(_hostname),
-        vm_rdir(_vm_rdir),
+        vm_dir(_vm_dir),
         hid(_hid),
         vmm_mad_name(_vmm),
         tm_mad_name(_tm),
@@ -93,41 +94,28 @@ History::History(
 void History::non_persistent_data()
 {
     ostringstream   os;
-    const char * nl = getenv("ONE_LOCATION");
-
-    if (nl == 0)
-    {
-       nl = "/var/tmp";
-    }
-
+    Nebula& 		nd = Nebula::instance();
+    
     // ----------- Local Locations ------------
+    os.str("");
+    os << nd.get_nebula_location() << "/var/" << oid << "/deployment." << seq;
 
-    os << nl << "/var/" << oid;
-    vm_lhome = os.str();
+    deployment_file = os.str();
     
     os.str("");
-    os << vm_lhome << "/deployment." << seq;
-
-    deployment_lfile = os.str();
+    os << nd.get_nebula_location() << "/var/" << oid << "/transfer." << seq;
     
+    transfer_file = os.str();
     
     // ----------- Remote Locations ------------
-    
     os.str("");
-    os << vm_rdir;
-    
-    os << "/" << oid;
+    os << vm_dir << "/" << oid;
     
     vm_rhome = os.str();
     
-    os << "/" << "checkpoint";
+    os << vm_rhome << "/checkpoint";
     
     checkpoint_file = os.str();
-    
-    os.str("");
-    os << vm_rhome << "/deployment." << seq;
-
-    deployment_rfile = os.str();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -147,7 +135,7 @@ int History::insert(SqliteDB * db)
         oid << "," <<
         seq << "," <<
         "'" << hostname << "',"<<
-        "'" << vm_rdir << "'," <<
+        "'" << vm_dir << "'," <<
         hid << "," <<
         "'" << vmm_mad_name << "'," <<
         "'" << tm_mad_name  << "'," <<
@@ -196,7 +184,7 @@ int History::unmarshall(int num, char **names, char ** values)
     seq           = atoi(values[SEQ]);
 
     hostname      = values[HOSTNAME];
-    vm_rdir       = values[VM_DIR];
+    vm_dir       = values[VM_DIR];
     
     hid           = atoi(values[HID]);
 

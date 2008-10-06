@@ -417,7 +417,7 @@ void VirtualMachine::cp_history()
 			history->seq + 1,
 			history->hid,
 			history->hostname,
-			history->vm_rdir,
+			history->vm_dir,
 			history->vmm_mad_name,
 			history->tm_mad_name);
 	
@@ -447,7 +447,7 @@ void VirtualMachine::cp_previous_history()
 			history->seq + 1,
 			previous_history->hid,
 			previous_history->hostname,
-			previous_history->vm_rdir,
+			previous_history->vm_dir,
 			previous_history->vmm_mad_name,
 			previous_history->tm_mad_name);
 	
