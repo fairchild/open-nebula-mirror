@@ -220,31 +220,7 @@ class IM < ONEMad
         
         init_actions
     end
-=begin
-    def start_action_thread
-        @action_thread=Thread.new {
-            while true
-                @action_mutex.lock
-                done=@actions.select{|a| a.finished }
-                @action_mutex.unlock
 
-                if done.length>0
-                    done.each{|a|
-                        tmp_result = a.get_result
-                        STDOUT.puts tmp_result
-                        STDOUT.flush
-                        log(tmp_result,DEBUG)
-                    }
-
-                    @action_mutex.lock
-                    @actions-=done
-                    @action_mutex.unlock
-                end
-                sleep(1)
-            end
-        }
-    end
-=end
     def action_init(args)
         STDOUT.puts "INIT SUCCESS"
         STDOUT.flush
@@ -275,11 +251,6 @@ class IM < ONEMad
             "MONITOR FAILURE " + number.to_s + " " + err_text
         end
     end
-    
-    #def action_finalize(args)
-    #    STDOUT.puts "FINALIZE SUCCESS"
-    #    exit 0
-    #end
 end
 
 
