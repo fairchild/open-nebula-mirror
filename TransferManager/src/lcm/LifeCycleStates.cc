@@ -68,7 +68,7 @@ void  LifeCycleManager::save_success_action(int vid)
                          
         //----------------------------------------------------
         
-        tm->trigger(TransferManager::PROLOG,vid);
+        tm->trigger(TransferManager::PROLOG_MIGR,vid);
     }
     else if ( vm->get_lcm_state() == VirtualMachine::SAVE_SUSPEND)
     {
@@ -121,7 +121,7 @@ void  LifeCycleManager::save_success_action(int vid)
         
         //----------------------------------------------------
         
-        tm->trigger(TransferManager::EPILOG,vid);
+        tm->trigger(TransferManager::EPILOG_STOP,vid);
     }
     else
     {

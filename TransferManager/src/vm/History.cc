@@ -113,11 +113,11 @@ void History::non_persistent_data()
     
     // ----------- Remote Locations ------------
     os.str("");
-    os << vm_dir << "/" << oid;
+    os << vm_dir << "/images" << oid;
     
     vm_rhome = os.str();
     
-    os << "/images/checkpoint";
+    os << "/checkpoint";
     
     checkpoint_file = os.str();
 }
