@@ -37,14 +37,7 @@ NebulaTemplate::NebulaTemplate(string& nebula_location)
         
     conf_file  = nebula_location + "/etc/";
     conf_file += conf_name;
-    
-    // VM_DIR
-    os << nebula_location << "/var";
-    value = os.str();
-    
-    attribute = new SingleAttribute("VM_DIR",value);
-    conf_default.insert(make_pair(attribute->name(),attribute));
-        
+            
     // POLL_INTERVAL
     value = "300";
     
@@ -69,10 +62,10 @@ NebulaTemplate::NebulaTemplate(string& nebula_location)
     attribute = new SingleAttribute("PORT",value);
     conf_default.insert(make_pair(attribute->name(),attribute));
        
-    //VM_RDIR    
-    value = nd.get_nebula_location() + "/var";
+    //VM_DIR    
+    value = nebula_location + "/var";
     
-    attribute = new SingleAttribute("VM_RDIR",value);
+    attribute = new SingleAttribute("VM_DIR",value);
     conf_default.insert(make_pair(attribute->name(),attribute));
     
     //DEBUG_LEVEL    
