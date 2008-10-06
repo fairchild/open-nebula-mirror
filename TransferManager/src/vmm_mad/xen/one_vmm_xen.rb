@@ -62,7 +62,12 @@ class DM < ONEMad
 			credits=credits[1] if credits
 
 			# Get the name of the VM (used to set credit scheduling)
-			vm_name=f.match(/^name = '(.*?)'$/)[1]
+			match_name=f.match(/^name = '(.*?)'$/)
+			if match_name
+			    vm_name=match_name[1]
+			else
+			    credits=nil
+			end
 		end
 
 		action_number=args[1]
@@ -83,7 +88,7 @@ class DM < ONEMad
 		end
 		
 		action=SSHAction.new(action_number, action_host, cmd)
-		send_ssh_action(action_number, action_host, action)
+		send_ssh_action(action)
 	end
 	
 	def action_shutdown(args)
@@ -146,7 +151,7 @@ class DM < ONEMad
 		end # End of callback
 		
 		action=SSHAction.new(action_number, action_host, cmd)
-		send_ssh_action(action_number, action_host, action)
+		send_ssh_action(action)
 	end
 	
 	###########################
@@ -163,7 +168,7 @@ class DM < ONEMad
 		end
 		
 		action=SSHAction.new(action_number, action_host, cmd)
-		send_ssh_action(action_number, action_host, action)
+		send_ssh_action(action)
 	end
 	
 	def write_response(action, stdout, stderr, args)

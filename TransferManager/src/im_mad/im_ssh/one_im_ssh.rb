@@ -259,7 +259,7 @@ class IM < ONEMad
             STDOUT.flush
             log(result,DEBUG)
         }
-        send_ssh_action(args[1], args[2], action)
+        send_ssh_action(action)
     end
     
     def get_result(actions, number)

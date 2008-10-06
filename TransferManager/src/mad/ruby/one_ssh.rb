@@ -1,29 +1,43 @@
 
+=begin rdoc
+
+Here will be a description of SSH library and an example on
+how to use it.
+
+=end
+
 require 'pp'
 require 'open3'
 require 'thread'
 require 'ThreadScheduler'
 
-
+# This class holds a command that will be executed on a remote host
+# using ssh. Commands can have an associated callback that will be
+# after they finish.
 class SSHCommand
     attr_accessor :value, :code, :stdout, :stderr, :command
     attr_accessor :callback
     
+    # Creates a new command
     def initialize(command)
         @command=command
         @callback=nil
     end
     
+    # Runs the command on the specified host
     def run(host)
         (@stdout, @stderr)=execute(host, @command)
         @code=get_exit_code(@stderr)
     end
     
+    # Executes callback associated to this command
     def exec_callback(num)
         if @callback
             @callback.call(self, num)
         end
     end
+    
+    private
     
     # Gets exit code from STDERR
     def get_exit_code(str)
@@ -55,6 +69,7 @@ class SSHCommand
 end
 
 class SSHCommandList < Array
+=begin
     def clone_actions
         new_array=Array.new
         self.each {|s|
@@ -62,15 +77,18 @@ class SSHCommandList < Array
         }
         new_array
     end
+=end
 end
 
+# An action is composed by one or more SSHCommands that will be executed in an
+# specific host. It holds a number that is the command identifier for a MAD.
 class SSHAction
     attr_accessor :callback
     
     def initialize(number, host, actions)
         @number=number
         @host=host
-        if actions.is_a? SSHCommandList
+        if actions.is_a?(SSHCommandList) || actions.is_a?(Array)
             @actions=clone_actions(actions)
         else
             @actions=SSHCommandList.new
@@ -87,15 +105,6 @@ class SSHAction
     end
     
     def run
-=begin
-        @thread=Thread.new {
-            run_actions
-            @finished=true
-            action_mutex.synchronize {
-                action_cond.signal
-            }
-        }
-=end
         run_actions
         @finished=true
     end
@@ -116,6 +125,7 @@ class SSHAction
         end
     end
     
+    private
     
     # Clone an array of sensors
     def clone_actions(actions)
@@ -126,22 +136,10 @@ end
 module SSHActionController
     
     def init_actions
-=begin
-        @actions=Array.new
-        @action_mutex=Mutex.new
-        @action_cond=ConditionVariable.new
-        start_action_thread
-=end
         @thread_scheduler=ThreadScheduler.new(10)
     end
     
-    def send_ssh_action(number, host, action)
-=begin        
-        @action_mutex.synchronize {
-            action.run(@action_mutex, @action_cond)
-            @actions << action
-        }
-=end
+    def send_ssh_action(action)
         @thread_scheduler.new_thread {
             action.run
             action.exec_callbacks
@@ -149,29 +147,8 @@ module SSHActionController
     end
     
     def action_finalize(args)
-=begin
-        @action_thread.kill!
-=end
         @thread_scheduler.shutdown
         super(args)
-    end
-    
-    def start_action_thread
-=begin        
-        @action_thread=Thread.new {
-            while true
-                done_actions=nil
-                @action_mutex.synchronize {
-                    @action_cond.wait(@action_mutex)
-                    done_actions=@actions.select{|a| a.finished }
-                    @actions-=done_actions if done_actions
-                }
-                if done_actions
-                    done_actions.each {|action| action.exec_callbacks }
-                end
-            end
-        }
-=end
     end
 end
 
