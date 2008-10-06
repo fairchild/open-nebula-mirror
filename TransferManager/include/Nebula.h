@@ -126,9 +126,15 @@ public:
         return nebula_location;
     };
    
+    
+    const string& get_nebula_hostname()
+    {
+        return hostname;
+    };
+    
     static string version()
     {
-        return "ONE0.1";   
+        return "ONE1.1";   
     };
     
     void start();
@@ -213,6 +219,7 @@ private:
     // ---------------------------------------------------------------
        
     string              nebula_location;
+    string				hostname;
     
     // ---------------------------------------------------------------
     // Configuration
