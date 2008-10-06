@@ -137,6 +137,7 @@ private:
     MigrationReason reason;
 
     //Non-persistent history fields
+    string  vm_lhome;
     string  transfer_file;
     string  deployment_file;
     

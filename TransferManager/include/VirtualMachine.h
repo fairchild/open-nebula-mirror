@@ -274,7 +274,7 @@ public:
     /**
      *  Returns the checkpoint filename for the current host. The checkpoint file 
      *  is in the form: 
-     *  		$VM_DIR/$VM_ID/checkpoint  
+     *  		$VM_DIR/$VM_ID/images/checkpoint  
      *  The hasHistory() function MUST be called before this one.
      *    @return the checkpoint filename
      */ 
@@ -292,6 +292,17 @@ public:
     const string & get_remote_dir() const
     {
         return history->vm_rhome;
+    };
+    
+    /**
+     *  Returns the local VM directory. The VM local dir is in the form: 
+     *  		$ONE_LOCATION/var/$VM_ID/  
+     *  The hasHistory() function MUST be called before this one.
+     *    @return the remote directory
+     */ 
+    const string & get_local_dir() const
+    {
+        return history->vm_lhome;
     };    
 
     /**

@@ -98,12 +98,16 @@ void History::non_persistent_data()
     
     // ----------- Local Locations ------------
     os.str("");
-    os << nd.get_nebula_location() << "/var/" << oid << "/deployment." << seq;
-
+    os << nd.get_nebula_location() << "/var/" << oid; 
+    
+    vm_lhome = os.str();
+    
+    os << "/deployment." << seq;
+    
     deployment_file = os.str();
     
     os.str("");
-    os << nd.get_nebula_location() << "/var/" << oid << "/transfer." << seq;
+    os << vm_lhome << "/transfer." << seq;
     
     transfer_file = os.str();
     
@@ -113,7 +117,7 @@ void History::non_persistent_data()
     
     vm_rhome = os.str();
     
-    os << vm_rhome << "/checkpoint";
+    os << "/images/checkpoint";
     
     checkpoint_file = os.str();
 }
