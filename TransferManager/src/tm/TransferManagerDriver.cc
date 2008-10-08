@@ -132,7 +132,7 @@ void TransferManagerDriver::protocol(
     }
 
     // Driver Actions
-    if ( action == "TRANSFER" )
+    if (action == "TRANSFER")
     {
         Nebula              &ne = Nebula::instance();
         LifeCycleManager *  lcm = ne.get_lcm();
@@ -186,6 +186,13 @@ void TransferManagerDriver::protocol(
         }
         
         lcm->trigger(lcm_action, id);
+    }
+    else if (action == "LOG")
+    {
+        string info;
+        
+        getline(is,info);
+        vm->log("TM",Log::INFO,info.c_str());
     }
 
     vm->unlock();
