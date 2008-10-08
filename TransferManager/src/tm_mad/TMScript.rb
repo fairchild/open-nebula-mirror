@@ -73,11 +73,15 @@ end
 class TMScript
     attr_accessor :lines
     
+    # +script_text+ contains the script to be executed.
     def initialize(script_text)
         @lines=Array.new
         parse_script(script_text)
     end
-        
+    
+    # Executes the script using the TMPlugin specified by +plugin+.
+    # Returns an array where first element tells if succeded and the
+    # second one is the error message in case of failure.
     def execute(plugin)
         result=@lines.each {|line|
             res=plugin.execute(*line)
@@ -95,7 +99,7 @@ class TMScript
         }
         
         pp result
-        
+        result
     end
     
     private
@@ -137,21 +141,22 @@ class TMScript
 end
 
 
-script_text="
+if $0 == __FILE__
+    script_text="
 
-CLONE localhost:/tmp/source.img ursa:/tmp/one_jfontan/0/hda.img
-
-
-CLONE localhost:/tmp/source.img ursa:/tmp/one_jfontan/1/hda.img
-
-"
-
-plugin=TMPlugin.new
-plugin["CLONE"]="./tm_clone.sh"
-
-scr=TMScript.new(script_text)
-pp scr.lines
+    CLONE localhost:/tmp/source.img ursa:/tmp/one_jfontan/0/hda.img
 
 
-scr.execute(plugin)
+    CLONE localhost:/tmp/source.img ursa:/tmp/one_jfontan/1/hda.img
 
+    "
+
+    plugin=TMPlugin.new
+    plugin["CLONE"]="./tm_clone.sh"
+
+    scr=TMScript.new(script_text)
+    pp scr.lines
+
+
+    scr.execute(plugin)
+end
