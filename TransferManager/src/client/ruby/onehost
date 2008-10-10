@@ -142,7 +142,6 @@ class HostShow
                         row["hs_max_cpu"]=a["max_cpu"]
                         row["hs_mem_usage"]=a["mem_usage"]
                         row["hs_cpu_usage"]=a["cpu_usage"]
-                        row["hs_running_vms"]=a["running_vms"]
                     }
                 end
             }
