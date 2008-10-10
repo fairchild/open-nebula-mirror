@@ -100,8 +100,8 @@ module ONE
             
             @db.busy_handler do |data, retries|
                 if retries < 3
-                    puts "Timeout connecting to the database, retrying. "+
-                            "Tries left #{2-retries}"
+                    #puts "Timeout connecting to the database, retrying. "+
+                    #        "Tries left #{2-retries}"
                     sleep 1
                     1
                 else
