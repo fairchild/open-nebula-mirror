@@ -67,7 +67,7 @@ TransferManagerDriver::TransferManagerDriver(
         		oss << "Error loading driver configuration file " << cfile;
         	}
         	
-           	Nebula::log("VMM", Log::ERROR, oss);            		           	
+           	Nebula::log("TM", Log::ERROR, oss);            		           	
         }
     }
 }
