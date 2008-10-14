@@ -26,8 +26,8 @@ class ThreadScheduler
     # at the same time
     def initialize(concurrent_number=10)
         @concurrent_number=concurrent_number
-        @jobs_queue=Array.new
-        @threads=Array.new
+        @thread_queue=Array.new
+        @running_threads=0
         @threads_mutex=Mutex.new
         @threads_cond=ConditionVariable.new
         start_thread_runner
@@ -37,10 +37,12 @@ class ThreadScheduler
     # when there is room at the selected concurrency level. Job is a block.
     def new_thread(&block)
         @threads_mutex.synchronize {
-            @jobs_queue<<block
+            @thread_queue<<block
             
-            # Awakes thread runner
-            @threads_cond.signal
+            if @running_threads < @concurrent_number
+              # Awakes thread runner only if there is room for a new thread
+              @threads_cond.signal
+            end            
         }
     end
     
@@ -55,43 +57,42 @@ class ThreadScheduler
     # Selects new jobs to be run as threads
     #
     # NOTE: should be called inside a syncronize block
-    def run_new_jobs
-        if @threads.size<@concurrent_number
-            number=@concurrent_number-@threads.size
-            number.times do
-                # Gets next job in the queue
-                job=@jobs_queue.shift
-                # Exits if there are no more jobs in the queue
-                break if !job
-                
-                # Creates the thread
-                thread=Thread.new {
-                    job.call
-                    @threads_mutex.synchronize {
-                        # Tell thread runner that the thread has finished
-                        @threads_cond.signal
-                    }
-                }
-                @threads<<thread
-            end
-        end
+    def run_new_thread
+        thread = @thread_queue.shift
+        
+        if thread
+          @running_threads = @running_threads + 1
+          
+          Thread.new {
+            thread.call
+           
+            @threads_mutex.synchronize {
+              # Tell thread runner that the thread has finished
+              @running_threads = @running_threads - 1
+              @threads_cond.signal
+            }
+
+          }          
+        end        
     end
     
     # Takes out finished threads from the pool.
     #
     # NOTE: should be called inside a syncronize block
-    def delete_stopped_threads
-        stopped_threads=@threads.select {|t| !t.alive? }
-        @threads-=stopped_threads
-    end
+    #def delete_stopped_threads
+    #    stopped_threads=@threads.select {|t| !t.alive? }
+    #    @threads-=stopped_threads
+    #end
     
     def start_thread_runner
         @thread_runner=Thread.new {
             while true
                 @threads_mutex.synchronize {
-                    @threads_cond.wait(@threads_mutex)
-                    delete_stopped_threads
-                    run_new_jobs
+                    while (@running_threads >= @concurrent_number)
+                      @threads_cond.wait(@threads_mutex)
+                    end
+                    
+                    run_new_thread
                 }
             end
         }
@@ -99,13 +100,14 @@ class ThreadScheduler
 end
 
 if __FILE__ == $0
-    th=ThreadScheduler.new(10)
+    
+    th=ThreadScheduler.new(20)
 
     100.times {|n|
         100.times {|m|
             th.new_thread {
-                #puts "Starting #{m+n*100}"
-                sleep rand*(1)
+                puts "Starting #{m+n*100}"
+                sleep rand*(5)
                 puts "Finishing #{m+n*100}"
             }
         }
