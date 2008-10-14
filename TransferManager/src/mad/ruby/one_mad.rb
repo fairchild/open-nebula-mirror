@@ -85,7 +85,7 @@ class ONEMad
 	# action associated to the message.
 	def loop
 		while true
-		    exit -1 if STDIN.eof?
+		    exit(-1) if STDIN.eof?
 			str=STDIN.gets
 			next if !str
 			
@@ -144,7 +144,7 @@ class ONEMad
 	
 	# Default FINALIZE action. Exists the program.
 	def action_finalize(args)
-		exit 0
+		exit(0)
 	end
 		
 end
