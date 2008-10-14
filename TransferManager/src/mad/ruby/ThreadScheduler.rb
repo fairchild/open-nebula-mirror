@@ -61,35 +61,26 @@ class ThreadScheduler
         thread = @thread_queue.shift
         
         if thread
-            @running_threads = @running_threads + 1
+            @running_threads += 1
 
             Thread.new {
                 thread.call
 
                 @threads_mutex.synchronize {
                     # Tell thread runner that the thread has finished
-                    @running_threads = @running_threads - 1
+                    @running_threads -= 1
                     @threads_cond.signal
                 }
             }
-        else
-            @threads_cond.wait(@threads_mutex)
         end
     end
-    
-    # Takes out finished threads from the pool.
-    #
-    # NOTE: should be called inside a syncronize block
-    #def delete_stopped_threads
-    #    stopped_threads=@threads.select {|t| !t.alive? }
-    #    @threads-=stopped_threads
-    #end
     
     def start_thread_runner
         @thread_runner=Thread.new {
             while true
                 @threads_mutex.synchronize {
-                    while (@running_threads >= @concurrent_number)
+                    while ((@concurrent_number-@running_threads)==0) ||
+                            @thread_queue.size==0
                         @threads_cond.wait(@threads_mutex)
                     end
                     
@@ -108,8 +99,8 @@ if __FILE__ == $0
         100.times {|m|
             th.new_thread {
                 puts "Starting #{m+n*100}"
-                sleep rand*(5)
-                puts "Finishing #{m+n*100}"
+                sleep 1
+                #puts "Finishing #{m+n*100}"
             }
         }
     }
