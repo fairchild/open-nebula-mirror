@@ -314,7 +314,7 @@ error_file:
     
 error_driver:
     os.str("");
-    os << "prolog, error getting driver " << vm->get_vmm_mad();
+    os << "prolog, error getting driver " << vm->get_tm_mad();
     goto error_common;
     
 error_empty_disk:

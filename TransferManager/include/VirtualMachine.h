@@ -558,6 +558,7 @@ public:
     {
         return uid;
     };
+    
 
     // ------------------------------------------------------------------------
     // Timers
@@ -604,20 +605,11 @@ private:
     // *************************************************************************
     // Virtual Machine Attributes
     // *************************************************************************
-
+    
     // -------------------------------------------------------------------------
     // Identification variables
     // -------------------------------------------------------------------------
-    /**
-     *  Array id
-     */
-    int         aid;
-
-    /**
-     *  Task id
-     */
-    int         tid;
-
+    
     /**
      *  User (owner) id
      */
@@ -625,22 +617,7 @@ private:
 
     // -------------------------------------------------------------------------
     // VM Scheduling & Managing Information
-    // -------------------------------------------------------------------------
-    /**
-     *  Static scheduling priority
-     */
-    int         priority;
-
-    /**
-     *  The VM reschedule flag
-     */
-    bool        reschedule;
-
-    /**
-     *  Last time (in epoch) that the VM was rescheduled
-     */
-    time_t      last_reschedule;
-    
+    // ------------------------------------------------------------------------- 
     /**
      *  Last time (in epoch) that the VM was polled to get its status
      */
@@ -809,24 +786,19 @@ protected:
 	enum ColNames
     {
         OID             = 0,
-        AID             = 1,
-        TID             = 2,
-        UID             = 3,
-        PRIORITY        = 4,
-        RESCHEDULE      = 5,
-        LAST_RESCHEDULE = 6,
-        LAST_POLL       = 7,
-        TEMPLATE_ID     = 8,
-        STATE           = 9,
-        LCM_STATE       = 10,
-        STIME           = 11,
-        ETIME           = 12,
-        DEPLOY_ID       = 13,
-        MEMORY          = 14,
-        CPU             = 15,
-        NET_TX          = 16,
-        NET_RX          = 17,
-        LIMIT           = 18
+        UID             = 1,
+        LAST_POLL       = 2,
+        TEMPLATE_ID     = 3,
+        STATE           = 4,
+        LCM_STATE       = 5,
+        STIME           = 6,
+        ETIME           = 7,
+        DEPLOY_ID       = 8,
+        MEMORY          = 9,
+        CPU             = 10,
+        NET_TX          = 11,
+        NET_RX          = 12,
+        LIMIT           = 13
     };
 
     static const char * table;

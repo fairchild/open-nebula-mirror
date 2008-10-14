@@ -26,14 +26,14 @@
 
 const char * History::table = "history";
 
-const char * History::db_names = "(oid,seq,hostname,vm_dir,hid,vmmad,tmmad,stime,"
+const char * History::db_names = "(vid,seq,host_name,vm_dir,hid,vm_mad,tm_mad,stime,"
     "etime,pstime,petime,rstime,retime,estime,eetime,reason)";
 
-const char * History::db_bootstrap = "CREATE TABLE history (oid INTEGER,"
-    "seq INTEGER,hostname TEXT,vm_dir TEXT,hid INTEGER,vmmad TEXT,tmmad TEXT,"
+const char * History::db_bootstrap = "CREATE TABLE history (vid INTEGER,"
+    "seq INTEGER,host_name TEXT,vm_dir TEXT,hid INTEGER,vm_mad TEXT,tm_mad TEXT,"
     "stime INTEGER,etime INTEGER,pstime INTEGER,petime INTEGER,rstime INTEGER,"
     "retime INTEGER,estime INTEGER,eetime INTEGER,reason INTEGER,"
-	"PRIMARY KEY(oid,seq))";
+	"PRIMARY KEY(vid,seq))";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -163,7 +163,7 @@ int History::insert(SqliteDB * db)
 
 int History::unmarshall(int num, char **names, char ** values)
 {
-    if ((values[OID] == 0) ||
+    if ((values[VID] == 0) ||
             (values[SEQ] == 0) ||
             (values[HOSTNAME] == 0) ||
             (values[VM_DIR] == 0) ||
@@ -184,7 +184,7 @@ int History::unmarshall(int num, char **names, char ** values)
         return -1;
     }
 
-    oid           = atoi(values[OID]);
+    oid           = atoi(values[VID]);
     seq           = atoi(values[SEQ]);
 
     hostname      = values[HOSTNAME];
@@ -247,12 +247,12 @@ int History::select(SqliteDB * db)
 
     if ( seq == -1)
     {
-    	oss << "SELECT * FROM history WHERE oid = "<< oid <<
-        	" AND seq=(SELECT MAX(seq) FROM history WHERE oid = " << oid << ")";
+    	oss << "SELECT * FROM history WHERE vid = "<< oid <<
+        	" AND seq=(SELECT MAX(seq) FROM history WHERE vid = " << oid << ")";
     }
     else
     {
-    	oss << "SELECT * FROM history WHERE oid = "<< oid <<" AND seq = "<< seq;    
+    	oss << "SELECT * FROM history WHERE vid = "<< oid <<" AND seq = "<< seq;    
     }
 
     rc = db->exec(oss,history_select_cb,(void *) this);
@@ -272,7 +272,7 @@ int History::drop(SqliteDB * db)
 {
     ostringstream   oss;
 
-    oss << "DELETE FROM " << table << " WHERE oid= "<< oid; 
+    oss << "DELETE FROM " << table << " WHERE vid= "<< oid; 
 
     return db->exec(oss);
 }

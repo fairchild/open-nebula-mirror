@@ -66,7 +66,7 @@ private:
     // ----------------------------------------
     enum ColNames
     {
-        OID             = 0,
+        VID             = 0,
         SEQ             = 1,
         HOSTNAME        = 2,
         VM_DIR          = 3,

@@ -33,7 +33,6 @@ NebulaTemplate::NebulaTemplate(string& nebula_location)
     ostringstream       os;
     SingleAttribute *   attribute;
     string              value;
-    Nebula&             nd = Nebula::instance();
         
     conf_file  = nebula_location + "/etc/";
     conf_file += conf_name;

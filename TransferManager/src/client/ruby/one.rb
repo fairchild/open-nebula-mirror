@@ -33,16 +33,15 @@ module ONE
     ONE_LOCATION=ENV["ONE_LOCATION"]
     
     TABLES={
-        "vmpool" => %w{oid aid tid uid priority reschedule last_reschedule 
-            last_poll template state lcm_state stime etime deploy_id memory
-            cpu net_tx net_rx},
-        "history" => %w{oid seq hostname vm_dir hid vmmad tmmad stime
+        "vm_pool" => %w{oid uid last_poll template_id state lcm_state 
+            stime etime deploy_id memory cpu net_tx net_rx},
+        "history" => %w{vid seq host_name vm_dir hid vm_mad tm_mad stime
             etime pstime petime rstime retime estime eetime reason},
-        "vm_template" => %w{id name type value},
-        "hostpool" => %w{hid host_name state im_mad vm_mad tm_mad
+        "vm_attributes" => %w{id name type value},
+        "host_pool" => %w{oid host_name state im_mad vm_mad tm_mad
             last_mon_time managed},
         "host_attributes" => %w{id name type value},
-        "hostshares" => %w{hsid endpoint disk_usage mem_usage
+        "host_shares" => %w{hid endpoint disk_usage mem_usage
             cpu_usage max_disk max_mem max_cpu running_vms}
     }
     
@@ -294,7 +293,7 @@ module ONE
             begin
                 @db=Database.new
             
-                res=@db.select_table_with_names("vmpool", options)
+                res=@db.select_table_with_names("vm_pool", options)
             
                 @db.close
                 
@@ -311,7 +310,7 @@ module ONE
             if res[0]
                 res[1].each {|row|
                     hostname=self.get_history_host(row["oid"])
-                    row["hostname"]=hostname
+                    row["host_name"]=hostname
                 }
             end
             res
@@ -329,12 +328,12 @@ module ONE
                 my_db=Database.new
             end
             
-            res=my_db.select_table_with_names("history", :where => "oid=#{id}")
+            res=my_db.select_table_with_names("history", :where => "vid=#{id}")
             
             my_db.close if !db
             
             if res and res[0] and res[1] and res[1][-1]
-                return hostname=res[1][-1]["hostname"]
+                return hostname=res[1][-1]["host_name"]
             else
                 return nil
             end
@@ -347,7 +346,7 @@ module ONE
                 my_db=Database.new
             end
             
-            res=my_db.select_table_with_names("history", :where => "oid=#{id}")
+            res=my_db.select_table_with_names("history", :where => "vid=#{id}")
             
             my_db.close if !db
 
@@ -361,7 +360,7 @@ module ONE
                 my_db=Database.new
             end
             
-            res=my_db.select_table_with_names("vm_template", :where => "id=#{id}")
+            res=my_db.select_table_with_names("vm_attributes", :where => "id=#{id}")
             
             my_db.close if !db
             
@@ -433,14 +432,14 @@ module ONE
         def get_vm_from_name(name)
             db=Database.new
             res_template=db.select_table_with_names(
-                                "vm_template", 
+                                "vm_attributes", 
                                 :where => "name=\"NAME\" AND value=\"#{name}\"")
             
             return nil if !res_template[0] or res_template[1].length<1
             
             selected_vms=res_template[1].collect {|sel_template|
                 template_id=sel_template["id"]
-                res_vm=get(:where => "template=#{template_id} AND state<>6")
+                res_vm=get(:where => "template_id=#{template_id} AND state<>6")
                 if !res_vm[0] or res_vm[1].length<1
                     nil
                 else
@@ -522,7 +521,7 @@ module ONE
         end
         
         def get(options=nil)
-            get_generic("hostpool", options)
+            get_generic("host_pool", options)
         end
         
         def get_host_attributes(hid)
@@ -530,7 +529,7 @@ module ONE
         end
         
         def get_host_share(hid)
-            get_generic("hostshares", :where => "hsid=#{hid}")
+            get_generic("host_shares", :where => "hid=#{hid}")
         end
         
         def prefix
@@ -562,9 +561,9 @@ module ONE
             return nil if !res[0] or res[1].length<1
             
             if res[1].length==1
-                return res[1][0]["hid"]
+                return res[1][0]["oid"]
             else
-                return res[1].collect {|host| host["hid"] }
+                return res[1].collect {|host| host["oid"] }
             end
         end
     end

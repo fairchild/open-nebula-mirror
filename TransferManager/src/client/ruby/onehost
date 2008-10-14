@@ -37,7 +37,7 @@ ShowTableHost={
         :name => "HID",
         :desc => "ONE identifier for host",
         :size => 4,
-        :proc => lambda {|d,e| d["hid"] }
+        :proc => lambda {|d,e| d["oid"] }
     },
     :name => {
         :name => "NAME",
@@ -123,7 +123,7 @@ class HostShow
             result=res
             header_host_small
             res[1].each {|row|
-                res2=@host.get_host_attributes(row["hid"])
+                res2=@host.get_host_attributes(row["oid"])
                 if res2[0]
                     attributes=res2[1]
                     attributes.each {|a|
@@ -133,7 +133,7 @@ class HostShow
                     }
                 end
                 
-                res2=@host.get_host_share(row["hid"])
+                res2=@host.get_host_share(row["oid"])
                 if res2[0]
                     attributes=res2[1]
                     attributes.each {|a|
