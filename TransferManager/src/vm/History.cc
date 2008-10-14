@@ -113,7 +113,7 @@ void History::non_persistent_data()
     
     // ----------- Remote Locations ------------
     os.str("");
-    os << vm_dir << "/images" << oid;
+    os << vm_dir << "/" << oid << "/images";
     
     vm_rhome = os.str();
     
