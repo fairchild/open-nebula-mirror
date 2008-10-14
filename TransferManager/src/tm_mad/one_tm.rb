@@ -28,11 +28,16 @@ class TM < ONEMad
         script_file=args[2]
         script_text=""
         
+        # Create the lambda that will be used to log
+        mad_logger=lambda {|message|
+            mad_log("TRANSFER", number, message)
+        }
+        
         open(script_file) {|f|
             script_text=f.read
         }
         
-        script=TMScript.new(script_text)
+        script=TMScript.new(script_text, mad_logger)
         @thread_scheduler.new_thread {
             res=script.execute(@plugin)
             if res[0]

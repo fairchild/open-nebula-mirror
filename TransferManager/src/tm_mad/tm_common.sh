@@ -11,7 +11,7 @@ function log_date
 # Logs a message
 function log
 {
-    echo `log_date`":$SCRIPT_NAME: $1"
+    echo "$SCRIPT_NAME: $1"
 }
 
 # Logs an error message

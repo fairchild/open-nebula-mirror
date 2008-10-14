@@ -25,14 +25,14 @@ for scripts to do so is as follows:
 
 =end
 class TMPlugin < Hash
-    
     # Sets the script path for the specific +command+
     def set(command, script)
         self[command]=script
     end
     
     # Executes the script associated with the +command+ using
-    # specified arguments.
+    # specified arguments. +logger+ is a proc that takes a message
+    # as its unique argument.
     #
     # Returns:
     # * It will return +nil+ if the +command+ is not defined.
@@ -41,31 +41,37 @@ class TMPlugin < Hash
     #
     # Note: the exit code will be written like this:
     #   ExitCode: 0
-    def execute(command, *args)
+    def execute(logger, command, *args)
         # Command is not defined
         return nil if !self[command]
         
         # Generates the line to call the script with all the
         # arguments provided.
         cmd=[self[command], *args].join(" ")
-        exec_local_command(cmd)
+        exec_local_command(cmd, logger)
     end
     
     private
     
     # Executes the command, get its exit code and logs every line that
     # comes from stdout. Returns whatever came from stderr.
-    def exec_local_command(command)
+    def exec_local_command(command, logger)
         cmd="#{command} ; echo ExitCode: $? 1>&2"
         stderr=""
         std=Open3.popen3(cmd) {|stdin, stdout, stderr_|
             # TODO: this should be sent to ONE and not to STDERR
             while !stdout.eof?
-                STDERR.puts stdout.readline
-                STDERR.flush
+                log(stdout.readline, logger)
             end
             stderr_.read
         }
+    end
+    
+    # Uses +logger+ to send +message+ to ONE
+    def log(message, logger=nil)
+        return nil if !logger
+        
+        logger.call(message)
     end
 end
 
@@ -74,8 +80,11 @@ class TMScript
     attr_accessor :lines
     
     # +script_text+ contains the script to be executed.
-    def initialize(script_text)
+    # +logger+ is a lambda that receives a message and sends it
+    # to ONE server
+    def initialize(script_text, logger=nil)
         @lines=Array.new
+        @logger=logger
         parse_script(script_text)
     end
     
@@ -84,13 +93,11 @@ class TMScript
     # second one is the error message in case of failure.
     def execute(plugin)
         result=@lines.each {|line|
-            res=plugin.execute(*line)
+            res=plugin.execute(@logger, *line)
             if !res
-                puts "COMMAND not found for: #{line.join(" ")}."
+                log "COMMAND not found for: #{line.join(" ")}."
                 res=[false, "COMMAND not found for: #{line.join(" ")}."]
             else
-                puts "STDERR:"
-                puts res
                 res=parse_output(res)
             end
             
@@ -98,12 +105,17 @@ class TMScript
             break res if !res[0]
         }
         
-        pp result
         result
     end
     
     private
     
+    # Sends a log +message+ to ONE using +@logger+
+    def log(message)
+        @logger.call(message) if @logger
+    end
+    
+    # Gets commands from the script and populates +@lines+
     def parse_script(script_text)
         script_text.each_line {|line|
             # skip if the line is commented
@@ -117,6 +129,8 @@ class TMScript
         }
     end
     
+    # Gets exit code and error message (if failed) from
+    # +stderr+
     def parse_output(err)
         exit_code=get_exit_code(err)
         if exit_code==0
@@ -133,6 +147,7 @@ class TMScript
         tmp[0][0].to_i
     end
     
+    # Parses error message from +stderr+ output
     def get_error_message(str)
         tmp=str.scan(/^ERROR MESSAGE --8<------\n(.*?)ERROR MESSAGE ------>8--$/m)
         return "Error message not available" if !tmp[0]
@@ -142,6 +157,22 @@ end
 
 
 if $0 == __FILE__
+    require 'one_log'
+    
+    logger=ONELog.new
+    
+    log_proc=lambda{|message|
+        logger.log("TRANSFER", "0", message)
+    }
+    
+    log_proc.call(<<-EOT)
+        Multiple
+        lines log
+        
+        thingy
+    EOT
+    
+    
     script_text="
 
     CLONE localhost:/tmp/source.img ursa:/tmp/one_jfontan/0/hda.img
@@ -154,7 +185,7 @@ if $0 == __FILE__
     plugin=TMPlugin.new
     plugin["CLONE"]="./tm_clone.sh"
 
-    scr=TMScript.new(script_text)
+    scr=TMScript.new(script_text, log_proc)
     pp scr.lines
 
 
