@@ -181,7 +181,7 @@ void  LifeCycleManager::save_failure_action(int vid)
     	
     	// --- Add new record by copying the previous one 
     	
-        vm->cp_history();
+        vm->cp_previous_history();
         
         vm->set_stime(the_time);
         
