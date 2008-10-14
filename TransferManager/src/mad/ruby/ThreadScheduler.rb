@@ -40,9 +40,9 @@ class ThreadScheduler
             @thread_queue<<block
             
             if @running_threads < @concurrent_number
-              # Awakes thread runner only if there is room for a new thread
-              @threads_cond.signal
-            end            
+                # Awakes thread runner only if there is room for a new thread
+                @threads_cond.signal
+            end
         }
     end
     
@@ -61,19 +61,20 @@ class ThreadScheduler
         thread = @thread_queue.shift
         
         if thread
-          @running_threads = @running_threads + 1
-          
-          Thread.new {
-            thread.call
-           
-            @threads_mutex.synchronize {
-              # Tell thread runner that the thread has finished
-              @running_threads = @running_threads - 1
-              @threads_cond.signal
-            }
+            @running_threads = @running_threads + 1
 
-          }          
-        end        
+            Thread.new {
+                thread.call
+
+                @threads_mutex.synchronize {
+                    # Tell thread runner that the thread has finished
+                    @running_threads = @running_threads - 1
+                    @threads_cond.signal
+                }
+            }
+        else
+            @threads_cond.wait(@threads_mutex)
+        end
     end
     
     # Takes out finished threads from the pool.
@@ -89,7 +90,7 @@ class ThreadScheduler
             while true
                 @threads_mutex.synchronize {
                     while (@running_threads >= @concurrent_number)
-                      @threads_cond.wait(@threads_mutex)
+                        @threads_cond.wait(@threads_mutex)
                     end
                     
                     run_new_thread
