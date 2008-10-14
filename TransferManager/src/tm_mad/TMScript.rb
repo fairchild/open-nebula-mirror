@@ -25,6 +25,11 @@ for scripts to do so is as follows:
 
 =end
 class TMPlugin < Hash
+    def initialize(scripts_file=nil)
+        super
+        load_scripts(scripts_file) if scripts_file
+    end
+    
     # Sets the script path for the specific +command+
     def set(command, script)
         self[command]=script
@@ -72,6 +77,23 @@ class TMPlugin < Hash
         return nil if !logger
         
         logger.call(message)
+    end
+    
+    def load_scripts(scripts_file)
+        scripts_text=open(scripts_file).read
+        
+        scripts_text.each_line {|line|
+            case line
+            when /^\s*(#.*)?$/
+                # skip empty or commented lines
+                next
+            when /^\s*(\w+)\s*=\s*(.*)\s*$/
+                # TODO: add ONE_LOCATION if it is not FQDM
+                self[$1]=$2.strip
+            else
+                STDERR.puts("Can not parse line: #{line}")
+            end
+        }
     end
 end
 

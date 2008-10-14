@@ -1,4 +1,5 @@
 
+require 'pp'
 require 'one_mad'
 require 'ThreadScheduler'
 require 'TMScript'
@@ -55,8 +56,8 @@ class TM < ONEMad
     
 end
 
-plugin=TMPlugin.new
-plugin["CLONE"]="./tm_clone.sh"
+plugin=TMPlugin.new("local.tm")
+#plugin["CLONE"]="./tm_clone.sh"
 
 tm=TM.new(plugin)
 
