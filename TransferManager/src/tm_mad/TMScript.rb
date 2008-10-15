@@ -1,6 +1,7 @@
 
 require 'pp'
 require 'open3'
+require 'ftools'
 
 =begin rdoc
 
@@ -25,6 +26,7 @@ for scripts to do so is as follows:
 
 =end
 class TMPlugin < Hash
+    # If a +scripts_file+ is supplied commands are loaded from it.
     def initialize(scripts_file=nil)
         super
         load_scripts(scripts_file) if scripts_file
@@ -80,7 +82,15 @@ class TMPlugin < Hash
     end
     
     def load_scripts(scripts_file)
-        scripts_text=open(scripts_file).read
+        scripts_text=""
+        
+        if File.exist?(scripts_file)
+            scripts_text=open(scripts_file).read
+        else
+            STDERR.puts("Can not open #{scripts_file}")
+            STDERR.flush
+            return
+        end
         
         scripts_text.each_line {|line|
             case line

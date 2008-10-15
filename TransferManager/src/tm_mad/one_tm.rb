@@ -56,8 +56,16 @@ class TM < ONEMad
     
 end
 
-plugin=TMPlugin.new("local.tm")
-#plugin["CLONE"]="./tm_clone.sh"
+tm_conf=ARGV[0]
+
+if !tm_conf
+    puts "You need to specify config file."
+    exit(-1)
+end
+
+tm_conf=ONE_LOCATION+"/"+tm_conf if tm_conf[0] != ?/
+
+plugin=TMPlugin.new(tm_conf)
 
 tm=TM.new(plugin)
 
