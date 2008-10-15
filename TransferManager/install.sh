@@ -30,7 +30,7 @@ if [ -z "$SRC_DIR" -o -z "$DST_DIR" ]; then
     exit -1
 fi
 
-DIRS="/bin /etc /etc/im_kvm /etc/im_xen /etc/vmm_kvm /etc/vmm_xen /libexec /lib/ruby /var /share/examples /lib/im_probes /etc/vmm_ec2 /etc/im_ec2"
+DIRS="/bin /etc /etc/im_kvm /etc/im_xen /etc/vmm_kvm /etc/vmm_xen /libexec /lib/ruby /var /share/examples /lib/im_probes /lib/tm_commands/nfs /etc/vmm_ec2 /etc/im_ec2 /etc/tm_nfs"
 
 for d in $DIRS; do
     mkdir -p $DST_DIR$d
@@ -51,6 +51,7 @@ inst_ln share/scripts/one bin
 
 inst_ln src/mad/ruby/one_mad.rb lib/ruby
 inst_ln src/mad/ruby/one_ssh.rb lib/ruby
+inst_ln src/mad/ruby/ThreadScheduler.rb lib/ruby
 
 inst_ln src/client/ruby/one.rb lib/ruby
 inst_ln src/client/ruby/client_utilities.rb lib/ruby
@@ -109,6 +110,23 @@ inst_ln src/im_mad/im_ssh/one_im_ssh bin
 inst_ln src/im_mad/host_probes/architecture.sh lib/im_probes
 inst_ln src/im_mad/host_probes/cpu.sh lib/im_probes
 inst_ln src/im_mad/host_probes/name.sh lib/im_probes
+
+# -- Transfer manager --
+
+inst_ln src/tm_mad/one_tm.rb            bin
+
+inst_ln src/tm_mad/TMScript.rb          lib/ruby
+inst_ln src/tm_mad/tm_common.sh         libexec
+
+inst_ln src/tm_mad/nfs/nfs.tm           etc/tm_nfs
+
+inst_ln src/tm_mad/nfs/tm_clone.sh      lib/tm_commands/nfs
+inst_ln src/tm_mad/nfs/tm_delete.sh     lib/tm_commands/nfs
+inst_ln src/tm_mad/nfs/tm_ln.sh         lib/tm_commands/nfs
+inst_ln src/tm_mad/nfs/tm_mkswap.sh     lib/tm_commands/nfs
+inst_ln src/tm_mad/nfs/tm_mkimage.sh    lib/tm_commands/nfs
+inst_ln src/tm_mad/nfs/tm_mv.sh         lib/tm_commands/nfs
+
 
 # --- Examples ---
 
