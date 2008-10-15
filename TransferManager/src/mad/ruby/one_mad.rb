@@ -120,7 +120,7 @@ class ONEMad
 	def mad_log(command, number, message)
 	    msg=message.strip
         msg.each_line {|line|
-            send_message(command, number, "LOG", line.strip)
+            send_message("LOG", "-", number, line.strip)
         }
     end
 	
