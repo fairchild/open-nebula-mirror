@@ -92,6 +92,8 @@ class TMPlugin < Hash
             return
         end
         
+        one_location=ENV['ONE_LOCATION']
+        
         scripts_text.each_line {|line|
             case line
             when /^\s*(#.*)?$/
@@ -99,7 +101,13 @@ class TMPlugin < Hash
                 next
             when /^\s*(\w+)\s*=\s*(.*)\s*$/
                 # TODO: add ONE_LOCATION if it is not FQDM
-                self[$1]=$2.strip
+                command=$1.strip.upcase
+                path=$2.strip
+                
+                # Substitutes ONE_LOCATION by the envionment variable
+                path.gsub!(/ONE_LOCATION/, one_location)
+                
+                self[command]=path
             else
                 STDERR.puts("Can not parse line: #{line}")
             end
