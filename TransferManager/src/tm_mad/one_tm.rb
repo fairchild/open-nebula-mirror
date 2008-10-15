@@ -1,4 +1,13 @@
 
+ONE_LOCATION=ENV["ONE_LOCATION"]
+
+if !ONE_LOCATION
+    puts "ONE_LOCATION not set"
+    exit(-1)
+end
+
+$: << ONE_LOCATION+"/lib/ruby"
+
 require 'pp'
 require 'one_mad'
 require 'ThreadScheduler'
