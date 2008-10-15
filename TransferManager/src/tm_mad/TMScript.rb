@@ -106,6 +106,10 @@ class TMPlugin < Hash
                 
                 # Substitutes ONE_LOCATION by the envionment variable
                 path.gsub!(/ONE_LOCATION/, one_location)
+
+                # Prepend ONE_LOCATION if the path does not
+                # start with /
+                path=one_location+"/"+path if path[0]!=?/
                 
                 self[command]=path
             else
