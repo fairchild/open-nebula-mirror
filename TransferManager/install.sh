@@ -113,6 +113,7 @@ inst_ln src/im_mad/host_probes/name.sh lib/im_probes
 
 # -- Transfer manager --
 
+inst_ln src/tm_mad/one_tm               bin
 inst_ln src/tm_mad/one_tm.rb            bin
 
 inst_ln src/tm_mad/TMScript.rb          lib/ruby
