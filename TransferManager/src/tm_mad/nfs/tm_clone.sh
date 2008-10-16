@@ -16,5 +16,17 @@ DST_DIR=`dirname $DST_PATH`
 log "Creating directory $DST_DIR"
 exec_and_log "mkdir -p $DST_DIR"
 
-log "Cloning $SRC_PATH"
-exec_and_log "cp $SRC_PATH $DST_PATH"
+case $SRC in
+http://*)
+    log "Downloading $SRC"
+    exec_and_log "wget -O $DST_PATH $SRC"
+    ;;
+
+*)
+    log "Cloning $SRC_PATH"
+    exec_and_log "cp $SRC_PATH $DST_PATH"
+    ;;
+esac
+
+exec_and_log "chmod a+w $DST_PATH"
+
