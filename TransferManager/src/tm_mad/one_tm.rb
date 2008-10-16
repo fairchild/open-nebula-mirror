@@ -52,9 +52,9 @@ class TM < ONEMad
         @thread_scheduler.new_thread {
             res=script.execute(@plugin)
             if res[0]
-                send_message("TRANSFER", number, "SUCCESS")
+                send_message("TRANSFER", "SUCCESS", number)
             else
-                send_message("TRANSFER", number, "FAILURE", res[1])
+                send_message("TRANSFER", "FAILURE", number, res[1])
             end
         }
     end
