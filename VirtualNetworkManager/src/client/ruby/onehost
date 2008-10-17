@@ -178,7 +178,7 @@ class OnehostParse < CommandParse
 Commands:
 
 * add (Adds a new machine to the pool)
-    onehost add <hostname> <im_mad> <vmm_mad>
+    onehost add <hostname> <im_mad> <vmm_mad> <tm_mad>
     
 * show (Gets info from a host)
     onehost show <host_id>
@@ -227,8 +227,8 @@ command=ARGV.shift
 
 case command
 when "add"
-    check_parameters("add", 3)
-    result=host.allocate(*[ARGV[0], ARGV[1], ARGV[2], "tm_mad", "true"])
+    check_parameters("add", 4)
+    result=host.allocate(*[ARGV[0], ARGV[1], ARGV[2], ARGV[3], "true"])
     
 when "show"
     check_parameters("show", 1)
