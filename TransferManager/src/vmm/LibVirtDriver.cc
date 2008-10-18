@@ -504,7 +504,7 @@ error_boot:
 	return -1;
 
 error_disk:
-	vm->log("VMM", Log::ERROR, "Wrong source or target value in DISK.");
+	vm->log("VMM", Log::ERROR, "Wrong target value in DISK.");
 	file.close();	
 	return -1;
 }
