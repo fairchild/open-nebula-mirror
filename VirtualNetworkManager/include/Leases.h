@@ -34,62 +34,80 @@ extern "C" int leases_select_cb (
 class Leases : public ObjectSQL
 {
 protected:
-/**
- *  The Lease class, it represents a pair of IP and MAC assigned to
- *  a Virtual Machine
- */
-	class Lease
-	{
-		private:
-			unsigned int      	ip;
-			unsigned int [2] 	mac;
-			int               	vid;
-			bool              	used;
+    /**
+     *  The Lease class, it represents a pair of IP and MAC assigned to
+     *  a Virtual Machine
+     */
+    class Lease
+    {
+    public:        
+        Lease(
+            string&	_ip,
+            string&	_mac,
+            int    	_vid,
+            bool    _used=true);
 
-		public:
-		    
-		    enum MACIndex
-            {
-                SUFFIX             = 0,
-                PREFIX             = 1
-            };
-		    
-		    
-			Lease(
-				string        	    _ip,
-				string           	_mac,
-				int               	_vid
-                bool              	_used=true);
+        ~Lease(){};
 
-			~Lease(){};
-			
-			/**
-			 * Converts this lease's IP and MAC to string
-			 * @param ip ip of the lease in string
-			 * @param mac mac of the lease in string
-			 */
-			
-			void to_string(string &_ip, 
-                           string &_mac);
-                           
-            /**
-             * Conversion from string IP to unsigned int IP
-             */
-            static int ip_string_to_number(string str_ip, unsigned int& num_ip);
-            
-            /**
-             * Conversion from unsigned int IP to string IP
-             */
-            static int ip_string_to_number(string str_ip, unsigned int& num_ip);
-	}
-    // ----------------------------------------
+        /**
+         * Converts this lease's IP and MAC to string
+         * @param ip ip of the lease in string
+         * @param mac mac of the lease in string
+         */
+
+        void to_string(string& _ip,
+                       string& _mac);
+
+    private:
+    	
+    	enum MACIndex
+    	{
+    		SUFFIX	= 0,
+    		PREFIX  = 1
+    	};
+    	
+        unsigned int    ip;
+        
+        unsigned int	mac[2];
+        
+        int             vid;
+        
+        bool            used;
+
+        /**
+         * Conversion from string IP to unsigned int IP
+         * @return 0 if success
+         */
+        static int ip_to_number(const string& ip, unsigned int& i_ip);
+
+        /**
+         * Conversion from unsigned int IP to string IP
+         * @return 0 if success
+         */
+        static void ip_to_string(const unsigned int i_ip, string& ip);
+
+        /**
+         * Conversion from string IP to unsigned int IP
+         * @return 0 if success
+         */
+        static int mac_to_number(const string& mac, unsigned int i_mac[]);
+        
+        /**
+         * Conversion from string IP to unsigned int IP
+         * @return 0 if success
+         */        
+        static void mac_to_string(const unsigned int i_mac[], string& mac);
+    }
+    
+    // -------------------------------------------------------------------------
     // Leases fields
-    // ----------------------------------------
+    // -------------------------------------------------------------------------
+    
     /**
      * Leases indentifier. Connects it to a Virtual Network
      */
     int             oid;
-    
+
     /**
      * Hash of leases, indexed by lease.ip
      */
@@ -109,7 +127,7 @@ protected:
         IP              = 1,
         MAC             = 2,
         VID             = 3,
-		USED			= 4,
+        USED			= 4,
         LIMIT           = 5
     };
 
@@ -193,23 +211,25 @@ private:
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int update(SqliteDB * db){};
+    int update(SqliteDB * db)
+    {}
+    ;
 
-	/**
-     *  Gets the value of a column in the pool for a given object
-     *    @param db pointer to Database
-     *    @param column to be selected
-     *    @param where condition to select the column
-     *    @param value of the column
-     *    @return 0 on success
-     */
+    /**
+        *  Gets the value of a column in the pool for a given object
+        *    @param db pointer to Database
+        *    @param column to be selected
+        *    @param where condition to select the column
+        *    @param value of the column
+        *    @return 0 on success
+        */
     int select_column(
         SqliteDB *      db,
         const string&   column,
         const string&   where,
         string *        value)
     {
-    	return ObjectSQL::select_column(db,table,column,where,value);
+        return ObjectSQL::select_column(db,table,column,where,value);
     }
 
     /**
@@ -226,7 +246,7 @@ private:
         const string&   where,
         const string&   value)
     {
-    	return ObjectSQL::update_column(db,table,column,where,value);
+        return ObjectSQL::update_column(db,table,column,where,value);
     }
 
 
@@ -245,8 +265,8 @@ public:
     // *************************************************************************
     Leases(int _oid,
            int _size):
-           oid(_oid),
-           size(_size);
+            oid(_oid),
+            size(_size);
 
     ~Leases();
 };
@@ -254,7 +274,7 @@ public:
 class RangedLeases : public Leases
 {
 private:
-	unsigned int network_address,
+    unsigned int network_address,
     unsigned int network_mask;
 
 public:
@@ -267,18 +287,20 @@ public:
                  string _network_address,
                  string _network_mask);
 
-    ~RangedLeases(){};
+    ~RangedLeases()
+    {}
+    ;
 
-   /**
-     * Returns an unused lease, which becomes used
-     * @param vid identifier of the VM getting this lease
-     * @param ip ip of the returned lease
-     * @param mac mac of  the returned lease
-     * @return
-     */
+    /**
+      * Returns an unused lease, which becomes used
+      * @param vid identifier of the VM getting this lease
+      * @param ip ip of the returned lease
+      * @param mac mac of  the returned lease
+      * @return
+      */
     int getLease(int       	vid,
-                string&  	ip,
-				string& 	mac);
+                 string&  	ip,
+                 string& 	mac);
 };
 
 class FixedLeases : public Leases
@@ -291,21 +313,23 @@ public:
     // Constructor
     // *************************************************************************
     FixedLeases(int    _oid,
-				int    _size,
+                int    _size,
                 string list_of_ips_and_macs);
 
-    ~FixedLeases(){};
+    ~FixedLeases()
+    {}
+    ;
 
-   /**
-     * Returns an unused lease, which becomes used
-     * @param vid identifier of the VM getting this lease
-     * @param ip ip of the returned lease
-     * @param mac mac of  the returned lease
-     * @return
-     */
-     int getLease(int       vid,
+    /**
+      * Returns an unused lease, which becomes used
+      * @param vid identifier of the VM getting this lease
+      * @param ip ip of the returned lease
+      * @param mac mac of  the returned lease
+      * @return
+      */
+    int getLease(int       vid,
                  string&  	ip,
- 				 string& 	mac);
+                 string& 	mac);
 };
 
 #endif /*LEASES_H_*/

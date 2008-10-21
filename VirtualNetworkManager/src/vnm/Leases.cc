@@ -23,103 +23,90 @@
 /* Lease class                                                                */
 /* ************************************************************************** */
 
-Lease(
-	string        	    _ip,
-	string           	_mac,
-	int               	_vid
-    bool              	_used=true):
+Lease::Lease(
+        string&	_ip,
+        string&	_mac,
+        int    	_vid,
+        bool    _used=true):
         	vid(_vid),
         	used(_used)
 {
-    
-    ip_string_to_number(_ip,&ip);    
-    
-    // MAC from string to unsigned int [2]
-    
-    char * cstr = new char [_mac.size()+1];
-    strcpy (cstr, _mac.c_str());
-    
-    *byte  = strtok(cstr, ".");
-    
-    int  mac_index = SUFFIX;
-    int  index     = 0;
-
-    while(byte!=NULL)
+    if ( mac_to_number(_mac, mac) != 0 )
     {
-        if (index++>1)  
-        {
-            mac_index = PREFIX;
-        }
-        mac[mac_index]   <<= 8;
-        mac[mac_index]   += atoi((const char *)byte);
-        byte             =  strtok(NULL, ".");
-    }  
-    
-    delete[] cstr; 
-       
+    	runtime_error("Wrong MAC format");
+    }
+    else if ( ip_to_number(_ip, ip) != 0 )
+    {
+    	runtime_error("Wrong IP format");
+    }
 }
-    
-    /* ************************************************************************** */
-    /* Lease Public Methods                                                       */
-    /* ************************************************************************** */
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 void Lease::to_string(string &_ip, 
                       string &_mac)
 {
-     int                      index=0;
-     unsigned int             temp_byte;
-     std::ostringstream       oss;
-
-     ip_number_to_string(ip,_ip);
-     
-     // Calculate the MAC
-     
-     oss.str("")=;
-
-
-     for (i=5;i>=0;i--)
-     {         
-         if ( i < 4 )
-         {
-             temp_byte =   mac[SUFFIX];
-             temp_byte >>= i*8;
-         }
-         else
-         {
-             temp_byte  =   mac[PREFIX];
-             temp_byte  >>= (i%4)*8;
-         }
-            
-         temp_byte  &= 255;
-         oss        << temp_byte;
-         
-         if(i!=0)
-         {
-             oss << ".";  
-         } 
-     }
-    
-     _mac = strdup(oss.str());
-
-     return 0;
+	mac_to_string(mac,_mac);
+	
+	ip_to_string(ip,_ip);
 }
 
-static int Lease::ip_number_to_string(unsigned int num_ip,
-                                      string&      str_ip)
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+static int Lease::ip_to_number(const string& ip, unsigned int& i_ip)
 {
-    int                      index;
-    unsigned int             temp_byte;
-    std::ostringstream       oss;
+    istringstream iss;    
+    size_t        pos=0;
+    int           count = 0;
+  	unsigned int  tmp;
+  	
+  	string ip = _ip;
+  	
+  	while ( (pos = ip.find('.')) !=  string::npos )
+  	{
+  		ip.replace(pos,1," ");
+	    count++;
+  	}
+
+	if (count != 3)
+	{
+	    return -1;
+	}
+
+	iss.str(ip);
+
+	i_ip = 0;
+	
+	for (int i=0;i<4;i++)
+	{
+		iss >> dec >> tmp >> ws;
+		
+	    i_ip <<= 8;
+	    i_ip += tmp;
+	}
+	
+	return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+static void Lease::ip_to_string(const unsigned int i_ip, string& ip)
+{
+    unsigned int    temp_byte;
+    ostringstream	oss;
 
     // Convert the IP from unsigned int to string
    
-    for (index=0;index<4;index++)
+    for (int index=0;index<4;index++)
     {
-        temp_byte   =   num_ip;
-        temp_byte   >>= (24-index*8);
-        temp_byte   &=  255;
+        temp_byte =   i_ip;
+        temp_byte >>= (24-index*8);
+        temp_byte &=  255;
         
-        oss         <<  temp_byte;
+        oss << temp_byte;
         
         if(index!=3) 
         {
@@ -127,31 +114,95 @@ static int Lease::ip_number_to_string(unsigned int num_ip,
         } 
     }
 
-    str_ip = strdup(oss.str());
+    ip = oss.str();
     
     return 0;
-}             
+}
 
-static int Lease::ip_string_to_number(string        str_ip,
-                                      unsigned int& num_ip)
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+static int Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
 {
-    // Convert IP from string to unsigned int
+    istringstream iss;    
+    size_t        pos=0;
+    int           count = 0;
+  	unsigned int  tmp;
+  	
+  	string mac = _mac;
+  	
+  	while ( (pos = mac.find(':')) !=  string::npos )
+  	{
+  		mac.replace(pos,1," ");
+	    count++;
+  	}
 
-    char * cstr = new char [str_ip.size()+1];
-    strcpy (cstr, str_ip.c_str());
+	if (count != 5)
+	{
+	    return -1;
+	}
 
-    char *byte  = strtok(cstr, ".");
+	iss.str(mac);
+	
+	i_mac[PREFIX] = 0;
+	i_mac[SUFFIX] = 0;
+	
+	iss >> hex >> i_mac[PREFIX] >> ws >> hex >> tmp >> ws;
+	i_mac[PREFIX] <<= 8;
+	i_mac[PREFIX] += tmp;
 
-    while(byte!=NULL)
-    {
+	for (int i=0;i<4;i++)
+	{
+		iss >> hex >> tmp >> ws;
+		
+	    i_mac[SUFFIX] <<= 8;
+	    i_mac[SUFFIX] += tmp;
+	}
+	
+	return 0;
+}
 
-      *num_ip   <<= 8;
-      *num_ip   += atoi((const char *)byte);
-      byte = strtok(NULL, ".");
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+static void Lease::mac_to_string(const unsigned int i_mac[], string& mac)
+{
+	ostringstream	oss;
+	unsigned int	temp_byte;
+	
+    oss.str("");
+
+    for (int i=5;i>=0;i--)
+    {         
+        if ( i < 4 )
+        {
+            temp_byte =   mac[SUFFIX];
+            temp_byte >>= i*8;
+        }
+        else
+        {
+            temp_byte  = mac[PREFIX];
+            temp_byte  >>= (i%4)*8;
+        }
+           
+        temp_byte  &= 255;
+        
+        oss.width(2);
+        oss.fill('0');
+        oss << hex << temp_byte;
+        
+        if(i!=0)
+        {
+            oss << ":";  
+        } 
     }
     
-    delete[] cstr;
-}                       
+    mac = oss.str();	
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 
 /* ************************************************************************** */
 /* Leases class                                                               */
