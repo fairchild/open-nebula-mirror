@@ -33,11 +33,11 @@ Lease::Lease(
 {
     if ( mac_to_number(_mac, mac) != 0 )
     {
-    	runtime_error("Wrong MAC format");
+    	throw runtime_error("Wrong MAC format");
     }
     else if ( ip_to_number(_ip, ip) != 0 )
     {
-    	runtime_error("Wrong IP format");
+    	throw runtime_error("Wrong IP format");
     }
 }
 
