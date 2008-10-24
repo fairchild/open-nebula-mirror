@@ -23,19 +23,19 @@
 /* Lease class                                                                */
 /* ************************************************************************** */
 
-Lease::Lease(
+ Leases::Lease::Lease(
         string&	_ip,
         string&	_mac,
         int    	_vid,
-        bool    _used=true):
+        bool    _used):
         	vid(_vid),
         	used(_used)
 {
-    if ( mac_to_number(_mac, mac) != 0 )
+    if ( mac_to_number(_mac, mac) )
     {
     	throw runtime_error("Wrong MAC format");
     }
-    else if ( ip_to_number(_ip, ip) != 0 )
+    else if ( ip_to_number(_ip, ip) )
     {
     	throw runtime_error("Wrong IP format");
     }
@@ -44,18 +44,29 @@ Lease::Lease(
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void Lease::to_string(string &_ip, 
-                      string &_mac)
-{
-	mac_to_string(mac,_mac);
-	
-	ip_to_string(ip,_ip);
+void Leases::Lease::to_string(string &_ip, 
+                              string &_mac,
+                              string &_vid,
+                              string &_used)
+{   
+    mac_to_string(mac, _mac);
+    ip_to_string(ip, _ip); 
+    _vid=vid;
+    
+    if( used )
+    {
+        used="Yes";
+    }
+    else
+    {
+        _used="No";
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-static int Lease::ip_to_number(const string& ip, unsigned int& i_ip)
+int Leases::Lease::ip_to_number(const string& _ip, unsigned int& i_ip)
 {
     istringstream iss;    
     size_t        pos=0;
@@ -93,7 +104,7 @@ static int Lease::ip_to_number(const string& ip, unsigned int& i_ip)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-static void Lease::ip_to_string(const unsigned int i_ip, string& ip)
+void Leases::Lease::ip_to_string(const unsigned int i_ip, string& ip)
 {
     unsigned int    temp_byte;
     ostringstream	oss;
@@ -115,14 +126,12 @@ static void Lease::ip_to_string(const unsigned int i_ip, string& ip)
     }
 
     ip = oss.str();
-    
-    return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-static int Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
+int Leases::Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
 {
     istringstream iss;    
     size_t        pos=0;
@@ -165,7 +174,7 @@ static int Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-static void Lease::mac_to_string(const unsigned int i_mac[], string& mac)
+void Leases::Lease::mac_to_string(const unsigned int i_mac[], string& mac)
 {
 	ostringstream	oss;
 	unsigned int	temp_byte;
@@ -176,12 +185,12 @@ static void Lease::mac_to_string(const unsigned int i_mac[], string& mac)
     {         
         if ( i < 4 )
         {
-            temp_byte =   mac[SUFFIX];
+            temp_byte =   i_mac[SUFFIX];
             temp_byte >>= i*8;
         }
         else
         {
-            temp_byte  = mac[PREFIX];
+            temp_byte  = i_mac[PREFIX];
             temp_byte  >>= (i%4)*8;
         }
            
@@ -212,10 +221,10 @@ static void Lease::mac_to_string(const unsigned int i_mac[], string& mac)
     /* Leases :: Constructor                                                      */
     /* ************************************************************************** */
     
-    ~Leases()
+    Leases::~Leases()
     {
         
-        map<int, Lease *>::iterator  it;
+        map<unsigned int, Lease *>::iterator  it;
 
         // Delete all the leases
 
@@ -231,240 +240,367 @@ static void Lease::mac_to_string(const unsigned int i_mac[], string& mac)
 
 const char * Leases::table               = "leases";
 
-const char * Leases::db_names            = "(oid,ip,mac,vid,used)";
+const char * Leases::db_names            = "(oid,ip,mac_prefix,mac_suffix,vid,used)";
 
 const char * Leases::db_bootstrap        = "CREATE TABLE leases ("
-        "oid INTEGER,ip TEXT, mac TEXT, vid INTEGER, used INTEGER,"
-        "PRIMARY KEY(oid,ip))";
+    "oid INTEGER,ip INTEGER, mac_prefix INTEGER,mac_suffix INTEGER," 
+    "vid INTEGER, used INTEGER, PRIMARY KEY(oid,ip))";
 
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------------- */
 
 int Leases::unmarshall(int num, char **names, char ** values)
 {
-    if (      (values[OID] == 0) ||
-              (values[IP]  == 0) ||
-              (values[MAC] == 0) ||
-              (values[VID] == 0) ||
-              (values[USED]== 0) ||
-              (num != LIMIT ))
-      {
-          return -1;
-      }
+   if (      (values[OID] == 0) ||
+             (values[IP]  == 0) ||
+             (values[MAC_PREFIX] == 0) ||
+             (values[MAC_SUFFIX] == 0) ||
+             (values[VID] == 0) ||
+             (values[USED]== 0) ||
+             (num != LIMIT ))
+     {
+         return -1;
+     }
+     
+     unsigned int mac [2];
 
-      string ip   = values[IP];
-      string mac  = values[MAC];
-      int    vid  = atoi(values[VID]);
-      bool   used = atoi(values[USED])==0?false:true;
-      
-      add(ip,mac,vid,used);
+     unsigned int ip      = (unsigned int)atol(values[IP]);
+     mac[Lease::PREFIX]   = (unsigned int)atol(values[MAC_PREFIX]);
+     mac[Lease::SUFFIX]   = (unsigned int)atol(values[MAC_SUFFIX]);
+     int          vid     = atoi(values[VID]);
+     bool         used    = atoi(values[USED])?true:false;
+     
+     leases.insert(make_pair(ip,new Lease(ip,mac,vid,used)));
 
-      return 0;
+     return 0;
 }
 
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
 
 extern "C" int leases_select_cb (
-        void *                  _leases,
-        int                     num,
-        char **                 values,
-        char **                 names)
+       void *                  _leases,
+       int                     num,
+       char **                 values,
+       char **                 names)
 {
-    Leases *    leases;
+   Leases *    leases;
 
-    leases = static_cast<Leases *>(_leases);
+   leases = static_cast<Leases *>(_leases);
 
-    if (leases == 0)
-    {
-        return -1;
-    }
+   if (leases == 0)
+   {
+       return -1;
+   }
 
-    return leases->unmarshall(num,names,values);
+   return leases->unmarshall(num,names,values);
 };
 
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
 
 int Leases::select(SqliteDB * db)
 {
-    ostringstream   oss;
-    ostringstream   ose;
-    
-    int             rc;
-    int             boid;
-    
-    string          filename;
-    const char *    nl;
-    
-    oss << "SELECT * FROM " << table << " WHERE oid = " << oid;
+   ostringstream   oss;
+   ostringstream   ose;
 
-    boid = oid;
-    oid  = -1;
-
-    rc = db->exec(oss,leases_select_cb,(void *) this);
+   int             rc;
+   int             boid;
 
 
-    if ((rc != 0) || (oid != boid ))
-    {
-        goto error_id;
-    }
+   oss << "SELECT * FROM " << table << " WHERE oid = " << oid;
+
+   boid = oid;
+   oid  = -1;
+
+   rc = db->exec(oss,leases_select_cb,(void *) this);
 
 
-    return 0;
+   if ((rc != 0) || (oid != boid ))
+   {
+       goto error_id;
+   }
+
+
+   return 0;
 
 
 error_id:
-    ose << "Error getting leases for network nid: " << oid;
-    return -1;
+   oss << "Error getting leases for network nid: " << oid;
+   return -1;
 
 }
 
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
 
-int Leases::insert(SqliteDB * db)
-{
-    // Insert the Leases in the DB
-    rc = update(db);
-
-    return 0;
-}
-
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------------------- */
 
 int Leases::update(SqliteDB * db)
 {
-    ostringstream   oss;
-    int             rc;
-   
-    map<int, Lease *>::iterator  it;
-    
-    // Iterate all the leases
-    
-    for(it=leases.begin();it!=leases.end();it++)
-    {
-        oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
-            oid << "," <<
-            (it->second).ip << "," <<
-            (it->second).mac << "," <<
-            (it->second).vid << "," <<
-            (it->second).used?1:0 << ")";
-    }
-
-    rc = db->exec(oss);
-
-    return rc;
+// TODO return -1 and log error message
+    return -1;
 }
 
-    /* ************************************************************************** */
-    /* Leases :: Interface Methods                                                */
-    /* ************************************************************************** */
-    
-    int Leases::add(string       ip,
-                    string       mac,
-                    int          vid,
-                    bool         used=true)
-    {
-        leases.insert(make_pair(ip,new Lease(ip,mac,vid,used)));
-        
-        return 0;
-    }
-    
-    int Leases::del(string ip)
-    {
-        leases.erase(ip);
-        
-        // Erase it from DB
+   /* ************************************************************************** */
+   /* Leases :: Interface Methods                                                */
+   /* ************************************************************************** */
 
-        oss << "DELETE FROM " << table << " WHERE oid=" << oid << " AND ip=" << ip;
+   bool Leases::check(string ip)
+   {
+       map<unsigned int,Lease *>::iterator it;
+       
+       unsigned int _ip;
+       
+       Leases::Lease::ip_to_number(ip,_ip);
 
-        return db->exec(oss);
-        
-        return 0;
-    }
-    
-    bool Leases::check(string ip)
-    {
-        map<int,Leases *>::iterator it;
-        
-        
-        leases.find(ip);
-        
-        if (it!=leases.end())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 
-    /* ************************************************************************** */
-    /* Leases :: Misc                                                             */
-    /* ************************************************************************** */
+       it=leases.find(_ip);
 
-    ostream& operator<<(ostream& os, VirtualNetwork& vnw)
-    {
-        os << "NID               : " << leases.oid << endl;
-        
-        os << "Leases:" << endl;
-        
-        map<int, Lease *>::iterator  it;
+       if (it!=leases.end())
+       {
+           return true;
+       }
+       else
+       {
+           return false;
+       }
+   }
 
-        // Iterate all the leases
+   /* ************************************************************************** */
+   /* Leases :: Misc                                                             */
+   /* ************************************************************************** */
 
-        for(it=leases.begin();it!=leases.end();it++)
-        {
-            os <<  "IP:"   << (it->second).ip <<  
-                  " MAC: " << (it->second).mac <<  
-                  " VID: " << (it->second).vid <<  
-                  " USED: " << (it->second).used?"Yes":"No";           
-        }
-    
-        return os;
-    };
-    
-    
+   ostream& operator<<(ostream& os, Leases& _leases)
+   {
+       os << "NID               : " << _leases.oid << endl;
+
+       os << "Leases:" << endl;
+
+       map<unsigned int, Leases::Lease *>::iterator  it;
+
+       // Iterate all the leases
+
+       for(it=_leases.leases.begin();it!=_leases.leases.end();it++)
+       {   
+           string ip,mac,vid,used;
+           
+           (it->second)->to_string(ip,mac,vid,used);
+           
+           os << "IP:"   << ip <<
+                 "MAC:"  << mac <<
+                 "VID:"  << vid <<
+                 "USED:" << used << endl;
+       }
+
+       return os;
+   };
+
+
 /* ************************************************************************** */
 /* Ranged Leases class                                                        */
 /* ************************************************************************** */
 
 
-    /* ************************************************************************** */
-    /* Ranged Leases :: Constructor                                               */
-    /* ************************************************************************** */
-    
-    RangedLeases(int    _oid,
-                 int    _size,
-                 string _network_address,
-                 string _network_mask)
-    {
-        Leases(_oid,_size);
-        
-        Lease::ip_string_to_number(_network_address,&network_address);
-        
-        Lease::ip_string_to_number(_network_mask,&network_mask);
-    }
-    
+   /* ************************************************************************** */
+   /* Ranged Leases :: Constructor                                               */
+   /* ************************************************************************** */
+
+   RangedLeases::RangedLeases(
+                SqliteDB * db,
+                int    _oid,
+                int    _size,
+                string _network_address,
+                string _network_mask):
+                   Leases(db,_oid,_size)
+   {
+       Leases::Lease::ip_to_number(_network_address,network_address);
+
+       Leases::Lease::ip_to_number(_network_mask,network_mask);
+   }
+   
+   /* ************************************************************************** */
+   /* Ranged Leases :: Methods                                                   */
+   /* ************************************************************************** */
+   
+   
+      int RangedLeases::add( string       ip,
+                             string       mac,
+                             int          vid,
+                             bool         used)
+      {
+          ostringstream    oss;
+          
+          unsigned int     _ip;
+          unsigned int     _mac [2];
+          
+          int              _used;
+          
+          leases.insert(make_pair(_ip,new Lease(ip,mac,vid,used)));
+         
+          
+          if (Lease::mac_to_number(mac,_mac)  )
+          {
+          	throw runtime_error("Wrong MAC format");
+          }
+          else if ( Lease::ip_to_number(ip,_ip) )
+          {
+          	throw runtime_error("Wrong IP format");
+          }
+          
+          if (used)
+          {
+              _used = 1;
+          }
+          else
+          {
+              _used = 0;
+          }
+
+          oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
+                      oid << "," <<
+                      _ip << "," <<
+                      _mac[Lease::PREFIX] << "," <<
+                      _mac[Lease::SUFFIX] << "," <<
+                      vid << "," <<
+                      _used << ")";
+                       
+          return db->exec(oss);
+
+          return 0;
+      }
+      
+ 
+      int  RangedLeases::del(string ip)
+      {
+          unsigned int     _ip;
+          ostringstream    oss;
+          
+           // Remove lease from leases map
+           
+          if ( Lease::ip_to_number(ip,_ip) )
+          {
+             throw runtime_error("Wrong IP format");
+          }
+          
+          leases.erase(_ip);
+
+          // Erase it from DB
+
+          oss << "DELETE FROM " << table << " WHERE oid=" << oid << " AND ip=" << _ip;
+
+          return db->exec(oss);
+      }
+   
+   
+
 /* ************************************************************************** */
 /* Fixed Leases class                                                         */
 /* ************************************************************************** */
 
 
-    /* ************************************************************************** */
-    /* Fixed Leases :: Constructor                                                */
-    /* ************************************************************************** */
-    
-    FixedLeases(int    _oid,
-				int    _size,
-                string list_of_ips_and_macs);
-    {
-        Leases(_oid,_size);
-        
-        // TODO --> Convert from list_of_ips_and_macs to leases
-    }
+   /* ************************************************************************** */
+   /* Fixed Leases :: Constructor                                                */
+   /* ************************************************************************** */
+
+   FixedLeases::FixedLeases(SqliteDB * db,
+               int     _oid,
+			   int     _size,
+               vector<const Attribute*> vector_leases):
+                  Leases(db,_oid,_size)
+   { 
+       const VectorAttribute *	single_attr_lease;
+       
+       string _mac;
+       string _ip;
+       
+       for (int i=0; i < (int)vector_leases.size() ;i++)
+       {
+
+           single_attr_lease = dynamic_cast<const VectorAttribute *>(vector_leases[i]);
+      	
+           if( single_attr_lease )
+           {
+               _ip      = single_attr_lease->vector_value("IP");
+               _mac     = single_attr_lease->vector_value("MAC");
+               
+               add(_ip,_mac,-1,false); 
+	       }
+       }
+   }
+   
+   /* ************************************************************************** */
+   /* Fixed Leases :: Methods                                                    */
+   /* ************************************************************************** */
+   
+       int FixedLeases::add(string       ip,
+                            string       mac,
+                            int          vid,
+                            bool         used)
+       {
+           ostringstream    oss;
+           unsigned int     _ip;
+           unsigned int     _mac [2];
+           int              _used;
+           
+           // Insert lease into leases map
+
+           if (Leases::Lease::mac_to_number(mac,_mac)  )
+           {
+           	throw runtime_error("Wrong MAC format");
+           }
+           else if ( Leases::Lease::ip_to_number(ip,_ip) )
+           {
+           	throw runtime_error("Wrong IP format");
+           }
+           
+           leases.insert(make_pair(_ip,new Lease(ip,mac,vid,used)));
+           
+           // Flip used flag to true
+           
+           if (used)
+           {
+               _used = 1;
+           }
+           else
+           {
+               _used = 0;
+           }
+
+           oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
+                       oid << "," <<
+                       _ip << "," <<
+                       _mac[Lease::PREFIX] << "," <<
+                       _mac[Lease::SUFFIX] << "," <<
+                       vid << "," <<
+                       _used << ")";
+
+           return db->exec(oss);
+       }
+
+       int FixedLeases::del(string ip)
+       {
+           unsigned int     _ip;
+           ostringstream    oss;
+           
+           // Remove lease from leases map
+           
+           if ( Leases::Lease::ip_to_number(ip,_ip) )
+           {
+               throw runtime_error("Wrong IP format");
+           }
+           
+           leases.erase(_ip);
+
+           // Flip used flag to false
+
+           oss << "INSERT OR REPLACE INTO " << table << " (oid,ip,used) VALUES ("<<
+                       oid << "," <<
+                       _ip << "," <<
+                       0   << ")";
+
+           return db->exec(oss);
+
+           return 0;
+       }
 
 

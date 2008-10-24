@@ -20,7 +20,10 @@
 
 #include <sqlite3.h>
 #include "ObjectSQL.h"
+#include "Attribute.h"
 
+#include <map>
+#include <vector>
 #include <sstream>
 
 using namespace std;
@@ -40,74 +43,100 @@ protected:
      */
     class Lease
     {
-    public:        
-        Lease(
-            string&	_ip,
-            string&	_mac,
-            int    	_vid,
-            bool    _used=true);
+        public:        
+            Lease(
+                string&	_ip,
+                string&	_mac,
+                int    	_vid,
+                bool    _used=true);
+        
+            Lease(
+                unsigned int    _ip,
+                unsigned int    _mac[],
+                int    	        _vid,
+                bool            _used=true): 
+                    ip(_ip),
+                    vid(_vid),
+                    used(_used)
+            {
+                // TODO check size
+                mac[PREFIX]=_mac[PREFIX];
+                mac[SUFFIX]=_mac[SUFFIX];
+                
+            };
 
-        ~Lease(){};
 
-        /**
-         * Converts this lease's IP and MAC to string
-         * @param ip ip of the lease in string
-         * @param mac mac of the lease in string
-         */
+            ~Lease(){};
+            
+            enum MACIndex
+        	{
+        		SUFFIX	= 0,
+        		PREFIX  = 1
+        	};
 
-        void to_string(string& _ip,
-                       string& _mac);
+            /**
+             * Converts this lease's IP and MAC to string
+             * @param ip ip of the lease in string
+             * @param mac mac of the lease in string
+             */
 
-    private:
+            void to_string(string& _ip,
+                           string& _mac,
+                           string& _vid,
+                           string& _used);
+                           
+            /**
+             * Conversion from string IP to unsigned int IP
+             * @return 0 if success
+             */
+            static int ip_to_number(const string& ip, unsigned int& i_ip);
+
+            /**
+             * Conversion from unsigned int IP to string IP
+             * @return 0 if success
+             */
+            static void ip_to_string(const unsigned int i_ip, string& ip);
+
+            /**
+             * Conversion from string IP to unsigned int IP
+             * @return 0 if success
+             */
+            static int mac_to_number(const string& mac, unsigned int i_mac[]);
+        
+            /**
+             * Conversion from string IP to unsigned int IP
+             * @return 0 if success
+             */        
+            static void mac_to_string(const unsigned int i_mac[], string& mac);
+            
+            friend class Leases;
+
+        private:
     	
-    	enum MACIndex
-    	{
-    		SUFFIX	= 0,
-    		PREFIX  = 1
-    	};
-    	
-        unsigned int    ip;
+            unsigned int    ip;
         
-        unsigned int	mac[2];
+            unsigned int	mac [2];
         
-        int             vid;
+            int             vid;
         
-        bool            used;
+            bool            used;
+    };    
 
-        /**
-         * Conversion from string IP to unsigned int IP
-         * @return 0 if success
-         */
-        static int ip_to_number(const string& ip, unsigned int& i_ip);
-
-        /**
-         * Conversion from unsigned int IP to string IP
-         * @return 0 if success
-         */
-        static void ip_to_string(const unsigned int i_ip, string& ip);
-
-        /**
-         * Conversion from string IP to unsigned int IP
-         * @return 0 if success
-         */
-        static int mac_to_number(const string& mac, unsigned int i_mac[]);
-        
-        /**
-         * Conversion from string IP to unsigned int IP
-         * @return 0 if success
-         */        
-        static void mac_to_string(const unsigned int i_mac[], string& mac);
-    }
     
     // -------------------------------------------------------------------------
     // Leases fields
     // -------------------------------------------------------------------------
     
     /**
+     * Pointer to the DataBase
+     */    
+    SqliteDB *      db;
+    
+    /**
      * Leases indentifier. Connects it to a Virtual Network
      */
-    int             oid;
-
+    int         oid;
+    
     /**
      * Hash of leases, indexed by lease.ip
      */
@@ -117,6 +146,7 @@ protected:
      * Number of possible leases (free + asigned)
      */
     int             size;
+    
 
     // ----------------------------------------
     // DataBase implementation variables
@@ -125,10 +155,11 @@ protected:
     {
         OID             = 0,
         IP              = 1,
-        MAC             = 2,
-        VID             = 3,
-        USED			= 4,
-        LIMIT           = 5
+        MAC_PREFIX      = 2,
+        MAC_SUFFIX      = 3,
+        VID             = 4,
+        USED            = 5,
+        LIMIT           = 6
     };
 
     static const char * table;
@@ -147,24 +178,26 @@ protected:
      * @param vid identifier of the VM getting this lease
      * @return 0 if success
      */
-    int add(string       ip,
-            string       mac,
-            int          vid,
-            bool         used=true);
+     virtual int add(string       ip,
+                     string       mac,
+                     int          vid,
+                     bool         used=true) = 0;
+                    
 
     /**
      * Remove a lease 
+     * @param db pointer to DB
      * @param ip ip of the lease to be deleted
      * @return 0 if success
      */
-    int del(string ip);
+     virtual int del(string ip) = 0;
 
     /**
      * Check if the passed ip corresponds with a given lease
      * @param ip of the lease to be checked
      * @return 0 if success
      */
-    bool check(string ip);
+     bool check(string ip);
 
     /**
      * Returns an unused lease, which becomes used
@@ -173,9 +206,9 @@ protected:
      * @param mac mac of  the returned lease
      * @return
      */
-    virtual int getLease(int          vid,
-                         string&      ip,
-                         string&	  mac) = 0;
+     virtual int getLease(int          vid,
+                          string&      ip,
+                          string&	   mac) = 0;
 
 private:
 
@@ -190,7 +223,7 @@ private:
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int insert(SqliteDB * db);
+    virtual int insert(SqliteDB * db) = 0;
 
     /**
      *  Reads the leases from the DB
@@ -204,16 +237,14 @@ private:
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int drop(SqliteDB * db);
+    int drop(SqliteDB * db){return 0;};
 
     /**
      *  Updates the leases record
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int update(SqliteDB * db)
-    {}
-    ;
+    int update(SqliteDB * db);
 
     /**
         *  Gets the value of a column in the pool for a given object
@@ -259,22 +290,26 @@ private:
      */
     int unmarshall(int num, char **names, char ** values);
 public:
+    
+    friend ostream& operator<<(ostream& os, Leases& _leases);
 
     // *************************************************************************
     // Constructor
     // *************************************************************************
-    Leases(int _oid,
-           int _size):
+    Leases(SqliteDB *      _db,
+           int             _oid,
+           int             _size):
+            db(_db),
             oid(_oid),
-            size(_size);
+            size(_size){};
 
-    ~Leases();
+    virtual ~Leases();
 };
 
 class RangedLeases : public Leases
 {
 private:
-    unsigned int network_address,
+    unsigned int network_address;
     unsigned int network_mask;
 
 public:
@@ -282,14 +317,13 @@ public:
     // *************************************************************************
     // Constructor
     // *************************************************************************
-    RangedLeases(int    _oid,
-                 int    _size,
-                 string _network_address,
-                 string _network_mask);
+    RangedLeases(SqliteDB * db,
+                 int        _oid,
+                 int        _size,
+                 string     _network_address,
+                 string     _network_mask);
 
-    ~RangedLeases()
-    {}
-    ;
+    ~RangedLeases(){};
 
     /**
       * Returns an unused lease, which becomes used
@@ -298,9 +332,33 @@ public:
       * @param mac mac of  the returned lease
       * @return
       */
-    int getLease(int       	vid,
-                 string&  	ip,
-                 string& 	mac);
+    int getLease(int      vid,
+                 string&  ip,
+                 string&  mac){return 0;};
+                 
+    /**
+     * Add a lease 
+     * @param ip ip of the lease
+     * @param mac mac of the lease
+     * @param vid identifier of the VM getting this lease
+     * @return 0 if success
+     */
+     int add(string       ip,
+             string       mac,
+             int          vid,
+             bool         used=true);
+                    
+
+    /**
+     * Remove a lease 
+     * @param db pointer to DB
+     * @param ip ip of the lease to be deleted
+     * @return 0 if success
+     */
+     int del(string ip);
+     
+     int insert(SqliteDB * db){return 0;};
+                              
 };
 
 class FixedLeases : public Leases
@@ -312,13 +370,12 @@ public:
     // *************************************************************************
     // Constructor
     // *************************************************************************
-    FixedLeases(int    _oid,
+    FixedLeases(SqliteDB * db,
+                int    _oid,
                 int    _size,
-                string list_of_ips_and_macs);
+                vector<const Attribute*> vector_leases);
 
-    ~FixedLeases()
-    {}
-    ;
+    ~FixedLeases(){};
 
     /**
       * Returns an unused lease, which becomes used
@@ -327,9 +384,32 @@ public:
       * @param mac mac of  the returned lease
       * @return
       */
-    int getLease(int       vid,
-                 string&  	ip,
-                 string& 	mac);
+    int getLease(int      vid,
+                 string&  ip,
+                 string&  mac){return 0;};   
+                 
+    /**
+     * Add a lease 
+     * @param ip ip of the lease
+     * @param mac mac of the lease
+     * @param vid identifier of the VM getting this lease
+     * @return 0 if success
+     */
+     int add(string       ip,
+             string       mac,
+             int          vid,
+             bool         used=true);
+                    
+
+    /**
+     * Remove a lease 
+     * @param db pointer to DB
+     * @param ip ip of the lease to be deleted
+     * @return 0 if success
+     */
+     int del(string ip);  
+     
+     int insert(SqliteDB * db){return 0;};
 };
 
 #endif /*LEASES_H_*/
