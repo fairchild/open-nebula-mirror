@@ -119,7 +119,7 @@ inst_ln src/tm_mad/one_tm.rb            bin
 inst_ln src/tm_mad/TMScript.rb          lib/ruby
 inst_ln src/tm_mad/tm_common.sh         libexec
 
-inst_ln src/tm_mad/nfs/nfs.tm           etc/tm_nfs
+inst_ln src/tm_mad/nfs/tm_nfs.conf      etc/tm_nfs
 
 inst_ln src/tm_mad/nfs/tm_clone.sh      lib/tm_commands/nfs
 inst_ln src/tm_mad/nfs/tm_delete.sh     lib/tm_commands/nfs
