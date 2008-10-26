@@ -64,15 +64,21 @@ public:
     friend ostream& operator<<(ostream& os, Leases& _leases);
 
     /**
-    * Returns an unused lease, which becomes used
-    * @param vid identifier of the VM getting this lease
-    * @param ip ip of the returned lease
-    * @param mac mac of  the returned lease
-    * @return
-    */
-     virtual int getLease(int          vid,
+     * Returns an unused lease, which becomes used
+     *  @param vid identifier of the VM getting this lease
+     *  @param ip ip of the returned lease
+     *  @param mac mac of  the returned lease
+     *  @return 0 if success
+     */
+     virtual int get_lease(int          vid,
                            string&      ip,
                            string&      mac) = 0;
+     
+     /**
+      * Release an used lease, which becomes unused
+      *   @param ip of the lease in use
+      */
+     virtual void release_lease(const string& ip) = 0;
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -239,22 +245,12 @@ protected:
      bool check(const string& ip);
 
      /**
-      *  Sets the value of a column in the pool for a given object
-      *    @param db pointer to Database
-      *    @param column to be selected
-      *    @param where condition to select the column
-      *    @param value of the column
-      *    @return 0 on success
+      *  Reads the leases from the DB, and updates the lease hash table
+      *    @param db pointer to the database.
+      *    @return 0 on success.
       */
-     int update_column(
-         SqliteDB *      db,
-         const string&   column,
-         const string&   where,
-         const string&   value)
-     {
-         return ObjectSQL::update_column(db,table,column,where,value);
-     }
-     
+     int select(SqliteDB * db);
+          
 private:
 
     friend int leases_select_cb (
@@ -262,7 +258,16 @@ private:
         int                     num,
         char **                 values,
         char **                 names);
-
+    
+    /**
+     *  Function to unmarshall a leases object
+     *    @param num the number of columns read from the DB
+     *    @para names the column names
+     *    @para vaues the column values
+     *    @return 0 on success
+     */
+    int unmarshall(int num, char **names, char ** values);
+    
     /**
      *  This method should not be called, leases are added/removed/updated
      *  through add/del interface
@@ -274,13 +279,6 @@ private:
     	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.insert()");
         return -1;
     }
-
-    /**
-     *  Reads the leases from the DB, and updates the lease hash table
-     *    @param db pointer to the database.
-     *    @return 0 on success.
-     */
-    int select(SqliteDB * db);
 
     /**
      *  This method should not be called, leases are added/removed/updated
@@ -307,6 +305,23 @@ private:
     }
 
     /**
+     *  Sets the value of a column in the pool for a given object
+     *    @param db pointer to Database
+     *    @param column to be selected
+     *    @param where condition to select the column
+     *    @param value of the column
+     *    @return 0 on success
+     */
+    int update_column(
+        SqliteDB *      db,
+        const string&   column,
+        const string&   where,
+        const string&   value)
+    {
+        return ObjectSQL::update_column(db,table,column,where,value);
+    }
+    
+    /**
      *  Gets the value of a column in the pool for a given object
      *    @param db pointer to Database
      *    @param column to be selected
@@ -322,15 +337,6 @@ private:
     {
         return ObjectSQL::select_column(db,table,column,where,value);
     }
-
-    /**
-     *  Function to unmarshall a leases object
-     *    @param num the number of columns read from the DB
-     *    @para names the column names
-     *    @para vaues the column values
-     *    @return 0 on success
-     */
-    int unmarshall(int num, char **names, char ** values);
 };
 
 #endif /*LEASES_H_*/

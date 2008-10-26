@@ -203,15 +203,16 @@ ostream& operator<<(ostream& os, Leases::Lease& _lease)
 	
     _lease.to_string(ip,mac);
     
+    ip = "IP = " + ip;
+    mac = "MAC = " + mac;
+    
     os.width(20);
-    os << left << "IP = "    << ip;
+    os << left << ip;
     
     os.width(24);
-    os << left << " MAC = "  << mac;
+    os << left << mac;
     
-    os.width(9);
-    os << left << " USED = " << _lease.used;
-    
+    os << left << " USED = " << _lease.used;  
     os << left << " VID = "  << _lease.vid;
     
     return os;
@@ -256,7 +257,7 @@ int Leases::unmarshall(int num, char **names, char ** values)
     bool   used        = atoi(values[USED]);
 
     leases.insert(make_pair(ip,new Lease(ip,mac,vid,used)));
-
+    
     return 0;
 }
 
@@ -342,6 +343,7 @@ ostream& operator<<(ostream& os, Leases& _leases)
     map<unsigned int, Leases::Lease *>::iterator  it;
     
     os << "NID   : " << _leases.oid << endl;
+    os << "SIZE  : " << _leases.size << endl;
 
     os << "Leases:" << endl;
 

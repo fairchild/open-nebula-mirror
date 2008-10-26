@@ -37,9 +37,27 @@ int main(int argc, char ** argv)
 
   leases_template.get(name,values);
 
-  FixedLeases fl(&db,3,(unsigned int)17,values);
+  //Create from template
+  //FixedLeases fl(&db,3,(unsigned int)17,values);
 
-  cout << fl;
+  //Read from DB
+  FixedLeases fl(&db,3,(unsigned int)17);
+
+  fl.select(&db);
+
+  cout << fl << endl << "--------------" << endl;
+
+  string ip, mac;
+
+  fl.get_lease(45, ip, mac);
+
+  cout << "Lease ip: " << ip << " mac: " << mac << endl;
+
+  cout << "--------------" << endl << fl << endl ;
+
+  fl.release_lease(ip);
+
+  cout << "--------------" << endl << fl;
 
   return 0;
 }

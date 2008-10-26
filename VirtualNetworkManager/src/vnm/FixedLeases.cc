@@ -124,14 +124,10 @@ int FixedLeases::del(const string& ip)
     	return 0; //Not in the map, not leased
     }
 
-    if (it_ip == current)
-    {
-    	current++;
-    }
-    
-    leases.erase(it_ip);
-    
     // Flip used flag to false
+    
+    it_ip->second->used = false;
+    it_ip->second->vid  = -1;
     
 	oss << "UPDATE " << table << " SET used='0', vid='-1' "
 	    << " WHERE ip='" << _ip <<"'";
@@ -142,7 +138,7 @@ int FixedLeases::del(const string& ip)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int FixedLeases::getLease(int vid, string&  ip, string&  mac)
+int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
 {	
 	int rc;
 	
@@ -173,6 +169,9 @@ int FixedLeases::getLease(int vid, string&  ip, string&  mac)
 			    << "' WHERE ip='" << current->second->ip <<"'";
 
 		    rc = db->exec(oss);
+		    
+		    current->second->used = true;
+		    current->second->vid  = vid;
 		    
 		    current++;
 			break;
