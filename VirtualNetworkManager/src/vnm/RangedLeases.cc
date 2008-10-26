@@ -17,97 +17,137 @@
 
 
 #include "RangedLeases.h"
-
+#include <cmath>
 
 /* ************************************************************************** */
 /* Ranged Leases class                                                        */
 /* ************************************************************************** */
 
 RangedLeases::RangedLeases(
-                SqliteDB * db,
-                int    _oid,
-                int    _size,
-                string _network_address,
-                string _network_mask):
-                   Leases(db,_oid,_size)
-   {
-       Leases::Lease::ip_to_number(_network_address,network_address);
+    SqliteDB * db,
+    int    _oid,
+    int    _size,
+    unsigned int  _mac_prefix,
+    const string& _network_address):
+        Leases(db,_oid,_size),mac_prefix(_mac_prefix),current(1)
+{
+    unsigned int net_addr;
+    
+    Leases::Lease::ip_to_number(_network_address,net_addr);
+    
+    //size is the number of hosts in the network
+    
+    network_address =  0xFFFFFFFF << (int) ceil(log(_size)/log(2));
 
-       Leases::Lease::ip_to_number(_network_mask,network_mask);
-   }
-   
-   /* ************************************************************************** */
-   /* Ranged Leases :: Methods                                                   */
-   /* ************************************************************************** */
-   
-   
-      int RangedLeases::add( string       ip,
-                             string       mac,
-                             int          vid,
-                             bool         used)
-      {
-          ostringstream    oss;
-          
-          unsigned int     _ip;
-          unsigned int     _mac [2];
-          
-          int              _used;
-          
-          leases.insert(make_pair(_ip,new Lease(ip,mac,vid,used)));
-         
-          
-          if (Lease::mac_to_number(mac,_mac)  )
-          {
-          	throw runtime_error("Wrong MAC format");
-          }
-          else if ( Lease::ip_to_number(ip,_ip) )
-          {
-          	throw runtime_error("Wrong IP format");
-          }
-          
-          if (used)
-          {
-              _used = 1;
-          }
-          else
-          {
-              _used = 0;
-          }
+    size = (~network_address) + 1;
+}
 
-          oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
-                      oid << "," <<
-                      _ip << "," <<
-                      _mac[Lease::PREFIX] << "," <<
-                      _mac[Lease::SUFFIX] << "," <<
-                      vid << "," <<
-                      _used << ")";
-                       
-          return db->exec(oss);
+/* ************************************************************************** */
+/* Ranged Leases :: Methods                                                   */
+/* ************************************************************************** */
 
-          return 0;
-      }
-      
- 
-      int  RangedLeases::del(string ip)
-      {
-          unsigned int     _ip;
-          ostringstream    oss;
-          
-           // Remove lease from leases map
-           
-          if ( Lease::ip_to_number(ip,_ip) )
-          {
-             throw runtime_error("Wrong IP format");
-          }
-          
-          leases.erase(_ip);
+int RangedLeases::get_lease(int vid, string&  ip, string&  mac)
+{
+	unsigned int num_ip;
+	int			 rc = -1;
+	
+	for (int i=0; i<size; i++, current++)
+	{
+		num_ip = network_address + (current%(size-2)) + 1;
+		
+		if (check(num_ip) == false)
+		{
+			unsigned int num_mac[2];
+			
+			num_mac[Lease::PREFIX] = mac_prefix;
+			num_mac[Lease::SUFFIX] = num_ip;
+			
+			rc = add(num_ip,num_mac,vid);
+			
+			if (rc==0)
+			{
+				Leases::Lease::ip_to_string(num_ip,ip);
+				Leases::Lease::mac_to_string(num_mac,mac);
+				
+				break;
+			}
+		}
+	}
+	
+	return rc;
+}
 
-          // Erase it from DB
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-          oss << "DELETE FROM " << table << " WHERE oid=" << oid << " AND ip=" << _ip;
+int RangedLeases::add(
+    unsigned int 	ip,
+    unsigned int 	mac[],
+    int 			vid,
+    bool 			used)
+{
+    ostringstream   oss;
+    int				rc;
+    
+    //Insert the lease in the database
+    oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
+    	oid << "," <<
+    	ip << "," <<
+    	mac[Lease::PREFIX] << "," <<
+    	mac[Lease::SUFFIX] << "," <<
+    	vid << "," <<
+    	used << ")";
 
-          return db->exec(oss);
-      }
-   
-   
+    rc = db->exec(oss);
+    
+    if ( rc == 0 )
+    {
+        leases.insert(make_pair(ip,new Lease(ip,mac,vid,used)));
+    }
 
+    return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int  RangedLeases::del(const string& ip)
+{
+    unsigned int    _ip;
+    ostringstream   oss;
+    int				rc;
+    map<unsigned int, Lease *>::iterator  it_ip;
+
+    // Remove lease from leases map
+
+    if ( Lease::ip_to_number(ip,_ip) )
+    {
+        return 0;
+    }
+
+    it_ip = leases.find(_ip);
+
+    if (it_ip == leases.end())
+    {
+        return 0; //Not in the map, not leased
+    }
+
+    // Erase it from DB
+
+    oss << "DELETE FROM " << table << " WHERE oid='" << oid
+    << "' AND ip='" << _ip << "'";
+
+    rc = db->exec(oss);
+
+    if ( rc == 0 )
+    {
+        delete it_ip->second;
+
+        leases.erase(it_ip);
+    }
+
+    return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */

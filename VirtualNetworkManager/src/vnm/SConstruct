@@ -7,7 +7,8 @@ lib_name='nebula_vnm'
 # Sources to generate the library
 source_files=[
 	'Leases.cc',
-	'FixedLeases.cc'
+	'FixedLeases.cc',
+	'RangedLeases.cc'
 ]
 
 # Build library

@@ -219,30 +219,13 @@ protected:
     // Leases methods
     // -------------------------------------------------------------------------
     /**
-     * Add a lease and stores it DB
-     * @param ip ip of the lease
-     * @param mac mac of the lease
-     * @param vid identifier of the VM getting this lease
-     * @return 0 if success
-     */
-    virtual int add(const string&   ip,
-                    const string&   mac,
-                    int             vid,
-                    bool            used=true) = 0;
-
-    /**
-     * Remove a lease (also from DB)
-     * @param ip ip of the lease to be deleted
-     * @return 0 if success
-     */
-     virtual int del(const string& ip) = 0;
-
-    /**
      * Check if the passed ip corresponds with a given lease
      * @param ip of the lease to be checked
      * @return true if the ip was already assigned
      */
      bool check(const string& ip);
+     
+     bool check(unsigned int ip);
 
      /**
       *  Reads the leases from the DB, and updates the lease hash table

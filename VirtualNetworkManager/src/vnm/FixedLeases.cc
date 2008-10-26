@@ -59,6 +59,8 @@ int FixedLeases::add(const string& ip, const string& mac, int vid, bool used)
     unsigned int     _ip;
     unsigned int     _mac [2];
     
+    int rc;
+    
     if ( Leases::Lease::ip_to_number(ip,_ip) )
     {
        	goto error_ip;
@@ -73,8 +75,6 @@ int FixedLeases::add(const string& ip, const string& mac, int vid, bool used)
     {
     	goto error_mac;
     }
-
-    leases.insert(make_pair(_ip,new Lease(_ip,_mac,vid,used)));
     
     oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES (" <<
         oid << "," <<
@@ -84,7 +84,14 @@ int FixedLeases::add(const string& ip, const string& mac, int vid, bool used)
         vid << "," <<
         used << ")";
 
-    return db->exec(oss);
+    rc = db->exec(oss);
+    
+    if ( rc == 0 )
+    {
+    	leases.insert(make_pair(_ip,new Lease(_ip,_mac,vid,used)));	
+    }
+    
+    return rc;
 
 error_mac:
     oss.str("");
@@ -140,18 +147,13 @@ int FixedLeases::del(const string& ip)
 
 int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
 {	
-	int rc;
+	int rc = -1;
 	
 	if (leases.empty())
 	{
 		return -1;
 	}
-	
-	if (current == leases.end())
-	{
-		current = leases.begin();
-	}
-	
+		
 	for(int i=0 ;i<size; i++,current++)
 	{
 		if (current == leases.end())
@@ -162,18 +164,22 @@ int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
 		if (current->second->used == false)
 		{
 			ostringstream oss;
-			
-			current->second->to_string(ip,mac);
-			
+						
 			oss << "UPDATE " << table << " SET used='1', vid='" << vid
 			    << "' WHERE ip='" << current->second->ip <<"'";
 
 		    rc = db->exec(oss);
 		    
-		    current->second->used = true;
-		    current->second->vid  = vid;
+		    if ( rc == 0 )
+		    {
+		    	current->second->used = true;
+		    	current->second->vid  = vid;
+		    	
+				current->second->to_string(ip,mac);
 		    
-		    current++;
+		    	current++;
+		    }
+		    
 			break;
 		}
 	}

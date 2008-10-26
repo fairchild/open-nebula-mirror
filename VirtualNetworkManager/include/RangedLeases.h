@@ -24,57 +24,81 @@ using namespace std;
 
 class RangedLeases : public Leases
 {
-private:
-    unsigned int network_address;
-    unsigned int network_mask;
-
 public:
 
     // *************************************************************************
     // Constructor
     // *************************************************************************
-    RangedLeases(SqliteDB * db,
-                 int        _oid,
-                 int        _size,
-                 string     _network_address,
-                 string     _network_mask);
+    RangedLeases(SqliteDB *    db,
+                 int           _oid,
+                 int           _size,
+                 unsigned int  _mac_prefix,
+                 const string& _network_address);
 
     ~RangedLeases(){};
 
     /**
-      * Returns an unused lease, which becomes used
-      * @param vid identifier of the VM getting this lease
-      * @param ip ip of the returned lease
-      * @param mac mac of  the returned lease
-      * @return
-      */
-    int getLease(int      vid,
-                 string&  ip,
-                 string&  mac){return 0;};
-                 
+     * Returns an unused lease, which becomes used
+     *   @param vid identifier of the VM getting this lease
+     *   @param ip ip of the returned lease
+     *   @param mac mac of  the returned lease
+     *   @return 0 if success
+     */
+    int get_lease(int vid, string&  ip, string&  mac);
+
     /**
-     * Add a lease 
+     * Release an used lease, which becomes unused
+     *   @param ip of the lease in use
+     */
+    void release_lease(const string& ip)
+    {
+    	del(ip);
+    }
+    
+    /**
+     *  Loads the leases from the DB.
+     */
+    int select(SqliteDB * db)
+    {
+    	//Read the leases from the DB
+    	int rc = Leases::select(db);
+    	//Update the size
+    	size = leases.size();
+    	
+    	//TODO regenerate network_address and network_mask??
+    	return rc;
+    }
+    
+private:
+	/**
+	 *  The default MAC prefix for the OpenNebula cluster
+	 */
+	unsigned int mac_prefix;
+	
+	/**
+	 *  The Network address to generate leases
+	 */
+	unsigned int network_address;
+	
+	unsigned int current;
+	
+    /**
+     * Add a lease, from the Lease interface
      * @param ip ip of the lease
      * @param mac mac of the lease
      * @param vid identifier of the VM getting this lease
      * @return 0 if success
      */
-     int add(string       ip,
-             string       mac,
-             int          vid,
-             bool         used=true);
-                    
-
+     int add(unsigned int ip, unsigned int mac[], int vid, bool used=true);
+       
     /**
-     * Remove a lease 
+     * Remove a lease, from the Lease interface
      * @param db pointer to DB
      * @param ip ip of the lease to be deleted
      * @return 0 if success
      */
-     int del(string ip);
-     
-     int insert(SqliteDB * db){return 0;};
-                              
+     int del(const string& ip);
+                                   
 };
 
 #endif /*RANGED_LEASES_H_*/
