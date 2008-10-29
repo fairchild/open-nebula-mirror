@@ -30,7 +30,7 @@ if [ -z "$SRC_DIR" -o -z "$DST_DIR" ]; then
     exit -1
 fi
 
-DIRS="/bin /etc /etc/im_kvm /etc/im_xen /etc/vmm_kvm /etc/vmm_xen /libexec /lib/ruby /var /share/examples /lib/im_probes /lib/tm_commands/nfs /etc/vmm_ec2 /etc/im_ec2 /etc/tm_nfs"
+DIRS="/bin /etc /etc/im_kvm /etc/im_xen /etc/vmm_kvm /etc/vmm_xen /libexec /lib/ruby /var /share/examples /lib/im_probes /lib/tm_commands/nfs /lib/tm_commands/ssh /etc/vmm_ec2 /etc/im_ec2 /etc/tm_nfs /etc/tm_ssh"
 
 for d in $DIRS; do
     mkdir -p $DST_DIR$d
@@ -128,6 +128,16 @@ inst_ln src/tm_mad/nfs/tm_ln.sh         lib/tm_commands/nfs
 inst_ln src/tm_mad/nfs/tm_mkswap.sh     lib/tm_commands/nfs
 inst_ln src/tm_mad/nfs/tm_mkimage.sh    lib/tm_commands/nfs
 inst_ln src/tm_mad/nfs/tm_mv.sh         lib/tm_commands/nfs
+
+inst_ln src/tm_mad/ssh/tm_ssh.conf      etc/tm_ssh
+inst_ln src/tm_mad/ssh/tm_sshrc         etc/tm_ssh
+
+inst_ln src/tm_mad/ssh/tm_clone.sh      lib/tm_commands/ssh
+inst_ln src/tm_mad/ssh/tm_delete.sh     lib/tm_commands/ssh
+inst_ln src/tm_mad/ssh/tm_ln.sh         lib/tm_commands/ssh
+inst_ln src/tm_mad/ssh/tm_mkswap.sh     lib/tm_commands/ssh
+inst_ln src/tm_mad/ssh/tm_mkimage.sh    lib/tm_commands/ssh
+inst_ln src/tm_mad/ssh/tm_mv.sh         lib/tm_commands/ssh
 
 
 # --- Examples ---
