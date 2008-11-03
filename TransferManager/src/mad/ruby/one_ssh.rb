@@ -135,8 +135,8 @@ end
 
 module SSHActionController
     
-    def init_actions
-        @thread_scheduler=ThreadScheduler.new(10)
+    def init_actions(num=10)
+        @thread_scheduler=ThreadScheduler.new(num)
     end
     
     def send_ssh_action(action)
@@ -181,3 +181,4 @@ def action_poll(args)
 end
 
 =end
+

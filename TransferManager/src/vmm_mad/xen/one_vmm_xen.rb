@@ -30,7 +30,7 @@ class DM < ONEMad
 			set_logger(STDERR,DEBUG_LEVEL)
 		end
 		
-		init_actions
+		init_actions(50)
 	end
 	
 	def action_init(args)
