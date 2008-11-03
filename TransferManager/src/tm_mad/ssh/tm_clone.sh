@@ -32,5 +32,5 @@ http://*)
     ;;
 esac
 
-exec_and_log "ssh $DST chmod a+w $DST_PATH"
+exec_and_log "ssh $DST_HOST chmod a+w $DST_PATH"
 
