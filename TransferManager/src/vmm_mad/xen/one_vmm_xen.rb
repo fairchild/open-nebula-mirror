@@ -42,11 +42,21 @@ class DM < ONEMad
 		
 		# Get local deployment file
 		one_location=ENV["ONE_LOCATION"]
-		m=args[3].match(/.*?\/(\d+)\/(deployment.\d+)$/)
+		m=args[3].match(/.*?\/(\d+)\/images\/(deployment.\d+)$/)
 		
 		# If matched the we can read the file and get more configuration values
 		if m
 			local_deployment_file="#{one_location}/var/#{m[1]}/#{m[2]}"
+
+            # TODO: review this way of copying files
+            # This command copies deployment file to remote machine
+            # when shared directories are not used
+            copy_deploy="scp #{local_deployment_file} #{args[2]}:#{args[3]}"
+            copy_deploy_exit=system(copy_deploy)
+            STDERR.puts("Command: #{copy_deploy}")
+            STDERR.puts(copy_deploy_exit)
+            STDERR.flush
+
 		   
 			# TODO: check for error
 			file=open(local_deployment_file)
