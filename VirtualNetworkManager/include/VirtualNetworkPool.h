@@ -39,20 +39,20 @@ public:
 
     /**
      *  Function to allocate a new VN object
-     *    @param stemplate a string describing the VM
+     *    @param uid user identifier
+     *    @param stemplate a string describing the VN
      *    @param oid the id assigned to the VM (output)
-     *    @return 0 on success, -1 error inserting in DB or -2 error parsing 
-     *     the template
+     *    @return 0 on success, -1 error inserting in DB,-2 error parsing 
+     *     the template, -3 wrong attributes in template
      */
     int allocate (
         int     uid,
-        const  string& nwtemplate,
-        int *  oid,
-        );
+        const  string& stemplate,
+        int *  oid);
 
     /**
      *  Function to get a VN from the pool, if the object is not in memory
-     *  it is loade from the DB
+     *  it is loaded from the DB
      *    @param oid VN unique id
      *    @param lock locks the VN mutex
      *    @return a pointer to the VN, 0 if the VN could not be loaded
@@ -65,12 +65,12 @@ public:
     };
 
     //--------------------------------------------------------------------------
-    // Virtual Netowrk DB access functions
+    // Virtual Network DB access functions
     //--------------------------------------------------------------------------
     
     /**
      *  Updates the template of a VN, adding a new attribute (replacing it if 
-     *  already defined), the vn's mutex SHOULD be locked
+     *  already defined), the VN's mutex SHOULD be locked
      *    @param vn pointer to the virtual network object
      *    @param name of the new attribute
      *    @param value of the new attribute
@@ -84,34 +84,13 @@ public:
     	return vn->update_template_attribute(db,name,value);
     }
     
-    /**
-     *  Updates the history record of a VN, the vm's mutex SHOULD be locked
-     *    @param vm pointer to the virtual machine object
-     *    @return 0 on success
-     */
-    int update_history(
-        VirtualNetwork * vn)
-    {
-        return vn->update_history(db);
-    }
 
-    /**
-     *  Updates the previous history record, the VN's mutex SHOULD be locked
-     *    @param vm pointer to the virtual network object
-     *    @return 0 on success
-     */
-    int update_previous_history(
-        VirtualNetwork * vn)
-    {
-        return vn->update_previous_history(db);
-    }
-    
     /**
      *  Bootstraps the database table(s) associated to the VirtualNetwork pool
      */
     void bootstrap()
     {
-        VirtualMachine::bootstrap(db);
+        VirtualNetwork::bootstrap(db);
     };
     
 private:

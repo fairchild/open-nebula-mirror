@@ -35,7 +35,7 @@ FixedLeases::FixedLeases(
     
     size = vector_leases.size();
        
-    for (int i=0; i < size ;i++)
+    for (unsigned long i=0; i < size ;i++)
     {
     	single_attr_lease = dynamic_cast<const VectorAttribute *>
     		(vector_leases[i]);
@@ -154,7 +154,7 @@ int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
 		return -1;
 	}
 		
-	for(int i=0 ;i<size; i++,current++)
+	for(unsigned long i=0 ;i<size; i++,current++)
 	{
 		if (current == leases.end())
 		{

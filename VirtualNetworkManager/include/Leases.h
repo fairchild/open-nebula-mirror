@@ -48,7 +48,7 @@ public:
      * @param _oid the virtual network unique identifier
      * @param _size the max number of leases
      */
-    Leases(SqliteDB * _db, int _oid, int _size):
+    Leases(SqliteDB * _db, int _oid, unsigned long _size):
         oid(_oid), size(_size), db(_db){};
             
     virtual ~Leases()
@@ -99,7 +99,7 @@ protected:
          * @param _vid, the ID of the VM owning the lease
          * @param _used, the lease is in use
          */
-        Lease(const string& _ip, const string& _mac,int _vid, bool _used=true);
+        //Lease(const string& _ip, const string& _mac,int _vid, bool _used=true);
 
         /**
         * Creates a new lease, numeric form.
@@ -172,18 +172,21 @@ protected:
 
     friend ostream& operator<<(ostream& os, Lease& _lease);
     
+    friend class VirtualNetwork;
+    friend class VirtualNetworkPool;
+    
     // -------------------------------------------------------------------------
     // Leases fields
     // -------------------------------------------------------------------------
     /**
     * Leases indentifier. Connects it to a Virtual Network
     */
-    int     oid;
+    int            oid;
     
     /**
     * Number of possible leases (free + asigned)
     */
-    int     size;
+    unsigned long  size;
     
     /**
      * Hash of leases, indexed by lease.ip
@@ -264,16 +267,12 @@ private:
     }
 
     /**
-     *  This method should not be called, leases are added/removed/updated
-     *  through add/del interface
+     *  Leases are added/removed/updated through add/del interface
+     *  This method is for pool management.
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int drop(SqliteDB * db)
-    {
-    	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.drop()");
-        return -1;
-    }
+    int drop(SqliteDB * db);
 
     /**
      *  This method should not be called, leases are added/removed/updated

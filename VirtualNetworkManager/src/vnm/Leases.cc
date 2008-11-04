@@ -25,19 +25,6 @@
 /* ************************************************************************** */
 /* ************************************************************************** */
 
-Leases::Lease::Lease(const string& _ip, const string& _mac,int _vid, bool _used)
-        :vid(_vid), used(_used)
-{
-    if ( mac_to_number(_mac, mac) )
-    {
-        throw runtime_error("Wrong MAC format");
-    }
-    else if ( ip_to_number(_ip, ip) )
-    {
-        throw runtime_error("Wrong IP format");
-    }
-}
-
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
@@ -307,6 +294,19 @@ error_id:
     
     Nebula::log("VNM", Log::ERROR, oss);
     return -1;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int Leases::drop(SqliteDB * db)
+{
+    ostringstream   oss;
+    
+    // Drop all the leases 
+    oss << "DELETE FROM " << table << " WHERE oid=" << oid;
+
+    return db->exec(oss);
 }
 
 /* ************************************************************************** */

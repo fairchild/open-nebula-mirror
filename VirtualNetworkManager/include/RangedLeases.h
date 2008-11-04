@@ -31,7 +31,7 @@ public:
     // *************************************************************************
     RangedLeases(SqliteDB *    db,
                  int           _oid,
-                 int           _size,
+                 unsigned long _size,
                  unsigned int  _mac_prefix,
                  const string& _network_address);
 
@@ -62,10 +62,7 @@ public:
     {
     	//Read the leases from the DB
     	int rc = Leases::select(db);
-    	//Update the size
-    	size = leases.size();
     	
-    	//TODO regenerate network_address and network_mask??
     	return rc;
     }
     

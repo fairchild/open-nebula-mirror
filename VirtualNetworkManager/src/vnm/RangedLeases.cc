@@ -24,22 +24,26 @@
 /* ************************************************************************** */
 
 RangedLeases::RangedLeases(
-    SqliteDB * db,
-    int    _oid,
-    int    _size,
+    SqliteDB      * db,
+    int           _oid,
+    unsigned long _size,
     unsigned int  _mac_prefix,
     const string& _network_address):
         Leases(db,_oid,_size),mac_prefix(_mac_prefix),current(1)
 {
     unsigned int net_addr;
     
+    //TODO REMOVE THIS JUST FOR TESTING
+    db->exec(Leases::db_bootstrap);
+    
     Leases::Lease::ip_to_number(_network_address,net_addr);
     
     //size is the number of hosts in the network
+    size = _size + 2;
     
-    network_address =  0xFFFFFFFF << (int) ceil(log(_size)/log(2));
+    network_address =  0xFFFFFFFF << (int) ceil(log(size)/log(2));
 
-    size = (~network_address) + 1;
+    network_address &= net_addr;
 }
 
 /* ************************************************************************** */

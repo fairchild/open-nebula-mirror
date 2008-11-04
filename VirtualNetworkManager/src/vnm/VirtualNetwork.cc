@@ -17,23 +17,30 @@
 
 
 #include "VirtualNetwork.h"
+#include "Nebula.h"
 
 
 /* ************************************************************************** */
 /* Virtual Network :: Constructor/Destructor                                  */
 /* ************************************************************************** */
 
-VirtualNetwork::VirtualNetwork(int    id,
-                               string _name,                            
-                               string _bridge):
+VirtualNetwork::VirtualNetwork(int  id):                 
                 PoolObjectSQL(id),
-                name(_name),
-                bidge(_bridge)
+                name(""),
+                uid(-1),
+                bridge(""),
+                type(UNINITIALIZED),
+                size(-1),
+                leases(0)
 {
 }
 
 VirtualNetwork::~VirtualNetwork()
-{
+{    
+    if (leases != 0)
+    {
+        delete leases;
+    }      
 }
 
 /* ************************************************************************** */
@@ -42,45 +49,62 @@ VirtualNetwork::~VirtualNetwork()
 
 const char * VirtualNetwork::table               = "network_pool";
 
-const char * VirtualNetwork::db_names            = "(oid,name,bridge");
+const char * VirtualNetwork::db_names            = "(oid,uid,name,type,size,bridge)";
 
 const char * VirtualNetwork::db_bootstrap        = "CREATE TABLE network_pool ("
-        "oid INTEGER PRIMARY KEY,name TEXT, bridge TEXT)";
-        
-const char * VirtualNetwork::table_leases        = "leases";
-
-const char * VirtualNetwork::db_names_leases     = "(oid,ip,vid)";
-
-const char * VirtualNetwork::db_bootstrap_leases = "CREATE TABLE leases ("
-        "oid INTEGER, ip INTEGER, vid INTEGER TEXT, PRIMARY KEY(oid,ip))";
+        "oid INTEGER PRIMARY KEY,uid INTEGER, name TEXT,type INTEGER, size INTEGER, bridge TEXT)";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
 int VirtualNetwork::unmarshall(int num, char **names, char ** values)
 {
- // TODO
+    if     ((values[OID]    == 0)  ||
+            (values[UID]    == 0)  ||
+            (values[NAME]   == 0)  ||
+            (values[TYPE]   == 0)  ||
+            (values[SIZE]   == 0)  || 
+            (values[BRIDGE] == 0)  ||                 
+            (num            != LIMIT ))
+    {
+        return -1;
+    }
+
+    oid    = atoi(values[OID]);
+    uid    = atoi(values[UID]);
+    
+    name   = values[NAME];
+    
+    type   = (NetworkType)atoi(values[TYPE]);
+    size   = atol(values[SIZE]);
+    
+    bridge = values[BRIDGE];
+    
+    // Virtual Network template ID is the Network ID    
+    vn_template.id = oid;
+
+    return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-extern "C" int vnw_select_cb (
-        void *                  _vm,
+extern "C" int vn_select_cb (
+        void *                  _vn,
         int                     num,
         char **                 values,
         char **                 names)
 {
-    VirtualNetwork *    vnw;
+    VirtualNetwork *    vn;
 
-    vnw = static_cast<VirtualNetwork *>(_vnw);
+    vn = static_cast<VirtualNetwork *>(_vn);
 
-    if (vnw == 0)
+    if (vn == 0)
     {
         return -1;
     }
 
-    return vnw->unmarshall(num,names,values);
+    return vn->unmarshall(num,names,values);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -93,42 +117,78 @@ int VirtualNetwork::select(SqliteDB * db)
     int             rc;
     int             boid;
     
-    string          filename;
-    const char *    nl;
-    
+    string          str_mac_prefix;    
+    unsigned int    mac_prefix;
+    string          network_address;
+        
     oss << "SELECT * FROM " << table << " WHERE oid = " << oid;
 
     boid = oid;
     oid  = -1;
 
-    rc = db->exec(oss,vnw_select_cb,(void *) this);
+    rc = db->exec(oss,vn_select_cb,(void *) this);
 
 
     if ((rc != 0) || (oid != boid ))
     {
         goto error_id;
     }
-
+    
     //Get the template
-    rc = vnw_template.select(db);
+    rc = vn_template.select(db);
 
     if (rc != 0)
     {
         goto error_template;
     }
+    
+
+    get_template_attribute("MAC_PREFIX",str_mac_prefix);    
+    Leases::Lease::mac_to_number(str_mac_prefix,&mac_prefix);
+    
+    //Get the leases
+    if (type == RANGED)
+    {
+        // retrieve specific information from template
+        get_template_attribute("NET_ADDRESS",network_address);  
+        
+        leases = new RangedLeases::RangedLeases(db,
+                                                oid,
+                                                size,
+                                                mac_prefix,
+                                                network_address);
+    }
+    else if(type == FIXED)
+         {
+             leases = new  FixedLeases(db,
+                                       oid,
+                                       mac_prefix);                                                                           
+         }
+         else
+         {
+             goto error_leases;
+         }
 
 
+    leases->select(db);
+        
     return 0;
 
 
 error_id:
     ose << "Error getting Virtual Network nid: " << oid;
+    Nebula::log("VNM", Log::ERROR, ose); 
     return -1;
 
 error_template:
-    ose << "Can not get template for VM id: " << oid;
+    ose << "Can not get template for Virtual Network nid: " << oid;
+    Nebula::log("VNM", Log::ERROR, ose); 
     return -1;
-
+    
+error_leases:
+    ose << "Error getting Virtual Network leases nid: " << oid;
+    Nebula::log("VNM", Log::ERROR, ose);   
+    return -1;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -136,24 +196,32 @@ error_template:
 
 int VirtualNetwork::insert(SqliteDB * db)
 {
-   // TODO  
+    ostringstream   ose;
+    int             rc;
+    
+    if ( vn_template.id == -1 )
+    {
+        vn_template.id = oid;
+    }
 
     // Insert the template first
-    rc = vnw_template.insert(db);
+    rc = vn_template.insert(db);
 
     if ( rc != 0 )
     {
-        //log("ONE", Log::ERROR, "Can not insert template");
+        ose << "Can not insert in DB template for Virtual Network id " << oid; 
+        Nebula::log("VNM", Log::ERROR, ose);
         return -1;
     }
 
-    //Insert the Virtual Network
+    // Insert the Virtual Network
     rc = update(db);
 
     if ( rc != 0 )
     {
-        //log("ONE", Log::ERROR, "Can not update vm");
-        vnw_template.drop(db);
+        ose << "Can not update Virtual Network id " << oid; 
+        Nebula::log("VNM", Log::ERROR, ose);
+        vn_template.drop(db);
 
         return -1;
     }
@@ -171,9 +239,12 @@ int VirtualNetwork::update(SqliteDB * db)
 
     oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
         oid << "," <<
-        name << "," <<
-        bridge << ")";
-
+        uid << "," <<
+        "'" << name << "',"  <<
+        type << "," <<
+        size << "," <<
+        "'" << bridge << "')";
+        
     rc = db->exec(oss);
 
     return rc;
@@ -184,13 +255,24 @@ int VirtualNetwork::update(SqliteDB * db)
 /* Virtual Network :: Misc                                                    */
 /* ************************************************************************** */
 
-ostream& operator<<(ostream& os, VirtualNetwork& vnw)
+ostream& operator<<(ostream& os, VirtualNetwork& vn)
 {
-    os << "NID               : " << vnw.oid << endl;
-    os << "Network Name      : " << vnw.name << endl;
-    os << "Bridge            : " << vnw.bridge << endl;
+    os << "NID               : " << vn.oid << endl;
+    os << "UID               : " << vn.uid << endl;
+    os << "Network Name      : " << vn.name << endl;
+    os << "Type              : ";
+    if ( vn.type==VirtualNetwork::RANGED )
+    {
+        os << "Ranged" << endl;
+    }
+    else
+    {
+       os << "Fixed" << endl;
+    }
+    os << "Size              : " << vn.size << endl;
+    os << "Bridge            : " << vn.bridge << endl;
 
-    os << "Template" << endl << vnw.vnw_template << endl;
+    os << "Template" << endl << vn.vn_template << endl;
     
     return os;
 };

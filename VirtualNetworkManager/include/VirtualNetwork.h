@@ -20,7 +20,11 @@
 
 
 #include "PoolSQL.h"
-#include <vector.h>
+#include "RangedLeases.h"
+#include "FixedLeases.h"
+#include "VirtualNetworkTemplate.h"
+
+#include <vector>
 #include <string>
 #include <map>
 
@@ -29,7 +33,7 @@
 
 using namespace std;
 
-extern "C" int vnw_select_cb (void * _vnw, int num,char ** values, char ** names);
+extern "C" int vn_select_cb (void * _vn, int num,char ** values, char ** names);
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -39,9 +43,20 @@ extern "C" int vnw_select_cb (void * _vnw, int num,char ** values, char ** names
  *  One lease is formed by one IP and one MAC address.
  *  MAC address are derived from IP addresses.
  */
-class VirtualMachine : public PoolObjectSQL
+class VirtualNetwork : public PoolObjectSQL
 {
 public:
+    
+    /**
+     * Possible types of networks
+     */ 
+    
+    enum NetworkType
+    {
+        UNINITIALIZED   = -1,
+        RANGED          =  0,
+        FIXED           =  1,
+    };
     
     // *************************************************************************
     // Virtual Network Public Methods
@@ -49,13 +64,21 @@ public:
     /**
      *    Gets a new lease for a specific VM
      *    @param vid VM identifier
-     *    @param IP pointer to string for IP to be stored into
-     *    @param MAC pointer to string for MAC to be stored into
-     *    @param bridge name of the physical bridge this VN binds to 
+     *    @param _ip pointer to string for IP to be stored into
+     *    @param _mac pointer to string for MAC to be stored into
+     *    @param _bridge name of the physical bridge this VN binds to 
      *    @return true if success, false if failure (no more leases or otherwise)
      */
-    bool getLease(int vid, string& IP, string& MAC, string& bridge);
+    bool get_lease(int vid, string& _ip, string& _mac, string& _bridge)
+    {
+        _bridge = bridge;
+        return leases->get_lease(vid,_ip,_mac);
+    };
  
+    /**
+     *  Function to write a Virtual Network in an output stream
+     */
+    friend ostream& operator<<(ostream& os, VirtualNetwork& vn);
         
 private:
 
@@ -64,7 +87,7 @@ private:
     // -------------------------------------------------------------------------
     friend class VirtualNetworkPool;
 
-    friend int vnw_select_cb (
+    friend int vn_select_cb (
         void *  _vm,
         int     num,
         char ** values,
@@ -85,7 +108,7 @@ private:
     /**
      *  Owner of the Virtual Network
      */
-    string         uid;
+    int            uid;
 
     // -------------------------------------------------------------------------
     // Binded physical attributes
@@ -100,31 +123,24 @@ private:
     // Virtual Network Description
     // -------------------------------------------------------------------------
     /**
+     * Holds the type of this network
+     */
+    NetworkType         type;
+    /**
+     *  Number of hosts in the Virtual Network (used + free)
+     */
+    unsigned long        size;
+    
+    /**
      *  Pointer to leases class, can be fixed or ranged.
      *  Holds information on given (and, optionally, possible) leases
      */
-    Leases     *   leases;
-    
-    /**
-     * Possible types of networks
-     */ 
-    
-    enum NetworkType
-    {
-        RANGED          = 0,
-        FIXED           = 1,
-    };
-    
-    /**
-     * Holds the type of this network
-     */
-    NetworkType             type;
-    
+    Leases     *        leases;    
     
     /**
      *  The Virtual Network template, holds the VNW attributes.
      */
-    VirtualNetworkTemplate  vnw_template;
+    VirtualNetworkTemplate  vn_template;
     
     // *************************************************************************
     // Virtual Network Private Methods
@@ -142,9 +158,9 @@ private:
     {
         db->exec(VirtualNetwork::db_bootstrap);
         
-        db->exec(Leases::db_bootstrap);
-
         db->exec(VirtualNetworkTemplate::db_bootstrap);
+        
+        db->exec(Leases::db_bootstrap);
     };
     
     /**
@@ -155,11 +171,68 @@ private:
      *    @return 0 on success
      */
     int unmarshall(int num, char **names, char ** values);
+
+    // ------------------------------------------------------------------------
+    // Template
+    // ------------------------------------------------------------------------    
+
+    /**
+     *  Gets the values of a template attribute
+     *    @param name of the attribute
+     *    @param values of the attribute
+     *    @return the number of values
+     */
+    int get_template_attribute(
+        string& name, 
+        vector<const Attribute*>& values) const
+    {
+        return vn_template.get(name,values);
+    };
+
+    /**
+     *  Gets the values of a template attribute
+     *    @param name of the attribute
+     *    @param values of the attribute
+     *    @return the number of values
+     */
+    int get_template_attribute(
+        const char *name,
+        vector<const Attribute*>& values) const
+    {
+        string str=name;
+        return vn_template.get(str,values);
+    };
     
     /**
+     *  Gets a string based VN attribute
+     *    @param name of the attribute
+     *    @param value of the attribute (a string), will be "" if not defined  
+     */
+    void get_template_attribute(
+        const char *    name, 
+        string&         value) const
+    {
+        string str=name;
+        vn_template.get(str,value);           
+    }        
+    
+    /**
+     *  Gets a string based VN attribute
+     *    @param name of the attribute
+     *    @param value of the attribute (an int), will be 0 if not defined   
+     */
+    void get_template_attribute(
+        const char *    name, 
+        int&            value) const
+    {
+        string str=name;
+        vn_template.get(str,value);        
+    }
+        
+    /**
      *  Updates the template of a VNW, adding a new attribute (replacing it if 
-     *  already defined), the vm's mutex SHOULD be locked
-     *    @param vm pointer to the virtual machine object
+     *  already defined), the VN's mutex SHOULD be locked
+     *    @param vm pointer to the virtual network object
      *    @param name of the new attribute
      *    @param value of the new attribute
      *    @return 0 on success
@@ -169,7 +242,7 @@ private:
         string&			 	name,
         string&			 	value)
     {
-    	return vnw_template.replace_attribute(db,name,value);
+    	return vn_template.replace_attribute(db,name,value);
     }    
     
 protected:
@@ -178,13 +251,9 @@ protected:
     // Constructor
     //**************************************************************************
     
-    VirtualNetwork(int         oid    = -1,
-                   int         uid    = -1,
-                   string      name   = "",
-                   string      bridge = "",
-                   NetworkType type );
+    VirtualNetwork(int  id = -1);
 
-    virtual ~VirtualNetwork();
+    ~VirtualNetwork();
     
     // *************************************************************************
     // DataBase implementation
@@ -239,7 +308,7 @@ protected:
     { 
     	int rc;
     	
-    	rc =  vnw_template.drop(db);
+    	rc =  vn_template.drop(db);
     	
     	if (rc != 0)
     	{
@@ -247,7 +316,7 @@ protected:
     	}
     	    
     	
-        rc = leases.drop(db);
+        rc = leases->drop(db);
     	
     	return rc;
     }
