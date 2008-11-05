@@ -98,7 +98,7 @@ int VirtualNetworkPool::allocate (
     }
     
        
-    Leases::Lease::mac_to_number(str_mac_prefix,&mac_prefix);
+    Leases::Lease::mac_prefix_to_number(str_mac_prefix,mac_prefix);
 
      //Get the leases
      if (vn->type == VirtualNetwork::RANGED)

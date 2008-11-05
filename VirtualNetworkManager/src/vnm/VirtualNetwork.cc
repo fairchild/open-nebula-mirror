@@ -151,7 +151,7 @@ int VirtualNetwork::select(SqliteDB * db)
     
 
     get_template_attribute("MAC_PREFIX",str_mac_prefix);    
-    Leases::Lease::mac_to_number(str_mac_prefix,&mac_prefix);
+    Leases::Lease::mac_prefix_to_number(str_mac_prefix,mac_prefix);
     
     //Get the leases
     if (type == RANGED)

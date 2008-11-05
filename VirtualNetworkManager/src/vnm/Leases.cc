@@ -147,6 +147,40 @@ int Leases::Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
+int Leases::Lease::mac_prefix_to_number(const string& _mac, unsigned int& prefix_mac)
+{
+    istringstream iss;
+    size_t        pos   = 0;
+    int           count = 0;
+    unsigned int  tmp;
+
+    string mac = _mac;
+
+    while ( (pos = mac.find(':')) !=  string::npos )
+    {
+        mac.replace(pos,1," ");
+        count++;
+    }
+
+    if (count != 1)
+    {
+        return -1;
+    }
+
+    iss.str(mac);
+
+    prefix_mac = 0;
+
+    iss >> hex >> prefix_mac >> ws >> hex >> tmp >> ws;
+    prefix_mac <<= 8;
+    prefix_mac += tmp;
+
+    return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 void Leases::Lease::mac_to_string(const unsigned int i_mac[], string& mac)
 {
     ostringstream	oss;

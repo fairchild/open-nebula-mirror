@@ -33,9 +33,6 @@ RangedLeases::RangedLeases(
 {
     unsigned int net_addr;
     
-    //TODO REMOVE THIS JUST FOR TESTING
-    db->exec(Leases::db_bootstrap);
-    
     Leases::Lease::ip_to_number(_network_address,net_addr);
     
     //size is the number of hosts in the network

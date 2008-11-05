@@ -137,11 +137,17 @@ protected:
         static void ip_to_string(const unsigned int i_ip, string& ip);
             
         /**
-         * Conversion from string IP to unsigned int IP
+         * Conversion from string MAC to unsigned int[] MAC
          * @return 0 if success
          */
         static int mac_to_number(const string& mac, unsigned int i_mac[]);
-            
+        
+        /**
+         * Conversion from string prefix MAC to unsigned int prefix MAC
+         * @return 0 if success
+         */
+        static int mac_prefix_to_number(const string& mac, unsigned int& i_mac);
+
         /**
          * Conversion from string IP to unsigned int IP
          */
