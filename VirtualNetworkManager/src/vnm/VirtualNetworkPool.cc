@@ -39,10 +39,9 @@ int VirtualNetworkPool::allocate (
     string                        str_type;                               
     
     string                        str_size;
-    unsigned long                 size;
+    unsigned int                  size;
     
     // Build a new Virtual Network object
-
     vn = new VirtualNetwork;
     
     vn->uid = uid;
@@ -81,7 +80,7 @@ int VirtualNetworkPool::allocate (
     
     if(!str_size.empty())
     {
-        size = atol(str_size.c_str());
+        size = atoi(str_size.c_str());
     }
     
     // Insert the VN in the pool so we have a valid OID
@@ -127,13 +126,6 @@ int VirtualNetworkPool::allocate (
                       //TODO what would be the default?
                       size = 65534;
                   }
-                  
-             
-           /*  unsigned int uint_network_address;
-             
-             Leases::Lease::ip_to_number(network_address,uint_network_address);
-             
-             size = (~uint_network_address) + 1;*/
          }
         
          vn->leases = new RangedLeases::RangedLeases(db,
@@ -146,7 +138,6 @@ int VirtualNetworkPool::allocate (
           {
               // retrieve specific information from template
 
- 
               vector<const Attribute *>   vector_leases;
               vn->get_template_attribute("LEASES",vector_leases);  
 
@@ -162,9 +153,6 @@ int VirtualNetworkPool::allocate (
               
               return -3;
           }
-          
-    vn->size = vn->leases->size;
-    vn->update(db);
           
     vn->unlock();
 

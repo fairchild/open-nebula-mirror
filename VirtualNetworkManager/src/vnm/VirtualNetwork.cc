@@ -30,7 +30,6 @@ VirtualNetwork::VirtualNetwork(int  id):
                 uid(-1),
                 bridge(""),
                 type(UNINITIALIZED),
-                size(-1),
                 leases(0)
 {
 }
@@ -49,10 +48,10 @@ VirtualNetwork::~VirtualNetwork()
 
 const char * VirtualNetwork::table               = "network_pool";
 
-const char * VirtualNetwork::db_names            = "(oid,uid,name,type,size,bridge)";
+const char * VirtualNetwork::db_names            = "(oid,uid,name,type,bridge)";
 
 const char * VirtualNetwork::db_bootstrap        = "CREATE TABLE network_pool ("
-        "oid INTEGER PRIMARY KEY,uid INTEGER, name TEXT,type INTEGER, size INTEGER, bridge TEXT)";
+        "oid INTEGER PRIMARY KEY,uid INTEGER, name TEXT,type INTEGER, bridge TEXT)";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -63,7 +62,6 @@ int VirtualNetwork::unmarshall(int num, char **names, char ** values)
             (values[UID]    == 0)  ||
             (values[NAME]   == 0)  ||
             (values[TYPE]   == 0)  ||
-            (values[SIZE]   == 0)  || 
             (values[BRIDGE] == 0)  ||                 
             (num            != LIMIT ))
     {
@@ -76,7 +74,6 @@ int VirtualNetwork::unmarshall(int num, char **names, char ** values)
     name   = values[NAME];
     
     type   = (NetworkType)atoi(values[TYPE]);
-    size   = atol(values[SIZE]);
     
     bridge = values[BRIDGE];
     
@@ -120,6 +117,9 @@ int VirtualNetwork::select(SqliteDB * db)
     string          str_mac_prefix;    
     unsigned int    mac_prefix;
     string          network_address;
+    
+    string                        str_size;
+    unsigned int                  size;
         
     oss << "SELECT * FROM " << table << " WHERE oid = " << oid;
 
@@ -142,6 +142,13 @@ int VirtualNetwork::select(SqliteDB * db)
         goto error_template;
     }
     
+    get_template_attribute("SIZE",str_size);
+    
+    if(!str_size.empty())
+    {
+        size = atoi(str_size.c_str());
+    }
+    
 
     get_template_attribute("MAC_PREFIX",str_mac_prefix);    
     Leases::Lease::mac_to_number(str_mac_prefix,&mac_prefix);
@@ -151,6 +158,28 @@ int VirtualNetwork::select(SqliteDB * db)
     {
         // retrieve specific information from template
         get_template_attribute("NET_ADDRESS",network_address);  
+        
+         // If size wasn't defined, we need to calculate it    
+        if ( str_size.empty() )
+        {
+             string net_class;
+             get_template_attribute("NET_CLASS",net_class);
+             
+             if ( net_class == "B" )
+             {
+                 size = 65534;	    
+                 
+             }
+             else if ( net_class == "C" )
+                  {
+                      size = 254;
+                  }
+                  else
+                  {
+                      //TODO what would be the default?
+                      size = 65534;
+                  }
+         }
         
         leases = new RangedLeases::RangedLeases(db,
                                                 oid,
@@ -242,7 +271,6 @@ int VirtualNetwork::update(SqliteDB * db)
         uid << "," <<
         "'" << name << "',"  <<
         type << "," <<
-        size << "," <<
         "'" << bridge << "')";
         
     rc = db->exec(oss);
@@ -269,7 +297,7 @@ ostream& operator<<(ostream& os, VirtualNetwork& vn)
     {
        os << "Fixed" << endl;
     }
-    os << "Size              : " << vn.size << endl;
+    os << "Size              : " << vn.get_size() << endl;
     os << "Bridge            : " << vn.bridge << endl;
 
     os << "Template" << endl << vn.vn_template << endl;

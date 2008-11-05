@@ -224,12 +224,12 @@ const char * Leases::db_bootstrap = "CREATE TABLE leases ("
 
 int Leases::unmarshall(int num, char **names, char ** values)
 {
-    if ((values[OID] == 0) ||
-            (values[IP]  == 0) ||
+    if (    (values[OID] == 0)        ||
+            (values[IP]  == 0)        ||
             (values[MAC_PREFIX] == 0) ||
             (values[MAC_SUFFIX] == 0) ||
-            (values[VID] == 0) ||
-            (values[USED]== 0) ||
+            (values[VID] == 0)        ||
+            (values[USED]== 0)        ||
             (num != LIMIT ))
     {
         return -1;

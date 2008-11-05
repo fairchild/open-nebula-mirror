@@ -28,11 +28,7 @@ FixedLeases::FixedLeases(
     const VectorAttribute *	single_attr_lease;
     string _mac;
     string _ip;
-    
-    
-    //TODO REMOVE THIS JUST FOR TESTING
-    db->exec(Leases::db_bootstrap);
-    
+        
     size = vector_leases.size();
        
     for (unsigned long i=0; i < size ;i++)
@@ -154,7 +150,7 @@ int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
 		return -1;
 	}
 		
-	for(unsigned long i=0 ;i<size; i++,current++)
+	for(unsigned int i=0 ;i<size; i++,current++)
 	{
 		if (current == leases.end())
 		{

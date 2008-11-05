@@ -74,6 +74,15 @@ public:
         _bridge = bridge;
         return leases->get_lease(vid,_ip,_mac);
     };
+    
+    /**
+     *    Gets size of the network (used + free)
+     *    @return number of hosts that can be fitted in this network
+     */
+    unsigned int get_size()
+    {
+        return leases->size;
+    };
  
     /**
      *  Function to write a Virtual Network in an output stream
@@ -126,10 +135,6 @@ private:
      * Holds the type of this network
      */
     NetworkType         type;
-    /**
-     *  Number of hosts in the Virtual Network (used + free)
-     */
-    unsigned long        size;
     
     /**
      *  Pointer to leases class, can be fixed or ranged.
@@ -265,9 +270,8 @@ protected:
         UID             = 1,
         NAME            = 2,
         TYPE            = 3,
-        SIZE            = 4,
-        BRIDGE          = 5,
-        LIMIT           = 6
+        BRIDGE          = 4,
+        LIMIT           = 5
     };
 
     static const char * table;

@@ -186,7 +186,7 @@ protected:
     /**
     * Number of possible leases (free + asigned)
     */
-    unsigned long  size;
+    unsigned int  size;
     
     /**
      * Hash of leases, indexed by lease.ip
@@ -240,7 +240,7 @@ protected:
 private:
 
     friend int leases_select_cb (
-        void *                  _history,
+        void *                  _leases,
         int                     num,
         char **                 values,
         char **                 names);

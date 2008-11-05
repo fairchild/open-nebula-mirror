@@ -55,7 +55,7 @@ int RangedLeases::get_lease(int vid, string&  ip, string&  mac)
 	unsigned int num_ip;
 	int			 rc = -1;
 	
-	for (int i=0; i<size; i++, current++)
+	for (unsigned int i=0; i<size; i++, current++)
 	{
 		num_ip = network_address + (current%(size-2)) + 1;
 		
