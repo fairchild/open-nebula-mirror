@@ -215,7 +215,13 @@ EOT
 end
 
 server=ONE::Server.new
-host=ONE::Host.new(server)
+$host=host=ONE::Host.new(server)
+
+def command_exit(code)
+    $host.close_db
+    exit(code)
+end
+
 
 onehost_opts=OnehostParse.new
 onehost_opts.parse(ARGV)
@@ -237,7 +243,7 @@ when "show"
         puts result[1]
     else
         puts "Error: "+result[1]
-        exit -1
+        command_exit -1
     end
     
 when "delete"
@@ -246,7 +252,7 @@ when "delete"
     result=host.delete(host_id)
     if result[0]
         puts "Host deleted"
-        exit 0
+        command_exit 0
     end
     
 when "list"
@@ -269,7 +275,7 @@ when "enable"
     result=host.enable(host_id)
     if result[0]
         puts "Host enabled"
-        exit 0
+        command_exit 0
     end
 
 when "disable"
@@ -278,15 +284,18 @@ when "disable"
     result=host.disable(host_id)
     if result[0]
         puts "Host disabled"
-        exit 0
+        command_exit 0
     end
     
 else
     onehost_opts.print_help
-    exit -1
+    command_exit -1
 end
 
 if !result[0]
     puts "Error: " + result[1].to_s
-    exit -1
+    command_exit -1
 end
+
+command_exit 0
+

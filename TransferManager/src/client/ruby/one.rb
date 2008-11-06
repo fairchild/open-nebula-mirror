@@ -288,15 +288,25 @@ module ONE
         def delete(*args)
             self.action("finalize", args[0])
         end
+
+        def get_db
+            if !@db
+                @db=Database.new
+            end
+            @db
+        end
+
+        def close_db
+            if @db
+                @db.close
+                @db=nil
+            end
+        end
         
         def get(options=nil)
             begin
-                @db=Database.new
+                res=get_db.select_table_with_names("vm_pool", options)
             
-                res=@db.select_table_with_names("vm_pool", options)
-            
-                @db.close
-                
                 result=res
             rescue
                 result=[false, "Error accessing database"]
@@ -322,15 +332,9 @@ module ONE
         ###########
         
         def get_history_host(id, db=nil)
-            if db
-                my_db=db
-            else
-                my_db=Database.new
-            end
+            my_db=get_db
             
             res=my_db.select_table_with_names("history", :where => "vid=#{id}")
-            
-            my_db.close if !db
             
             if res and res[0] and res[1] and res[1][-1]
                 return hostname=res[1][-1]["host_name"]
@@ -340,29 +344,17 @@ module ONE
         end
         
         def get_history(id, db=nil)
-            if db
-                my_db=db
-            else
-                my_db=Database.new
-            end
+            my_db=get_db
             
             res=my_db.select_table_with_names("history", :where => "vid=#{id}")
             
-            my_db.close if !db
-
             return res
         end
         
         def get_template(id, db=nil)
-            if db
-                my_db=db
-            else
-                my_db=Database.new
-            end
+            my_db=get_db
             
             res=my_db.select_table_with_names("vm_attributes", :where => "id=#{id}")
-            
-            my_db.close if !db
             
             if res && res[0]
                 template=Hash.new
@@ -430,7 +422,7 @@ module ONE
         #   id if there is only one vm with that name
         #   array of ids if there is more than one vm
         def get_vm_from_name(name)
-            db=Database.new
+            db=get_db
             res_template=db.select_table_with_names(
                                 "vm_attributes", 
                                 :where => "name=\"NAME\" AND value=\"#{name}\"")
@@ -482,7 +474,7 @@ module ONE
                 "enable_"   => [:to_i, nil]
             }
         end
-        
+
         def allocate(*args)
             case args[4]
             when /^true$/i, 1
@@ -506,11 +498,7 @@ module ONE
         
         def get_generic(table, options=nil)
             begin
-                @db=Database.new
-            
-                res=@db.select_table_with_names(table, options)
-            
-                @db.close
+                res=get_db.select_table_with_names(table, options)
                 
                 result=res
             rescue
@@ -534,6 +522,20 @@ module ONE
         
         def prefix
             "host"
+        end
+        
+        def get_db
+            if !@db
+                @db=Database.new
+            end
+            @db
+        end
+
+        def close_db
+            if @db
+                @db.close
+                @db=nil
+            end
         end
         
         
