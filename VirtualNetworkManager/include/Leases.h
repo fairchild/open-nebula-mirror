@@ -21,7 +21,6 @@
 #include <sqlite3.h>
 #include "ObjectSQL.h"
 #include "Attribute.h"
-#include "Nebula.h"
 
 #include <map>
 #include <vector>
@@ -268,7 +267,7 @@ private:
      */
     int insert(SqliteDB * db)
     {
-    	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.insert()");
+    	//Nebula::log("VNM", Log::ERROR, "Should not access to Leases.insert()");
         return -1;
     }
 
@@ -288,7 +287,7 @@ private:
      */
     int update(SqliteDB * db)
     {
-    	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.update()");
+    	//Nebula::log("VNM", Log::ERROR, "Should not access to Leases.update()");
         return -1;
     }
 

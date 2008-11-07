@@ -24,6 +24,7 @@
 #include "NebulaTemplate.h"
 
 #include "VirtualMachinePool.h"
+#include "VirtualNetworkPool.h"
 #include "HostPool.h"
 
 #include "VirtualMachineManager.h"
@@ -87,6 +88,11 @@ public:
     {
         return hpool;
     }; 
+    
+    VirtualNetworkPool * get_vnpool()
+    {
+        return vnpool;
+    };
 
     // --------------------------------------------------------------
     // Manager Accessors
@@ -128,7 +134,7 @@ public:
    
     static string version()
     {
-        return "ONE0.1";   
+        return "ONE1.0";   
     };
     
     void start();
@@ -148,7 +154,7 @@ private:
     //Constructors and = are private to only access the class through instance
     // -----------------------------------------------------------------------
     
-    Nebula():nebula_configuration(0),db(0),vmpool(0),hpool(0),lcm(0),
+    Nebula():nebula_configuration(0),db(0),vmpool(0),hpool(0),vnpool(0),lcm(0),
         vmm(0),im(0),tm(0),dm(0),rm(0){};
     
     ~Nebula()
@@ -224,9 +230,10 @@ private:
     // Nebula Pools
     // ---------------------------------------------------------------
     
-    SqliteDB *           db;
+    SqliteDB           * db;
     VirtualMachinePool * vmpool;
-    HostPool *           hpool;
+    HostPool           * hpool;
+    VirtualNetworkPool * vnpool;
     
     // ---------------------------------------------------------------
     // Nebula Managers

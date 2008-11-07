@@ -93,6 +93,21 @@ public:
         VirtualNetwork::bootstrap(db);
     };
     
+    /** Drops a VN from the cache & DB, the VN mutex MUST BE locked
+     *    @param vn pointer to VN
+     */
+    int drop(VirtualNetwork * vn)
+    {
+    	int rc = vn->drop(db);
+    	
+    	if ( rc == 0)
+    	{
+    		remove(static_cast<PoolObjectSQL *>(vn));	
+    	}
+        
+        return rc;
+    };
+    
 private:
 
     /**
@@ -103,6 +118,9 @@ private:
     {
         return new VirtualNetwork;
     };
+    
+    // Holds the system-wide MAC prefix
+    unsigned int     mac_prefix;
 };
  
 #endif /*VIRTUAL_NETWORK_POOL_H_*/

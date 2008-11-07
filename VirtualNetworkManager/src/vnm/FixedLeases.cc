@@ -17,6 +17,7 @@
 
 
 #include "FixedLeases.h"
+#include "Nebula.h"
 
 FixedLeases::FixedLeases(
 		SqliteDB * 					db,

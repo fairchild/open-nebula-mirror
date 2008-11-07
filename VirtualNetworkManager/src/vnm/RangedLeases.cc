@@ -17,6 +17,7 @@
 
 
 #include "RangedLeases.h"
+#include "Nebula.h"
 #include <cmath>
 
 /* ************************************************************************** */

@@ -145,6 +145,7 @@ void Nebula::start()
     {        
         vmpool = new VirtualMachinePool(db);
         hpool  = new HostPool(db);
+        vnpool = new VirtualNetworkPool(db);
     }
     catch (exception&)
     {
@@ -155,6 +156,7 @@ void Nebula::start()
     
     vmpool->bootstrap();
     hpool->bootstrap();
+    vnpool->bootstrap();
     
     // ----------------------------------------------------------- 
     // Close stds, we no longer need them                          
@@ -340,6 +342,7 @@ void Nebula::start()
         rm = new RequestManager(
             vmpool,
             hpool,
+            vnpool,
             rm_port,
             nebula_location + "/var/one_xmlrpc.log");
     }
