@@ -33,17 +33,19 @@ module ONE
     ONE_LOCATION=ENV["ONE_LOCATION"]
     
     TABLES={
-        "vmpool" => %w{oid aid tid uid priority reschedule last_reschedule 
-            last_poll template state lcm_state stime etime deploy_id memory
-            cpu net_tx net_rx},
-        "history" => %w{oid seq hostname vm_dir hid vmmad tmmad stime
-            etime pstime petime rstime retime estime eetime reason},
-        "vm_template" => %w{id name type value},
-        "hostpool" => %w{hid host_name state im_mad vm_mad tm_mad
-            last_mon_time managed},
+        "vmpool"          => %w{oid aid tid uid priority reschedule last_reschedule 
+                                last_poll template state lcm_state stime etime 
+                                deploy_id memory cpu net_tx net_rx},
+        "history"         => %w{oid seq hostname vm_dir hid vmmad tmmad stime
+                                etime pstime petime rstime retime estime eetime reason},
+        "vm_template"     => %w{id name type value},
+        "hostpool"        => %w{hid host_name state im_mad vm_mad tm_mad
+                                last_mon_time managed},
         "host_attributes" => %w{id name type value},
-        "hostshares" => %w{hsid endpoint disk_usage mem_usage
-            cpu_usage max_disk max_mem max_cpu running_vms}
+        "hostshares"      => %w{hsid endpoint disk_usage mem_usage
+                                cpu_usage max_disk max_mem max_cpu running_vms},
+        "network_pool"    => %w{oid uid name type bridge},
+        "vn_template"     => %w{id name type value}
     }
     
     
@@ -125,6 +127,7 @@ module ONE
             
             res=result.collect {|row|
                 r=Hash.new
+                
                 TABLES[table].each_with_index {|value, index|
                     r[value]=row[index]
                 }
@@ -565,6 +568,87 @@ module ONE
                 return res[1][0]["hid"]
             else
                 return res[1].collect {|host| host["hid"] }
+            end
+        end
+    end
+    
+    
+    class VN < CommandContainer
+                
+        
+        def commands
+            {
+                "allocate_" => [:to_s],
+                "info"      => [:to_i],
+                "delete"    => [:to_i],
+            }
+        end
+        
+        def allocate(*args)
+            begin
+                f=open(args[0], "r")
+                template=f.read
+                f.close
+            rescue
+                return [false, "Can not read template"]
+            end
+            
+            self.allocate_(template)
+        end
+        
+        def get_generic(table, options=nil)
+            begin
+                @db=Database.new
+            
+                res=@db.select_table_with_names(table, options)
+            
+                @db.close
+                
+                result=res
+            rescue
+                result=[false, "Error accessing database"]
+            end
+            
+            result
+        end
+        
+        def get(options=nil)
+            get_generic("network_pool", options)
+        end
+        
+        def get_vn_attributes(nid)
+            get_generic("vn_template", :where => "oid=#{nid}")
+        end
+        
+        def get_vn_leases(nid)
+            get_generic("leases", :where => "oid=#{nid}")
+        end
+        
+        def prefix
+            "vn"
+        end
+        
+        
+        ###########
+        # HELPERS #
+        ###########
+        
+        def get_vn_id(name)
+            vn_id=name.strip
+            # Check if the name is not a number (is not an ID)
+            vn_id=get_vn_from_name(vn_id) if !vn_id.match(/^[0123456789]+$/)
+            return vn_id
+        end
+        
+        def get_vn_from_name(name)
+            res=get(:where => "name=\"#{name}\"")
+            
+            return nil if !res[0] or res[1].length<1
+            
+            if res[1].length==1
+                return res[1][0]["oid"]
+            else
+                return res[1].collect {|vn| vn["oid"] }
             end
         end
     end

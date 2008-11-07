@@ -54,7 +54,7 @@ void RequestManager::VirtualNetworkAllocate::execute(
     }
       
     //Result
-    
+    arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
     arrayData.push_back(xmlrpc_c::value_int(nid));
     arrayresult = new xmlrpc_c::value_array(arrayData);
     

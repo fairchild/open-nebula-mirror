@@ -392,7 +392,7 @@ private:
     public:
         VirtualNetworkInfo(VirtualNetworkPool * _vnpool):vnpool(_vnpool)
         {
-            _signature="A:ss";
+            _signature="A:si";
             _help="Returns virtual network information";
         };
 
@@ -414,7 +414,7 @@ private:
     public:
         VirtualNetworkDelete(VirtualNetworkPool * _vnpool):vnpool(_vnpool)
         {
-            _signature="A:ss";
+            _signature="A:si";
             _help="Deletes a virtual network";
         };
 
