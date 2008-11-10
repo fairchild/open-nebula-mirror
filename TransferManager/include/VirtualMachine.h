@@ -270,6 +270,17 @@ public:
     {
         return history->deployment_file;
     };
+    
+    /**
+     *  Returns the remote deployment filename. The file is in the form:
+     *  		$VM_DIR/$VM_ID/images/deployment.$SEQ 
+     *  The hasHistory() function MUST be called before this one.
+     *    @return the deployment filename
+     */ 
+    const string & get_remote_deployment_file() const
+    {
+        return history->rdeployment_file;
+    };    
         
     /**
      *  Returns the checkpoint filename for the current host. The checkpoint file 

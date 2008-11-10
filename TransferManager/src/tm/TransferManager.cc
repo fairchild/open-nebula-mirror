@@ -439,24 +439,18 @@ void TransferManager::epilog_action(int vid)
     
 error_history:
 	os.str("");
-    os << "prolog, VM " << vid << " has no history";
+    os << "epilog, VM " << vid << " has no history";
     goto error_common;
     
 error_file:
     os.str("");
-    os << "prolog, could not open file: " << vm->get_transfer_file();
+    os << "epilog, could not open file: " << vm->get_transfer_file();
     goto error_common;
     
 error_driver:
     os.str("");
-    os << "prolog, error getting driver " << vm->get_vmm_mad();
+    os << "epilog, error getting driver " << vm->get_vmm_mad();
     goto error_common;
-    
-error_empty_disk:
-	os.str("");
-	os << "prolog, undefined source disk image in VM template";
-	xfr.close();
-	goto error_common;
     
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);        

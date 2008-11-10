@@ -143,6 +143,7 @@ private:
     
     string  vm_rhome;
     string  checkpoint_file;
+    string  rdeployment_file;
     
     friend int history_select_cb (
         void *                  _history,

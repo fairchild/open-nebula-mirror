@@ -219,7 +219,6 @@ void VirtualMachineManager::deploy_action(int vid)
     const VirtualMachineManagerDriver *   vmd;
     int                             rc;
     ostringstream                   os;
-    ostringstream                   remote_deployment_file;
 
     // Get the VM from the pool
     vm = vmpool->get(vid,true);
@@ -255,10 +254,8 @@ void VirtualMachineManager::deploy_action(int vid)
         goto error_file;
     }
 
-    remote_deployment_file << vm->get_remote_dir() << "/deployment";
-
     // Invoke driver method
-    vmd->deploy(vid,vm->get_hostname(),remote_deployment_file.str());
+    vmd->deploy(vid,vm->get_hostname(),vm->get_remote_deployment_file());
 
     vm->unlock();
     

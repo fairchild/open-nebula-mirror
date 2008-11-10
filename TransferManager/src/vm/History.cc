@@ -120,6 +120,11 @@ void History::non_persistent_data()
     os << "/checkpoint";
     
     checkpoint_file = os.str();
+    
+    os.str("");
+    os << vm_rhome << "/deployment." << seq;
+    
+    rdeployment_file = os.str();
 }
 
 /* -------------------------------------------------------------------------- */
