@@ -255,7 +255,7 @@ void VirtualMachineManager::deploy_action(int vid)
         goto error_file;
     }
 
-    remote_deployment_file << vm->get_remote_dir() << "/deployment.0";
+    remote_deployment_file << vm->get_remote_dir() << "/deployment";
 
     // Invoke driver method
     vmd->deploy(vid,vm->get_hostname(),remote_deployment_file.str());
