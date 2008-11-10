@@ -103,7 +103,7 @@ void TransferManager::trigger(Actions action, int _vid)
         
     default:
         delete vid;
-        return;        
+        return;
     }
 
     am.trigger(aname,vid);
@@ -156,7 +156,7 @@ void TransferManager::do_action(const string &action, void * arg)
         ostringstream oss;
         oss << "Unknown action name: " << action;
         
-        Nebula::log("TrM", Log::ERROR, oss);        
+        Nebula::log("TrM", Log::ERROR, oss);
     }
 }
 
@@ -165,27 +165,27 @@ void TransferManager::do_action(const string &action, void * arg)
 
 void TransferManager::prolog_action(int vid)
 {
-	ofstream 		xfr;
+    ofstream        xfr;
     ostringstream   os;
-    string			xfr_name;
+    string          xfr_name;
     
-    const VectorAttribute *	disk;
-    string			source;
-    string			type;
-    string			clon;
+    const VectorAttribute * disk;
+    string          source;
+    string          type;
+    string          clon;
         
-    VirtualMachine *	vm;
-    Nebula& 			nd = Nebula::instance();
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
     
     const TransferManagerDriver * tm_md;
     
     vector<const Attribute *>   attrs;
-    int							num;
+    int                         num;
     
     
     // ------------------------------------------------------------------------
     // Setup & Transfer script
-    // ------------------------------------------------------------------------       
+    // ------------------------------------------------------------------------
 
     vm = vmpool->get(vid,true);
     
@@ -203,19 +203,19 @@ void TransferManager::prolog_action(int vid)
     
     if ( tm_md == 0 )
     {
-    	goto error_driver;
+        goto error_driver;
     }
     
     xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
-    	goto error_file;
+        goto error_file;
     }
         
     // ------------------------------------------------------------------------
     // Swap and image Commands
-    // ------------------------------------------------------------------------       
+    // ------------------------------------------------------------------------
 
     num = vm->get_template_attribute("DISK",attrs);
     
@@ -232,20 +232,20 @@ void TransferManager::prolog_action(int vid)
                                 
         if ( type.empty() == false)
         {
-        	transform(type.begin(),type.end(),type.begin(),(int(*)(int))toupper);
+            transform(type.begin(),type.end(),type.begin(),(int(*)(int))toupper);
         }
         
         if ( type == "SWAP" )
         {
-        	string  size = disk->vector_value("SIZE");
+            string  size = disk->vector_value("SIZE");
 
-        	if (size.empty()==true)
-        	{
-        		size = "1";
-        	}
-        	
-        	xfr << "MKSWAP " << size << " " << vm->get_hostname() << ":" 
-        		<< vm->get_remote_dir() << "/disk." << i << endl;
+            if (size.empty()==true)
+            {
+                size = "1";
+            }
+            
+            xfr << "MKSWAP " << size << " " << vm->get_hostname() << ":"
+                << vm->get_remote_dir() << "/disk." << i << endl;
         }
         else
         {
@@ -253,46 +253,46 @@ void TransferManager::prolog_action(int vid)
                             
             if ( source.empty() )
             {
-            	goto error_empty_disk;
+                goto error_empty_disk;
             }
             
-    		clon = disk->vector_value("CLONE");
-    		
-    		if ( clon.empty() == true )
-    		{
-    			clon = "YES"; //Clone by default
-    		}
-    		else
-    		{
-    			transform(clon.begin(),clon.end(),clon.begin(),(int(*)(int))toupper);
-    		}
-    		
-    		if (clon == "YES")
-    		{
-    			xfr << "CLONE ";
-    		}
-    		else
-    		{
-    			xfr << "LN ";
-    		}
-    		
-    		if ( source.find(":") == string::npos ) //Regular file
-    		{
-    			xfr << nd.get_nebula_hostname() << ":" << source << " ";
-    		} 
-    		else //TM Plugin specific protocol
-    		{
-    			xfr << source << " ";
-    		}
-    		
-    		xfr << vm->get_hostname() << ":" << vm->get_remote_dir() 
-    			<< "/disk." << i << endl;
+            clon = disk->vector_value("CLONE");
+            
+            if ( clon.empty() == true )
+            {
+                clon = "YES"; //Clone by default
+            }
+            else
+            {
+                transform(clon.begin(),clon.end(),clon.begin(),(int(*)(int))toupper);
+            }
+            
+            if (clon == "YES")
+            {
+                xfr << "CLONE ";
+            }
+            else
+            {
+                xfr << "LN ";
+            }
+            
+            if ( source.find(":") == string::npos ) //Regular file
+            {
+                xfr << nd.get_nebula_hostname() << ":" << source << " ";
+            } 
+            else //TM Plugin specific protocol
+            {
+                xfr << source << " ";
+            }
+            
+            xfr << vm->get_hostname() << ":" << vm->get_remote_dir()
+                << "/disk." << i << endl;
         }
     }
 
     // ------------------------------------------------------------------------
     // TODO: Context commands
-    // ------------------------------------------------------------------------       
+    // ------------------------------------------------------------------------
 
     xfr.close();
     
@@ -303,7 +303,7 @@ void TransferManager::prolog_action(int vid)
     return;
     
 error_history:
-	os.str("");
+    os.str("");
     os << "prolog, VM " << vid << " has no history";
     goto error_common;
     
@@ -318,13 +318,13 @@ error_driver:
     goto error_common;
     
 error_empty_disk:
-	os.str("");
-	os << "prolog, undefined source disk image in VM template";
-	xfr.close();
-	goto error_common;
+    os.str("");
+    os << "prolog, undefined source disk image in VM template";
+    xfr.close();
+    goto error_common;
     
 error_common:
-    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);        
+    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
     vm->log("TM", Log::ERROR, os);
         
     vm->unlock();
@@ -346,27 +346,27 @@ void TransferManager::prolog_migr_action(int vid)
 
 void TransferManager::epilog_action(int vid)
 {
-	ofstream 		xfr;
+    ofstream        xfr;
     ostringstream   os;
-    string			xfr_name;
+    string          xfr_name;
     
-    const VectorAttribute *	disk;
-    string			source;
-    string			save;
-    string			clon;
+    const VectorAttribute * disk;
+    string          source;
+    string          save;
+    string          clon;
         
-    VirtualMachine *	vm;
-    Nebula& 			nd = Nebula::instance();
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
     
     const TransferManagerDriver * tm_md;
     
     vector<const Attribute *>   attrs;
-    int							num;
+    int                         num;
     
     
     // ------------------------------------------------------------------------
     // Setup & Transfer script
-    // ------------------------------------------------------------------------       
+    // ------------------------------------------------------------------------
 
     vm = vmpool->get(vid,true);
     
@@ -384,19 +384,19 @@ void TransferManager::epilog_action(int vid)
     
     if ( tm_md == 0 )
     {
-    	goto error_driver;
+        goto error_driver;
     }
     
     xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
-    	goto error_file;
+        goto error_file;
     }
-        
+    
     // ------------------------------------------------------------------------
     // copy back VM image (DISK with SAVE="yes")
-    // ------------------------------------------------------------------------       
+    // ------------------------------------------------------------------------
 
     num = vm->get_template_attribute("DISK",attrs);
     
@@ -413,21 +413,21 @@ void TransferManager::epilog_action(int vid)
                                 
         if ( save.empty() == true)
         {
-        	continue;
+            continue;
         }
         
         transform(save.begin(),save.end(),save.begin(),(int(*)(int))toupper);
         
         if ( save == "YES" )
         {
-        	xfr << "MV " << vm->get_hostname() << ":" << vm->get_remote_dir() 
-				<< "/disk." << i << " "
-				<< nd.get_nebula_hostname() << ":" << vm->get_local_dir()
-				<< "/disk." << i << endl;
+            xfr << "MV " << vm->get_hostname() << ":" << vm->get_remote_dir()
+                << "/disk." << i << " "
+                << nd.get_nebula_hostname() << ":" << vm->get_local_dir()
+                << "/disk." << i << endl;
         }
     }
 
-    xfr << "DELETE " << vm->get_hostname() <<":"<< vm->get_remote_dir() << endl; 
+    xfr << "DELETE " << vm->get_hostname() <<":"<< vm->get_remote_dir() << endl;
 
     xfr.close();
     
@@ -438,7 +438,7 @@ void TransferManager::epilog_action(int vid)
     return;
     
 error_history:
-	os.str("");
+    os.str("");
     os << "epilog, VM " << vid << " has no history";
     goto error_common;
     
@@ -453,11 +453,11 @@ error_driver:
     goto error_common;
     
 error_common:
-    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);        
+    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
     vm->log("TM", Log::ERROR, os);
         
     vm->unlock();
-    return;	
+    return; 
 }
 
 /* -------------------------------------------------------------------------- */
@@ -484,12 +484,12 @@ void TransferManager::checkpoint_action(int vid)
 
 void TransferManager::load_mads(int uid)
 {
-    unsigned int            		i;
-    ostringstream           		oss;
-    const VectorAttribute * 		vattr;
-    int                     		rc;
-    string							name;
-    TransferManagerDriver *			tm_driver = 0;
+    unsigned int                    i;
+    ostringstream                   oss;
+    const VectorAttribute *         vattr;
+    int                             rc;
+    string                          name;
+    TransferManagerDriver *         tm_driver = 0;
     
     oss << "Loading Transfer Manager drivers.";
     
@@ -501,23 +501,23 @@ void TransferManager::load_mads(int uid)
         
         name  = vattr->vector_value("NAME");
         
-        oss << "\tLoading driver: " << name;                 
+        oss << "\tLoading driver: " << name;
         Nebula::log("VMM", Log::INFO, oss);
         
         tm_driver = new TransferManagerDriver(
-        		uid, 
-        		vattr->value(),
-        		(uid != 0),
-        		vmpool);
+                uid, 
+                vattr->value(),
+                (uid != 0),
+                vmpool);
         
         if ( tm_driver == 0 )
-        	continue;
+            continue;
         
         rc = add(tm_driver);
         
         if ( rc == 0 )
         {
-            oss.str("");            
+            oss.str("");
             oss << "\tDriver " << name << " loaded.";
             
             Nebula::log("TM",Log::INFO,oss);
