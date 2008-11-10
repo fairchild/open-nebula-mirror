@@ -147,40 +147,6 @@ int Leases::Lease::mac_to_number(const string& _mac, unsigned int i_mac[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int Leases::Lease::mac_prefix_to_number(const string& _mac, unsigned int& prefix_mac)
-{
-    istringstream iss;
-    size_t        pos   = 0;
-    int           count = 0;
-    unsigned int  tmp;
-
-    string mac = _mac;
-
-    while ( (pos = mac.find(':')) !=  string::npos )
-    {
-        mac.replace(pos,1," ");
-        count++;
-    }
-
-    if (count != 1)
-    {
-        return -1;
-    }
-
-    iss.str(mac);
-
-    prefix_mac = 0;
-
-    iss >> hex >> prefix_mac >> ws >> hex >> tmp >> ws;
-    prefix_mac <<= 8;
-    prefix_mac += tmp;
-
-    return 0;
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
 void Leases::Lease::mac_to_string(const unsigned int i_mac[], string& mac)
 {
     ostringstream	oss;
@@ -269,13 +235,31 @@ int Leases::unmarshall(int num, char **names, char ** values)
         return -1;
     }
 
-    unsigned int mac [2];
-
-    unsigned int ip    = (unsigned int)atol(values[IP]);
-    mac[Lease::PREFIX] = (unsigned int)atol(values[MAC_PREFIX]);
-    mac[Lease::SUFFIX] = (unsigned int)atol(values[MAC_SUFFIX]);
-    int    vid         = atoi(values[VID]);
-    bool   used        = atoi(values[USED]);
+    unsigned int mac[2];
+    unsigned int ip;
+    int          vid;
+    bool         used;
+    
+    istringstream iss;
+    
+    iss.str(values[IP]);
+    iss >> ip;
+    
+    iss.clear();
+    iss.str(values[MAC_PREFIX]);
+    iss >> mac[Lease::PREFIX];
+    
+    iss.clear();
+    iss.str(values[MAC_SUFFIX]);
+    iss >> mac[Lease::SUFFIX];
+    
+    iss.clear();
+    iss.str(values[VID]);
+    iss >> vid;
+    
+    iss.clear();
+    iss.str(values[USED]);
+    iss >> used;
 
     leases.insert(make_pair(ip,new Lease(ip,mac,vid,used)));
     
@@ -341,6 +325,18 @@ int Leases::drop(SqliteDB * db)
     oss << "DELETE FROM " << table << " WHERE oid=" << oid;
 
     return db->exec(oss);
+}
+
+int Leases::insert(SqliteDB * db)
+{
+	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.insert()");
+    return -1;
+}
+
+int Leases::update(SqliteDB * db)
+{
+	Nebula::log("VNM", Log::ERROR, "Should not access to Leases.update()");
+    return -1;
 }
 
 /* ************************************************************************** */

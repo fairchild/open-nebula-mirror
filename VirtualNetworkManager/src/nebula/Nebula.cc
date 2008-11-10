@@ -142,10 +142,17 @@ void Nebula::start()
     }
     
     try
-    {        
+    {   
+    	string 	mac_prefix;
+    	int		size;
+    	
         vmpool = new VirtualMachinePool(db);
         hpool  = new HostPool(db);
-        vnpool = new VirtualNetworkPool(db);
+        
+        nebula_configuration->get("MAC_PREFIX", mac_prefix);
+        nebula_configuration->get("NETWORK_SIZE", size);
+                
+        vnpool = new VirtualNetworkPool(db,mac_prefix,size);
     }
     catch (exception&)
     {

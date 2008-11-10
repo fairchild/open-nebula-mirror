@@ -20,9 +20,8 @@
 
 
 #include "PoolSQL.h"
-#include "RangedLeases.h"
-#include "FixedLeases.h"
 #include "VirtualNetworkTemplate.h"
+#include "Leases.h"
 
 #include <vector>
 #include <string>
@@ -112,12 +111,12 @@ private:
     /**
      *  Name of the Virtual Network
      */
-    string         name;
+    string 	name;
     
     /**
      *  Owner of the Virtual Network
      */
-    int            uid;
+    int		uid;
 
     // -------------------------------------------------------------------------
     // Binded physical attributes
@@ -126,7 +125,7 @@ private:
     /**
      *  Name of the bridge this VNW binds to
      */
-    string         bridge;
+    string	bridge;
 
     // -------------------------------------------------------------------------
     // Virtual Network Description
@@ -134,13 +133,13 @@ private:
     /**
      * Holds the type of this network
      */
-    NetworkType         type;
+    NetworkType	type;
     
     /**
      *  Pointer to leases class, can be fixed or ranged.
      *  Holds information on given (and, optionally, possible) leases
      */
-    Leases     *        leases;    
+    Leases *	leases;    
     
     /**
      *  The Virtual Network template, holds the VNW attributes.
@@ -148,9 +147,18 @@ private:
     VirtualNetworkTemplate  vn_template;
     
     // *************************************************************************
-    // Virtual Network Private Methods
-    // *************************************************************************    
+    // Non persistent data members from Nebula.conf
+    // *************************************************************************
     
+    /**
+     *  MAC prefix for this OpenNebula site
+     */
+    unsigned int 	mac_prefix;
+    
+    /**
+     *  Default size for virtual networks
+     */
+    int				default_size;
 
     // *************************************************************************
     // DataBase implementation (Private)
@@ -256,7 +264,7 @@ protected:
     // Constructor
     //**************************************************************************
     
-    VirtualNetwork(int  id = -1);
+    VirtualNetwork(unsigned int _mac_prefix, int _default_size);
 
     ~VirtualNetwork();
     

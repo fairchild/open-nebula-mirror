@@ -29,6 +29,7 @@ env.Append(LIBS=[
 	'nebula_template',
 	'nebula_pool',
 	'nebula_host',
+	'nebula_vnm',
 	'nebula_common',
 	'sqlite3',
     'wwwxml',
@@ -74,7 +75,6 @@ env.Append(LIBS=[
 env.Append(LIBS=[
 	'nebula_core',
 	'nebula_vmm',
-	'nebula_vnm',
 	'nebula_lcm',
 	'nebula_vm',
 	'nebula_im',
@@ -85,6 +85,7 @@ env.Append(LIBS=[
 	'nebula_template',
 	'nebula_pool',
 	'nebula_host',
+	'nebula_vnm',
 	'nebula_common',
 	'sqlite3',
 ])

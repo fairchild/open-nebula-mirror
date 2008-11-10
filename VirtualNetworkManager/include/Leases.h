@@ -142,12 +142,6 @@ protected:
         static int mac_to_number(const string& mac, unsigned int i_mac[]);
         
         /**
-         * Conversion from string prefix MAC to unsigned int prefix MAC
-         * @return 0 if success
-         */
-        static int mac_prefix_to_number(const string& mac, unsigned int& i_mac);
-
-        /**
          * Conversion from string IP to unsigned int IP
          */
         static void mac_to_string(const unsigned int i_mac[], string& mac);
@@ -178,7 +172,6 @@ protected:
     friend ostream& operator<<(ostream& os, Lease& _lease);
     
     friend class VirtualNetwork;
-    friend class VirtualNetworkPool;
     
     // -------------------------------------------------------------------------
     // Leases fields
@@ -240,7 +233,7 @@ protected:
       *    @param db pointer to the database.
       *    @return 0 on success.
       */
-     int select(SqliteDB * db);
+     virtual int select(SqliteDB * db);
           
 private:
 
@@ -265,11 +258,7 @@ private:
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int insert(SqliteDB * db)
-    {
-    	//Nebula::log("VNM", Log::ERROR, "Should not access to Leases.insert()");
-        return -1;
-    }
+    int insert(SqliteDB * db);
 
     /**
      *  Leases are added/removed/updated through add/del interface
@@ -285,11 +274,7 @@ private:
      *    @param db pointer to the database.
      *    @return 0 on success.
      */
-    int update(SqliteDB * db)
-    {
-    	//Nebula::log("VNM", Log::ERROR, "Should not access to Leases.update()");
-        return -1;
-    }
+    int update(SqliteDB * db);
 
     /**
      *  Sets the value of a column in the pool for a given object

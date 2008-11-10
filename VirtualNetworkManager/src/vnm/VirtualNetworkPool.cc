@@ -19,32 +19,63 @@
 #include "VirtualNetworkPool.h"
 #include <sstream>
 
+VirtualNetworkPool::VirtualNetworkPool(SqliteDB * db, 
+	const string& 	prefix,
+	int				_default_size):
+		PoolSQL(db,VirtualNetwork::table),
+		mac_prefix(0),
+		default_size(default_size)
+{
+    istringstream iss;
+    size_t        pos   = 0;
+    int           count = 0;
+    unsigned int  tmp;
+
+    string mac = prefix;
+
+    while ( (pos = mac.find(':')) !=  string::npos )
+    {
+    	mac.replace(pos,1," ");
+    	count++;
+    }
+
+    if (count != 1)
+    {
+    	Nebula::log("VNM",Log::ERROR,"Wrong MAC prefix format, using default");
+    	mac_prefix = 1; //"00:01"
+    	
+    	return;
+    }
+
+    iss.str(mac);
+
+    iss >> hex >> mac_prefix >> ws >> hex >> tmp >> ws;
+    mac_prefix <<= 8;
+    mac_prefix += tmp;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+    		
 int VirtualNetworkPool::allocate (
     int            uid,
     const  string& stemplate,
     int *          oid)
 {
-    VirtualNetwork *              vn;
-    char *                        error_msg;
-    int                           rc;
-    ostringstream oss;            
-                                  
-    string                        str_mac_prefix;    
-    unsigned int                  mac_prefix;
-                                  
-    string                        network_address;
-    string                        name;
-    string                        bridge;
+    VirtualNetwork *	vn;
+    char *				error_msg;
+    int                 rc;
+    ostringstream 		oss;            
+
+    string              name;
+    string              bridge;
     
-    string                        str_type;                               
-    
-    string                        str_size;
-    unsigned int                  size;
+    string              str_type;
     
     // Build a new Virtual Network object
-    vn = new VirtualNetwork;
+    vn = new VirtualNetwork(mac_prefix, default_size);
     
-    vn->uid = uid;
+    vn->uid	= uid;
     
     rc = vn->vn_template.parse(stemplate,&error_msg);
     
@@ -54,11 +85,10 @@ int VirtualNetworkPool::allocate (
         Nebula::log("VNM", Log::ERROR, oss);
         free(error_msg);
 
-        return -2;
+        return -1;
     }
    
     // Information about the VN needs to be extracted from the template
-    // TODO maybe not all in the template??? cross it with NebulaTemplate???
     vn->get_template_attribute("TYPE",str_type);
     
     if ( str_type == "RANGED")
@@ -76,87 +106,12 @@ int VirtualNetworkPool::allocate (
     vn->get_template_attribute("BRIDGE",bridge);
     vn->bridge = bridge;
     
-    vn->get_template_attribute("SIZE",str_size);
-    
-    if(!str_size.empty())
-    {
-        size = atoi(str_size.c_str());
-    }
-    
     // Insert the VN in the pool so we have a valid OID
 
     *oid = PoolSQL::allocate(vn);
     
-    vn = dynamic_cast<VirtualNetwork *>(PoolSQL::get(*oid,true));
-         
-    vn->get_template_attribute("MAC_PREFIX",str_mac_prefix); 
-    
-    if(str_mac_prefix.empty())
-    {
-        // TODO assign global nebula mac_prefix
-        str_mac_prefix="FF:FF";
-    }
-    
-       
-    Leases::Lease::mac_prefix_to_number(str_mac_prefix,mac_prefix);
-
-     //Get the leases
-     if (vn->type == VirtualNetwork::RANGED)
-     {
-         // retrieve specific information from template
-         vn->get_template_attribute("NET_ADDRESS",network_address);
-         
-         // If size wasn't defined, we need to calculate it    
-         if ( str_size.empty() )
-         {
-             string net_class;
-             vn->get_template_attribute("NET_CLASS",net_class);
-             
-             if ( net_class == "B" )
-             {
-                 size = 65534;	    
-                 
-             }
-             else if ( net_class == "C" )
-                  {
-                      size = 254;
-                  }
-                  else
-                  {
-                      //TODO what would be the default?
-                      size = 65534;
-                  }
-         }
-        
-         vn->leases = new RangedLeases::RangedLeases(db,
-                                                     *oid,
-                                                     size,
-                                                     mac_prefix,
-                                                     network_address);
-     }
-     else if(vn->type == VirtualNetwork::FIXED)
-          {
-              // retrieve specific information from template
-
-              vector<const Attribute *>   vector_leases;
-              vn->get_template_attribute("LEASES",vector_leases);  
-
-              vn->leases = new FixedLeases::FixedLeases(db,
-                                                        *oid,
-                                                        mac_prefix,
-                                                        vector_leases);
-          }
-          else
-          {
-              oss << "Wrong type of Virtual Network: " << vn->type << endl;
-              Nebula::log("VNM", Log::ERROR, oss);
-              
-              return -3;
-          }
-          
-    vn->unlock();
-
     return 0;
 }
 
-
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */

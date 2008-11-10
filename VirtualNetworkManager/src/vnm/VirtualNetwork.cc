@@ -18,21 +18,27 @@
 
 #include "VirtualNetwork.h"
 #include "Nebula.h"
-
+#include "RangedLeases.h"
+#include "FixedLeases.h"
 
 /* ************************************************************************** */
 /* Virtual Network :: Constructor/Destructor                                  */
 /* ************************************************************************** */
 
-VirtualNetwork::VirtualNetwork(int  id):                 
-                PoolObjectSQL(id),
+VirtualNetwork::VirtualNetwork(unsigned int  mp, int ds):                 
+                PoolObjectSQL(-1),
                 name(""),
                 uid(-1),
                 bridge(""),
                 type(UNINITIALIZED),
-                leases(0)
+                leases(0),
+                mac_prefix(mp),
+                default_size(ds)
 {
 }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 VirtualNetwork::~VirtualNetwork()
 {    
@@ -113,13 +119,8 @@ int VirtualNetwork::select(SqliteDB * db)
     
     int             rc;
     int             boid;
-    
-    string          str_mac_prefix;    
-    unsigned int    mac_prefix;
+
     string          network_address;
-    
-    string                        str_size;
-    unsigned int                  size;
         
     oss << "SELECT * FROM " << table << " WHERE oid = " << oid;
 
@@ -127,7 +128,6 @@ int VirtualNetwork::select(SqliteDB * db)
     oid  = -1;
 
     rc = db->exec(oss,vn_select_cb,(void *) this);
-
 
     if ((rc != 0) || (oid != boid ))
     {
@@ -141,45 +141,41 @@ int VirtualNetwork::select(SqliteDB * db)
     {
         goto error_template;
     }
-    
-    get_template_attribute("SIZE",str_size);
-    
-    if(!str_size.empty())
-    {
-        size = atoi(str_size.c_str());
-    }
-    
 
-    get_template_attribute("MAC_PREFIX",str_mac_prefix);    
-    Leases::Lease::mac_prefix_to_number(str_mac_prefix,mac_prefix);
-    
     //Get the leases
     if (type == RANGED)
     {
+    	string 	nclass;
+    	int		size;
+    	
         // retrieve specific information from template
-        get_template_attribute("NET_ADDRESS",network_address);  
+        get_template_attribute("NETWORK_ADDRESS",network_address);
         
-         // If size wasn't defined, we need to calculate it    
-        if ( str_size.empty() )
+        if (network_address.empty())
         {
-             string net_class;
-             get_template_attribute("NET_CLASS",net_class);
+        	goto error_addr;
+        }
+                
+        get_template_attribute("NETWORK_SIZE",nclass);
              
-             if ( net_class == "B" )
-             {
-                 size = 65534;	    
-                 
-             }
-             else if ( net_class == "C" )
-                  {
-                      size = 254;
-                  }
-                  else
-                  {
-                      //TODO what would be the default?
-                      size = 65534;
-                  }
-         }
+        if ( nclass == "B" )
+        {
+        	size = 65534;	    
+        }
+        else if ( nclass == "C" )
+        {
+        	size = 254;
+        }
+        else //Assume its a number
+        {
+        	istringstream iss(nclass);            
+        	iss >> size;
+        }
+        
+        if (size == 0)
+        {
+        	size = default_size;
+        }
         
         leases = new RangedLeases::RangedLeases(db,
                                                 oid,
@@ -188,36 +184,45 @@ int VirtualNetwork::select(SqliteDB * db)
                                                 network_address);
     }
     else if(type == FIXED)
-         {
-             leases = new  FixedLeases(db,
-                                       oid,
-                                       mac_prefix);                                                                           
-         }
-         else
-         {
-             goto error_leases;
-         }
-
-
-    leases->select(db);
-        
-    return 0;
-
+    {
+    	leases = new  FixedLeases(db,
+                                  oid,
+                                  mac_prefix);                                                                           
+    }
+    else
+    {
+    	goto error_type;
+    }
+    
+    if (leases == 0)
+    {
+        goto error_leases;
+    }
+    
+    return leases->select(db);
 
 error_id:
     ose << "Error getting Virtual Network nid: " << oid;
-    Nebula::log("VNM", Log::ERROR, ose); 
-    return -1;
+	goto error_common;
 
 error_template:
     ose << "Can not get template for Virtual Network nid: " << oid;
-    Nebula::log("VNM", Log::ERROR, ose); 
-    return -1;
+	goto error_common;
     
 error_leases:
     ose << "Error getting Virtual Network leases nid: " << oid;
-    Nebula::log("VNM", Log::ERROR, ose);   
-    return -1;
+	goto error_common;
+
+error_type:
+	ose << "Wrong type of Virtual Network: " << type;
+    goto error_common;
+	
+error_addr:
+	ose << "Network address is not defined nid: " << oid;
+	
+error_common:
+	Nebula::log("VNM", Log::ERROR, ose);   
+	return -1;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -238,9 +243,7 @@ int VirtualNetwork::insert(SqliteDB * db)
 
     if ( rc != 0 )
     {
-        ose << "Can not insert in DB template for Virtual Network id " << oid; 
-        Nebula::log("VNM", Log::ERROR, ose);
-        return -1;
+    	goto error_template;
     }
 
     // Insert the Virtual Network
@@ -248,14 +251,98 @@ int VirtualNetwork::insert(SqliteDB * db)
 
     if ( rc != 0 )
     {
-        ose << "Can not update Virtual Network id " << oid; 
-        Nebula::log("VNM", Log::ERROR, ose);
-        vn_template.drop(db);
-
-        return -1;
+    	goto error_update;
     }
+         
+     //Get the leases
+     if (type == VirtualNetwork::RANGED)
+     {
+    	 string nclass;
+    	 string naddr;
+    	 int 	size;
+    	 
+         // retrieve specific information from template
+         get_template_attribute("NETWORK_ADDRESS",naddr);
 
-    return 0;
+         if (naddr.empty())
+         {
+         	goto error_addr;
+         }
+         
+         get_template_attribute("NETWORK_SIZE",nclass);
+             
+         if ( nclass == "B" )
+         {
+        	 size = 65534;   
+         }
+         else if ( nclass == "C" )
+         {
+             size = 254;
+         }
+         else //Assume its a number
+         {
+        	 istringstream iss(nclass);
+        	 
+        	 iss >> size;
+         }
+        
+         if (size == 0)
+         {
+        	 size = default_size;
+         }
+         
+         leases = new RangedLeases::RangedLeases(db,
+                                                 oid,
+                                                 size,
+                                                 mac_prefix,
+                                                 naddr);
+     }
+     else if(type == VirtualNetwork::FIXED)
+     {
+    	 vector<const Attribute *>   vector_leases;
+         
+    	 get_template_attribute("LEASES",vector_leases);  
+
+         leases = new FixedLeases::FixedLeases(db,
+                                               oid,
+                                               mac_prefix,
+                                               vector_leases);
+     }
+     else
+     {
+    	 goto error_type;
+     }
+     
+     if (leases == 0)
+     {
+    	 goto error_leases;
+     }
+          
+     return 0;
+
+error_template:
+	ose << "Can not insert in DB template for Virtual Network id " << oid; 
+    goto error_common;
+
+error_update:
+	ose << "Can not update Virtual Network id " << oid; 
+	vn_template.drop(db);
+	goto error_common;
+
+error_leases:
+    ose << "Error getting Virtual Network leases nid: " << oid;
+	goto error_common;
+
+error_type:
+	ose << "Wrong type of Virtual Network: " << type;
+    goto error_common;
+
+error_addr:
+	ose << "Network address is not defined nid: " << oid;
+
+error_common:
+	Nebula::log("VNM", Log::ERROR, ose);
+    return -1;
 }
 
 /* -------------------------------------------------------------------------- */

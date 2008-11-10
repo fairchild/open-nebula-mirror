@@ -75,6 +75,18 @@ NebulaTemplate::NebulaTemplate(string& nebula_location)
     attribute = new SingleAttribute("VM_RDIR",value);
     conf_default.insert(make_pair(attribute->name(),attribute));
     
+    //MAC_PREFIX    
+    value = "00:01";
+    
+    attribute = new SingleAttribute("MAC_PREFIX",value);
+    conf_default.insert(make_pair(attribute->name(),attribute));
+
+    //NETWORK_SIZE    
+    value = "254";
+    
+    attribute = new SingleAttribute("NETWORK_SIZE",value);
+    conf_default.insert(make_pair(attribute->name(),attribute));
+    
     //DEBUG_LEVEL    
     value = Log::WARNING;
     

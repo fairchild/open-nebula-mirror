@@ -33,7 +33,9 @@ class VirtualNetworkPool : public PoolSQL
 {
 public:
 
-    VirtualNetworkPool(SqliteDB * db):PoolSQL(db,VirtualNetwork::table){};
+    VirtualNetworkPool(SqliteDB * 		db, 
+    				   const string&	str_mac_prefix,
+    				   int 				default_size);
 
     ~VirtualNetworkPool(){};
 
@@ -82,8 +84,7 @@ public:
         string&			 	value)
     {
     	return vn->update_template_attribute(db,name,value);
-    }
-    
+    };
 
     /**
      *  Bootstraps the database table(s) associated to the VirtualNetwork pool
@@ -109,18 +110,24 @@ public:
     };
     
 private:
-
     /**
      *  Factory method to produce VN objects
      *    @return a pointer to the new VN
      */
     PoolObjectSQL * create()
     {
-        return new VirtualNetwork;
+        return new VirtualNetwork(mac_prefix, default_size);
     };
     
-    // Holds the system-wide MAC prefix
+    /**
+     *  Holds the system-wide MAC prefix
+     */
     unsigned int     mac_prefix;
+    
+    /**
+     *  Default size for Virtual Networks
+     */
+    unsigned int     default_size;    
 };
  
 #endif /*VIRTUAL_NETWORK_POOL_H_*/
