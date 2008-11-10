@@ -145,8 +145,8 @@ int VirtualNetwork::select(SqliteDB * db)
     //Get the leases
     if (type == RANGED)
     {
-    	string 	nclass;
-    	int		size;
+    	string 	nclass = "";
+    	int		size = 0;
     	
         // retrieve specific information from template
         get_template_attribute("NETWORK_ADDRESS",network_address);
@@ -166,7 +166,7 @@ int VirtualNetwork::select(SqliteDB * db)
         {
         	size = 254;
         }
-        else //Assume its a number
+        else if (!nclass.empty())//Assume its a number
         {
         	istringstream iss(nclass);            
         	iss >> size;
@@ -221,7 +221,7 @@ error_addr:
 	ose << "Network address is not defined nid: " << oid;
 	
 error_common:
-	Nebula::log("VNM", Log::ERROR, ose);   
+	//Nebula::log("VNM", Log::ERROR, ose);   
 	return -1;
 }
 
@@ -257,9 +257,9 @@ int VirtualNetwork::insert(SqliteDB * db)
      //Get the leases
      if (type == VirtualNetwork::RANGED)
      {
-    	 string nclass;
-    	 string naddr;
-    	 int 	size;
+    	 string nclass = "";
+    	 string naddr  = "";
+    	 int 	size = 0;
     	 
          // retrieve specific information from template
          get_template_attribute("NETWORK_ADDRESS",naddr);
@@ -279,7 +279,7 @@ int VirtualNetwork::insert(SqliteDB * db)
          {
              size = 254;
          }
-         else //Assume its a number
+         else if (!nclass.empty())//Assume its a number
          {
         	 istringstream iss(nclass);
         	 
@@ -341,7 +341,7 @@ error_addr:
 	ose << "Network address is not defined nid: " << oid;
 
 error_common:
-	Nebula::log("VNM", Log::ERROR, ose);
+	//Nebula::log("VNM", Log::ERROR, ose);
     return -1;
 }
 

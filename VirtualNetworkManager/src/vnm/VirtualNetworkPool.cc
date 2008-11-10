@@ -24,7 +24,7 @@ VirtualNetworkPool::VirtualNetworkPool(SqliteDB * db,
 	int				_default_size):
 		PoolSQL(db,VirtualNetwork::table),
 		mac_prefix(0),
-		default_size(default_size)
+		default_size(_default_size)
 {
     istringstream iss;
     size_t        pos   = 0;
