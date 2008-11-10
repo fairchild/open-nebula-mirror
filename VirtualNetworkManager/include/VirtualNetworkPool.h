@@ -73,9 +73,9 @@ public:
      *    @param lock locks the VN mutex
      *    @return a pointer to the VN, 0 if the VN could not be loaded
      */
-    VirtualNetwork * get_by_name(
-        string  name,
-        bool    lock);
+    VirtualNetwork * get(
+        const string&  name,
+        bool    	   lock);
 
     //--------------------------------------------------------------------------
     // Virtual Network DB access functions

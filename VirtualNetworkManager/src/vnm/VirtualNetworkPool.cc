@@ -147,25 +147,24 @@ static int select_name_cb(
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-VirtualNetwork * VirtualNetworkPool::get_by_name(string name, bool lock)
+VirtualNetwork * VirtualNetworkPool::get(const string& name, bool lock)
 {
     ostringstream   oss;
     
-    int      *      oid;
-    
-    int             rc; 
+    int	oid;    
+    int	rc; 
         
     oss << "SELECT oid FROM " << VirtualNetwork::table << " WHERE name = '" 
         << name << "'";
     
-    rc = db->exec(oss, select_name_cb, (void *) oid);
+    rc = db->exec(oss, select_name_cb, (void *) (&oid));
 
     if (rc != 0)
     {
         return 0;
     }
 
-    return get(*oid,lock);
+    return get(oid,lock);
 }
 
 /* -------------------------------------------------------------------------- */
