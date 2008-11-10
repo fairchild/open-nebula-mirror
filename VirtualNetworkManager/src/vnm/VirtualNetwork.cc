@@ -336,15 +336,13 @@ error_type:
 error_addr:
 	ose << "Network address is not defined nid: " << oid;
     goto error_leases;
-    	
+
+error_null_leases:
+    ose << "Error getting Virtual Network leases nid: " << oid;
+
 error_leases:
  	vn_template.drop(db);  
     vn_drop(db);
-	goto error_common;
-	
-error_null_leases:
-    ose << "Error getting Virtual Network leases nid: " << oid;
-    goto error_common;
 
 error_common:
 	Nebula::log("VNM", Log::ERROR, ose);
