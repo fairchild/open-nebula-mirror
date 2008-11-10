@@ -184,6 +184,12 @@ private:
      *    @return 0 on success
      */
     int unmarshall(int num, char **names, char ** values);
+    
+    /**
+     *  Function to drop VN entry in vn_pool
+     *    @return 0 on success
+     */
+    int vn_drop(SqliteDB * db);
 
     // ------------------------------------------------------------------------
     // Template
@@ -319,16 +325,12 @@ protected:
     int drop(SqliteDB * db)
     { 
     	int rc;
-    	
+        
     	rc =  vn_template.drop(db);
-    	
-    	if (rc != 0)
-    	{
-            return rc;
-    	}
-    	    
-    	
-        rc = leases->drop(db);
+    	   	
+        rc += leases->drop(db);
+        
+        rc += vn_drop(db);
     	
     	return rc;
     }

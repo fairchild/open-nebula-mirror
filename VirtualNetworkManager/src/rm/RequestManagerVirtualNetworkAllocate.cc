@@ -66,7 +66,7 @@ void RequestManager::VirtualNetworkAllocate::execute(
 
 error_vn_allocate:
     
-    oss << "Error allocating VN with template: " << stemplate;     
+    oss << "Error allocating VN with template: " << endl << stemplate;     
     Nebula::log("ReM",Log::ERROR,oss); 
 
     arrayData.push_back(xmlrpc_c::value_boolean(false));

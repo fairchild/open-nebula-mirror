@@ -166,7 +166,7 @@ int VirtualNetwork::select(SqliteDB * db)
         {
         	size = 254;
         }
-        else if (!nclass.empty())//Assume its a number
+        else if (!nclass.empty()) //Assume its a number
         {
         	istringstream iss(nclass);            
         	iss >> size;
@@ -221,7 +221,7 @@ error_addr:
 	ose << "Network address is not defined nid: " << oid;
 	
 error_common:
-	//Nebula::log("VNM", Log::ERROR, ose);   
+	Nebula::log("VNM", Log::ERROR, ose);   
 	return -1;
 }
 
@@ -314,8 +314,8 @@ int VirtualNetwork::insert(SqliteDB * db)
      }
      
      if (leases == 0)
-     {
-    	 goto error_leases;
+     { 
+    	 goto error_null_leases;
      }
           
      return 0;
@@ -329,19 +329,25 @@ error_update:
 	vn_template.drop(db);
 	goto error_common;
 
-error_leases:
-    ose << "Error getting Virtual Network leases nid: " << oid;
-	goto error_common;
-
 error_type:
 	ose << "Wrong type of Virtual Network: " << type;
-    goto error_common;
+    goto error_leases;
 
 error_addr:
 	ose << "Network address is not defined nid: " << oid;
+    goto error_leases;
+    	
+error_leases:
+ 	vn_template.drop(db);  
+    vn_drop(db);
+	goto error_common;
+	
+error_null_leases:
+    ose << "Error getting Virtual Network leases nid: " << oid;
+    goto error_common;
 
 error_common:
-	//Nebula::log("VNM", Log::ERROR, ose);
+	Nebula::log("VNM", Log::ERROR, ose);
     return -1;
 }
 
@@ -363,6 +369,21 @@ int VirtualNetwork::update(SqliteDB * db)
     rc = db->exec(oss);
 
     return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int VirtualNetwork::vn_drop(SqliteDB * db)
+{
+    ostringstream   oss;
+    int             rc;
+
+    oss << "DELETE FROM " << table << " WHERE OID=" << oid;
+        
+    rc = db->exec(oss);
+
+    return rc;    
 }
 
 

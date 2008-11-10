@@ -110,6 +110,11 @@ int VirtualNetworkPool::allocate (
 
     *oid = PoolSQL::allocate(vn);
     
+    if ( *oid == -1 )
+    {
+        return -1;
+    }
+    
     return 0;
 }
 
