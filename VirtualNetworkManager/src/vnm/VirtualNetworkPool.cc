@@ -114,9 +114,61 @@ int VirtualNetworkPool::allocate (
     {
         return -1;
     }
-    
+        
     return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
+
+extern "C"
+{
+static int select_name_cb(
+    void *          _value,
+    int             num,
+    char **         values,
+    char **         names)
+{
+    int    *        oid;
+    
+    oid = static_cast<int *>(_value);
+    
+    if ( oid == 0 || values == 0 || values[0] == 0 )
+    {
+        return -1;
+    }
+    
+    *oid = atoi(values[0]);
+    
+    return 0;    
+}    
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+VirtualNetwork * VirtualNetworkPool::get_by_name(string name, bool lock)
+{
+    ostringstream   oss;
+    
+    int      *      oid;
+    
+    int             rc; 
+        
+    oss << "SELECT oid FROM " << VirtualNetwork::table << " WHERE name = '" 
+        << name << "'";
+    
+    rc = db->exec(oss, select_name_cb, (void *) oid);
+
+    if (rc != 0)
+    {
+        return 0;
+    }
+
+    return get(*oid,lock);
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+

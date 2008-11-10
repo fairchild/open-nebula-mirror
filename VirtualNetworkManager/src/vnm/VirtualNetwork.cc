@@ -57,7 +57,7 @@ const char * VirtualNetwork::table               = "network_pool";
 const char * VirtualNetwork::db_names            = "(oid,uid,name,type,bridge)";
 
 const char * VirtualNetwork::db_bootstrap        = "CREATE TABLE network_pool ("
-        "oid INTEGER PRIMARY KEY,uid INTEGER, name TEXT,type INTEGER, bridge TEXT)";
+     "oid INTEGER,uid INTEGER, name TEXT PRIMARY KEY,type INTEGER, bridge TEXT)";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

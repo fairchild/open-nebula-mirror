@@ -65,6 +65,17 @@ public:
     {
         return static_cast<VirtualNetwork *>(PoolSQL::get(oid,lock));
     };
+    
+    /**
+     *  Function to get a VN from the pool using the network name
+     *  If the object is not in memory it is loaded from the DB
+     *    @param name VN unique name
+     *    @param lock locks the VN mutex
+     *    @return a pointer to the VN, 0 if the VN could not be loaded
+     */
+    VirtualNetwork * get_by_name(
+        string  name,
+        bool    lock);
 
     //--------------------------------------------------------------------------
     // Virtual Network DB access functions
