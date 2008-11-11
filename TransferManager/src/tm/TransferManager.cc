@@ -544,8 +544,87 @@ error_common:
 
 void TransferManager::epilog_stop_action(int vid)
 {
-    Nebula& nd = Nebula::instance();
+    ofstream        xfr;
+    ostringstream   os;
+        
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
     
+    const TransferManagerDriver * tm_md;
+    
+    
+    // ------------------------------------------------------------------------
+    // Setup & Transfer script
+    // ------------------------------------------------------------------------
+
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0) 
+    {
+        return;
+    }
+
+    if (!vm->hasHistory())
+    {
+        goto error_history;
+    }
+    
+    tm_md = get(vm->get_uid(),vm->get_tm_mad());
+    
+    if ( tm_md == 0 )
+    {
+        goto error_driver;
+    }
+    
+    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+
+    if (xfr.fail() == true)
+    {
+        goto error_file;
+    }
+        
+    // ------------------------------------------------------------------------
+    // Move image directory
+    // ------------------------------------------------------------------------
+
+    xfr << "MV ";
+    xfr << vm->get_hostname() << ":" << vm->get_remote_dir() << " ";
+    xfr << nd.get_nebula_hostname() << ":" << vm->get_local_dir() << endl;
+
+    // ------------------------------------------------------------------------
+    // TODO: Context commands
+    // ------------------------------------------------------------------------
+
+    xfr.close();
+    
+    tm_md->transfer(vid,vm->get_transfer_file());
+    
+    vm->unlock();
+    
+    return;
+    
+error_history:
+    os.str("");
+    os << "epilog_stop, VM " << vid << " has no history";
+    goto error_common;
+    
+error_file:
+    os.str("");
+    os << "epilog_stop, could not open file: " << vm->get_transfer_file();
+    goto error_common;
+    
+error_driver:
+    os.str("");
+    os << "epilog_stop, error getting driver " << vm->get_tm_mad();
+    goto error_common;
+    
+error_common:
+    (nd.get_lcm())->trigger(LifeCycleManager::EPILOG_FAILURE,vid);
+    vm->log("TM", Log::ERROR, os);
+        
+    vm->unlock();
+    return;
+ 
     (nd.get_lcm())->trigger(LifeCycleManager::EPILOG_SUCCESS,vid);
 }
 
