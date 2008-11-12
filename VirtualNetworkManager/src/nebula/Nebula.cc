@@ -333,18 +333,9 @@ void Nebula::start()
     // ---- Request Manager ----
     try
     {        
-        int             rm_port=0;
+        int             rm_port = 0;
 
-        attr.clear();
-
-        nebula_configuration->get("PORT", attr);
-        
-        sattr = static_cast<const SingleAttribute *>(attr[0]);
-        
-        is.clear();
-        is.str(sattr->value());
-        
-        is >> rm_port;
+        nebula_configuration->get("PORT", rm_port);
         
         rm = new RequestManager(
             vmpool,

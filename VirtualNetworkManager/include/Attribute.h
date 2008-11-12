@@ -77,7 +77,12 @@ public:
     /**
      *  Builds a new attribute from a string.
      */
-    virtual void unmarshall(string& sattr) = 0;
+    virtual void unmarshall(const string& sattr) = 0;
+    
+    /**
+     *  Replaces the attribute value from a string.
+     */
+    virtual void replace(const string& sattr) = 0;
     
     /**
      *  Returns the attribute type
@@ -139,11 +144,19 @@ public:
     /**
      *  Builds a new attribute from a string.
      */    
-    void unmarshall(string& sattr)
+    void unmarshall(const string& sattr)
     {
         attribute_value = sattr;
     };
-    
+
+    /**
+     *  Replaces the attribute value from a string.
+     */
+    void replace(const string& sattr)
+    {
+        attribute_value = sattr;
+    };
+
     /**
      *  Returns the attribute type
      */    
@@ -201,7 +214,12 @@ public:
      *  Builds a new attribute from a string of the form:
      *  "VAL_NAME_1=VAL_VALUE_1,...,VAL_NAME_N=VAL_VALUE_N".
      */        
-    void unmarshall(string& sattr);
+    void unmarshall(const string& sattr);
+
+    /**
+     *  Replace the value of the given attribute with the provided map
+     */    
+    void replace(const string& sattr);
 
     /**
      *  Returns the attribute type

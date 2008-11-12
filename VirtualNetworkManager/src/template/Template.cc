@@ -157,13 +157,35 @@ void Template::marshall(string &str, const char delim)
 /* -------------------------------------------------------------------------- */
 
 int Template::get(
-    string& name, 
+    const string& name, 
     vector<const Attribute*>& values) const
 {
     multimap<string, Attribute *>::const_iterator       i;
     pair<multimap<string, Attribute *>::const_iterator,
     multimap<string, Attribute *>::const_iterator>      index;        
     int                                                 j;
+
+    index = attributes.equal_range(name);
+
+    for ( i = index.first,j=0 ; i != index.second ; i++,j++ )
+    {
+        values.push_back(i->second);
+    }
+
+    return j;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int Template::get(
+    const string& name, 
+    vector<Attribute const *>& values)
+{
+    multimap<string, Attribute *>::iterator       i;
+    pair<multimap<string, Attribute *>::iterator,
+    multimap<string, Attribute *>::iterator>      index;        
+    int                                           j;
 
     index = attributes.equal_range(name);
 

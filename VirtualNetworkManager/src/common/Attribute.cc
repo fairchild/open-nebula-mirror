@@ -54,7 +54,7 @@ string * VectorAttribute::marshall()
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void VectorAttribute::unmarshall(string& sattr)
+void VectorAttribute::unmarshall(const string& sattr)
 {
     size_t 	bpos=0,epos,mpos;
     string  tmp;
@@ -85,6 +85,15 @@ void VectorAttribute::unmarshall(string& sattr)
         attribute_value.insert(make_pair(tmp.substr(0,mpos),
                                          tmp.substr(mpos+1)));
     }
+}
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void VectorAttribute::replace(const string& sattr)
+{
+	attribute_value.erase(attribute_value.begin(),attribute_value.end());
+
+	unmarshall(sattr);
 }
 
 /* -------------------------------------------------------------------------- */
