@@ -84,8 +84,8 @@ env.Append(LIBS=[
 	'nebula_template',
 	'nebula_pool',
 	'nebula_host',
-	'nebula_vm',
 	'nebula_vnm',
+	'nebula_vm',
 	'nebula_common',
 	'sqlite3',
 ])
