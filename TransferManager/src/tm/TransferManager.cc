@@ -431,6 +431,94 @@ error_common:
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
+void TransferManager::prolog_resume_action(int vid)
+{
+    ofstream        xfr;
+    ostringstream   os;
+        
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
+    
+    const TransferManagerDriver * tm_md;
+    
+    
+    // ------------------------------------------------------------------------
+    // Setup & Transfer script
+    // ------------------------------------------------------------------------
+
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0) 
+    {
+        return;
+    }
+
+    if (!vm->hasHistory())
+    {
+        goto error_history;
+    }
+    
+    tm_md = get(vm->get_uid(),vm->get_tm_mad());
+    
+    if ( tm_md == 0 )
+    {
+        goto error_driver;
+    }
+    
+    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+
+    if (xfr.fail() == true)
+    {
+        goto error_file;
+    }
+        
+    // ------------------------------------------------------------------------
+    // Move image directory
+    // ------------------------------------------------------------------------
+
+    xfr << "MV ";
+    xfr << nd.get_nebula_hostname() << ":" << vm->get_local_dir() << "/images ";
+    xfr << vm->get_hostname() << ":" << vm->get_remote_dir() << endl;
+
+    // ------------------------------------------------------------------------
+    // TODO: Context commands
+    // ------------------------------------------------------------------------
+
+    xfr.close();
+    
+    tm_md->transfer(vid,vm->get_transfer_file());
+    
+    vm->unlock();
+    
+    return;
+    
+error_history:
+    os.str("");
+    os << "prolog_resume, VM " << vid << " has no history";
+    goto error_common;
+    
+error_file:
+    os.str("");
+    os << "prolog_resume, could not open file: " << vm->get_transfer_file();
+    goto error_common;
+    
+error_driver:
+    os.str("");
+    os << "prolog_resume, error getting driver " << vm->get_tm_mad();
+    goto error_common;
+    
+error_common:
+    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
+    vm->log("TM", Log::ERROR, os);
+        
+    vm->unlock();
+    return;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 void TransferManager::epilog_action(int vid)
 {
     ofstream        xfr;

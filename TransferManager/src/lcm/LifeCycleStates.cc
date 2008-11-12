@@ -82,7 +82,7 @@ void  LifeCycleManager::save_success_action(int vid)
         //----------------------------------------------------
 
         vm->set_running_etime(the_time);
-        
+
         vm->set_etime(the_time);
         
         vm->set_reason(History::STOP_RESUME);
@@ -108,12 +108,14 @@ void  LifeCycleManager::save_success_action(int vid)
         //----------------------------------------------------
         
         vm->set_state(VirtualMachine::EPILOG_STOP);
-        
+
         vmpool->update(vm);
         
         vm->set_epilog_stime(the_time);
         
         vm->set_running_etime(the_time);        
+
+        vm->set_reason(History::STOP_RESUME);
         
         vmpool->update_history(vm);
         

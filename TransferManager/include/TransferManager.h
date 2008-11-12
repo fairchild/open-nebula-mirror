@@ -171,6 +171,11 @@ private:
      *  This function starts the prolog migration sequence 
      */
     void prolog_migr_action(int vid);
+
+    /**
+     *  This function starts the prolog resume sequence 
+     */
+    void prolog_resume_action(int vid);
     
     /**
      *  This function starts the epilog sequence
