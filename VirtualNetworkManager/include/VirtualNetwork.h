@@ -66,9 +66,9 @@ public:
      *    @param _ip pointer to string for IP to be stored into
      *    @param _mac pointer to string for MAC to be stored into
      *    @param _bridge name of the physical bridge this VN binds to 
-     *    @return true if success, false if failure (no more leases or otherwise)
+     *    @return 0 if success
      */
-    bool get_lease(int vid, string& _ip, string& _mac, string& _bridge)
+    int get_lease(int vid, string& _ip, string& _mac, string& _bridge)
     {
         _bridge = bridge;
         return leases->get_lease(vid,_ip,_mac);

@@ -354,7 +354,7 @@ int VirtualMachine::insert(SqliteDB * db)
      
          vn = vnpool->get(network,true);
      
-         if ( !vn->get_lease(oid, ip, mac, bridge) )
+         if ( vn->get_lease(oid, ip, mac, bridge) != 0 )
          {
                 vn->unlock();
                 return -1;
