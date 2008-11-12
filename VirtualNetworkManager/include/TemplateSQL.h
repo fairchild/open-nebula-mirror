@@ -92,7 +92,32 @@ protected:
      *    @param name of the attribute.
      *    @param value of the new attribute. 
      */
-    int replace_attribute(SqliteDB * db, string& name, string& value);    
+    int replace_attribute(SqliteDB * db, const string& name, const string& value); 
+    
+    /**
+     *  Inserts single attribute 
+     *    @param db pointer to the database.
+     *    @param name of the attribute.
+     *    @param value of the attribute.
+     */
+    int insert_attribute(SqliteDB * db, const string& name, const string& value);   
+    
+    /**
+     *  Inserts vector attribute 
+     *    @param db pointer to the database.
+     *    @param name of the attribute.
+     *    @param values of the attribute.
+     */
+    int insert_attribute(SqliteDB *                 db, 
+                         const string&              name, 
+                         const map<string, string>& values);
+    
+    /**
+     *  Removes all occurences of a given attribute (SINGLE OR VECTOR)
+     *    @param db pointer to the database.
+     *    @param name of the attribute.
+     */
+    int delete_attribute(SqliteDB * db, const string& name);
 };
 
 /* -------------------------------------------------------------------------- */

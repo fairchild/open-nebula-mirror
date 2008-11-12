@@ -33,7 +33,7 @@ class Attribute
 {
 public:
 
-    Attribute(string& aname):attribute_name(aname)
+    Attribute(const string& aname):attribute_name(aname)
     {
         transform (
             attribute_name.begin(),
@@ -104,12 +104,12 @@ class SingleAttribute : public Attribute
 {
 public:
 
-    SingleAttribute(string& name):Attribute(name){};
+    SingleAttribute(const string& name):Attribute(name){};
 
-    SingleAttribute(string& name, string& value):
+    SingleAttribute(const string& name, const string& value):
         Attribute(name),attribute_value(value){};
     
-    SingleAttribute(const char * name, string& value):
+    SingleAttribute(const char * name, const string& value):
         Attribute(name),attribute_value(value){};
 
     ~SingleAttribute(){};
@@ -169,9 +169,9 @@ class VectorAttribute : public Attribute
 {
 public:
 
-    VectorAttribute(string& name):Attribute(name){};
+    VectorAttribute(const string& name):Attribute(name){};
 
-    VectorAttribute(string& name, map<string,string>& value):
+    VectorAttribute(const string& name,const  map<string,string>& value):
             Attribute(name),attribute_value(value){};
 
     ~VectorAttribute(){};

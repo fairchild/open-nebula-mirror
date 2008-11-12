@@ -244,14 +244,17 @@ int TemplateSQL::drop(SqliteDB * db)
 
 int TemplateSQL::replace_attribute(
 	SqliteDB * 					db, 
-	string& 					name, 
-	string& 					value)
+	const string& 				name, 
+	const string& 				value)
 {
     ostringstream   oss;
     int 			rc;
             
     multimap<string, Attribute *>::const_iterator	i;
     Attribute *		attribute;
+    
+    string          _name  = name;
+    string          _value = value;
     
     if ( id == -1 || name.empty() || name.empty() )
     {
@@ -287,7 +290,7 @@ int TemplateSQL::replace_attribute(
     	attributes.erase(name);
     }
 
-	attribute = new SingleAttribute(name,value);
+	attribute = new SingleAttribute(_name,_value);
 	
 	attributes.insert(make_pair(attribute->name(),attribute));
 	
@@ -302,3 +305,87 @@ int TemplateSQL::replace_attribute(
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
+
+int TemplateSQL::insert_attribute(SqliteDB *    db, 
+                                  const string& name, 
+                                  const string& value)
+{
+    ostringstream   oss;
+    
+    Attribute *		attribute;
+    
+        
+    attribute = new SingleAttribute(name,value);
+	
+	attributes.insert(make_pair(attribute->name(),attribute));
+	
+	oss.str("");
+	
+    oss << "INSERT INTO " << table << " " << db_names
+        << " VALUES (" << id << ",'" << name << "'," << 
+        Attribute::SIMPLE <<",'" << value << "')";
+
+    return db->exec(oss);
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int TemplateSQL::insert_attribute(SqliteDB *           db, 
+                                  const string&        name, 
+                                  const map<string, string>& values)
+{
+    ostringstream   oss;
+    
+    Attribute *     attribute;
+    string    *     attr;
+             
+    attribute = new VectorAttribute(name,values);
+	
+	attributes.insert(make_pair(attribute->name(),attribute));
+	
+	oss.str("");
+	
+	attr  = attribute->marshall();
+
+    if ( attr == 0 )
+    {
+        return -1;
+    }
+
+    oss << "INSERT OR REPLACE INTO " << table << " " << db_names
+        << " VALUES (" << id << ",'" << name << "',"<< Attribute::VECTOR <<",'"
+        << *attr << "')";
+
+    return db->exec(oss);    
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int TemplateSQL::delete_attribute(SqliteDB * db, const string& name)
+{
+    ostringstream   oss;
+    int 			rc;
+            
+    multimap<string, Attribute *>::const_iterator	i;
+    
+    i = attributes.find(name);
+
+    if ( i != attributes.end() ) //attribute exists
+    {
+            oss << "DELETE FROM " << table << " WHERE id=" << id 
+                << " AND name='" << name << "'";
+
+        rc = db->exec(oss);
+
+        if ( rc != 0 )
+        {
+               return rc;
+        }
+
+        attributes.erase(name);
+    }
+    
+    return 0;
+}
