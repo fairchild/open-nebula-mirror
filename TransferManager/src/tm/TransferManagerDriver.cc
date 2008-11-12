@@ -145,6 +145,7 @@ void TransferManagerDriver::protocol(
         	{
         		case VirtualMachine::PROLOG:
         		case VirtualMachine::PROLOG_MIGRATE:
+        		case VirtualMachine::PROLOG_RESUME:
        	        	lcm_action = LifeCycleManager::PROLOG_SUCCESS; 
         			break;
         			
@@ -172,6 +173,7 @@ void TransferManagerDriver::protocol(
         	{
         		case VirtualMachine::PROLOG:
         		case VirtualMachine::PROLOG_MIGRATE:
+        		case VirtualMachine::PROLOG_RESUME:
        	        	lcm_action = LifeCycleManager::PROLOG_FAILURE; 
         			break;
         			

@@ -453,19 +453,23 @@ void  LifeCycleManager::prolog_success_action(int vid)
     ostringstream           os;
     
     VirtualMachineManager::Actions action;
-
+    VirtualMachine::LcmState       lcm_state;
+    
     vm = vmpool->get(vid, true);
 
     if ( vm == 0 )
     {
         return;
     }
+    
+    lcm_state = vm->get_lcm_state(); 
             
-    if (vm->get_lcm_state()==VirtualMachine::PROLOG)
+    if (lcm_state == VirtualMachine::PROLOG)
     {
         action = VirtualMachineManager::DEPLOY;    
     }
-    else if (vm->get_lcm_state()==VirtualMachine::PROLOG_MIGRATE)
+    else if ( lcm_state == VirtualMachine::PROLOG_MIGRATE ||
+    		  lcm_state == VirtualMachine::PROLOG_RESUME )
     {
         action = VirtualMachineManager::RESTORE;        
     }

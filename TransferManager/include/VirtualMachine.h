@@ -72,10 +72,11 @@ public:
         SAVE_SUSPEND   = 6,
         SAVE_MIGRATE   = 7,
         PROLOG_MIGRATE = 8,
-        EPILOG_STOP    = 9,
-        EPILOG         = 10,
-        SHUTDOWN       = 11,
-        CANCEL         = 12
+        PROLOG_RESUME  = 9,
+        EPILOG_STOP    = 10,
+        EPILOG         = 11,
+        SHUTDOWN       = 12,
+        CANCEL         = 13
     };
 
     // -------------------------------------------------------------------------

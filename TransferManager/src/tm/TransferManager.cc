@@ -84,7 +84,11 @@ void TransferManager::trigger(Actions action, int _vid)
     case PROLOG_MIGR:
         aname = "PROLOG_MIGR";
         break;
-
+        
+    case PROLOG_RESUME:
+        aname = "PROLOG_RESUME";
+        break;
+        
     case EPILOG:
         aname = "EPILOG";
         break;
@@ -132,7 +136,11 @@ void TransferManager::do_action(const string &action, void * arg)
     else if (action == "PROLOG_MIGR")
     {
         prolog_migr_action(vid);
-    }    
+    }
+    else if (action == "PROLOG_RESUME")
+    {
+        prolog_resume_action(vid);
+    }        
     else if (action == "EPILOG")
     {
         epilog_action(vid);

@@ -49,6 +49,7 @@ public:
     {
         PROLOG,
         PROLOG_MIGR,
+        PROLOG_RESUME,
         EPILOG,
         EPILOG_STOP,
         CHECKPOINT,
