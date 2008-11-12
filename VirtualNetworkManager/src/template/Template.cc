@@ -180,7 +180,7 @@ int Template::get(
 
 int Template::get(
     const string& name, 
-    vector<Attribute const *>& values)
+    vector<Attribute  *>& values)
 {
     multimap<string, Attribute *>::iterator       i;
     pair<multimap<string, Attribute *>::iterator,

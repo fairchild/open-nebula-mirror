@@ -106,7 +106,7 @@ public:
      */
     virtual int get(
         const string& name, 
-        vector<Attribute const *>& values);
+        vector<Attribute *>& values);
         
     /**
      *  Gets the value of a Single attributes (string) with the given name. 

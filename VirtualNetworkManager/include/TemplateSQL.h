@@ -95,7 +95,7 @@ protected:
     int replace_attribute(SqliteDB * db, const string& name, const string& value); 
     
     /**
-     *  Inserts single attribute 
+     *  Inserts single attribute ( DO NOT USE BEFORE INSERT )
      *    @param db pointer to the database.
      *    @param name of the attribute.
      *    @param value of the attribute.
@@ -103,7 +103,7 @@ protected:
     int insert_attribute(SqliteDB * db, const string& name, const string& value);   
     
     /**
-     *  Inserts vector attribute 
+     *  Inserts vector attribute ( DO NOT USE BEFORE INSERT )
      *    @param db pointer to the database.
      *    @param name of the attribute.
      *    @param values of the attribute.

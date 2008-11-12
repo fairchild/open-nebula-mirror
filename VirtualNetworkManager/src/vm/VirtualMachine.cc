@@ -25,6 +25,9 @@
 #include <sstream>
 
 #include "VirtualMachine.h"
+#include "VirtualNetworkPool.h"
+#include "Nebula.h"
+
 
 
 /* ************************************************************************** */
@@ -292,10 +295,22 @@ error_previous_history:
 /* -------------------------------------------------------------------------- */
 
 int VirtualMachine::insert(SqliteDB * db)
-{
-    int rc;
-    string name;
+{                              
+    int                        rc;
+    string                     name;
+                               
+    int                        num_nics;
+    vector<Attribute  * > nics;
+    VirtualNetworkPool       * vnpool; 
+    VirtualNetwork           * vn;
+    ostringstream              new_nic;
+    
+    string                     ip;
+    string                     mac;
+    string                     bridge;
+    string                     network;
 
+    string nn = "NIC";
     //Set a name if the VM has not got one
     
     get_template_attribute("NAME",name);
@@ -311,7 +326,52 @@ int VirtualMachine::insert(SqliteDB * db)
     	name_attr = new SingleAttribute("NAME",name);
     	
     	vm_template.set(name_attr);
-    }    
+    }  
+    
+     // Set the networking attributes. Take the NICs out 
+     // of the template, cross it with the vnpool and insert them again
+     
+     Nebula& nd = Nebula::instance();
+     vnpool     = nd.get_vnpool();
+     
+     num_nics   = vm_template.get(nn,nics);
+     
+     for(int i=0; i<num_nics; i++,new_nic.str(""))
+     {
+         VectorAttribute *  nic = dynamic_cast<VectorAttribute * >(nics[i]);
+     
+         if ( nic == 0 )
+         {
+             continue;
+         }
+     
+         network = nic->vector_value("NETWORK");
+     
+         if ( network.empty() )
+         {
+             continue;
+         }
+     
+         vn = vnpool->get(network,true);
+     
+         if ( !vn->get_lease(oid, ip, mac, bridge) )
+         {
+                vn->unlock();
+                return -1;
+         }
+         
+         vn->unlock();
+         
+         new_nic << "NIC=["               <<
+                            ip            << "," <<
+                            mac           << "," <<
+                            bridge        << "," <<
+                            vn->get_oid() << 
+                         "]";
+         
+         nic->replace(new_nic.str());
+                 
+    }
 
     // Insert the template first, so we get a valid template ID
     rc = vm_template.insert(db);
