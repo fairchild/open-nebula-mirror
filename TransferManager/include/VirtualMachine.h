@@ -337,6 +337,15 @@ public:
     };
     
     /**
+     *  Returns the reason that originated the VM migration in the previous host
+     *    @return the migration reason to leave this host
+     */
+    const History::MigrationReason get_previous_reason() const
+    {
+        return previous_history->reason;
+    };    
+    
+    /**
      *  Get host id where the VM is or is going to execute. The hasHistory()
      *  function MUST be called before this one.
      */
