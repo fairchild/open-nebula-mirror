@@ -296,21 +296,24 @@ error_previous_history:
 
 int VirtualMachine::insert(SqliteDB * db)
 {                              
-    int                        rc;
-    string                     name;
+    int                  rc;
+    string               name;
                                
-    int                        num_nics;
-    vector<Attribute  * > nics;
-    VirtualNetworkPool       * vnpool; 
-    VirtualNetwork           * vn;
-    ostringstream              new_nic;
+    int                  num_nics;
+    string               nic_name="NIC";
+    vector<Attribute * > nics;
+    VectorAttribute *    nic;
     
-    string                     ip;
-    string                     mac;
-    string                     bridge;
-    string                     network;
+    VirtualNetworkPool * vnpool; 
+    VirtualNetwork *     vn;
+    
+    ostringstream        new_nic;
+    
+    string               ip;
+    string               mac;
+    string               bridge;
+    string               network;
 
-    string nn = "NIC";
     //Set a name if the VM has not got one
     
     get_template_attribute("NAME",name);
@@ -328,18 +331,17 @@ int VirtualMachine::insert(SqliteDB * db)
     	vm_template.set(name_attr);
     }  
     
-     // Set the networking attributes. Take the NICs out 
-     // of the template, cross it with the vnpool and insert them again
+     // Set the networking attributes.
      
      Nebula& nd = Nebula::instance();
      vnpool     = nd.get_vnpool();
      
-     num_nics   = vm_template.get(nn,nics);
+     num_nics   = vm_template.get(nic_name,nics);
      
      for(int i=0; i<num_nics; i++,new_nic.str(""))
      {
-         VectorAttribute *  nic = dynamic_cast<VectorAttribute * >(nics[i]);
-     
+    	 nic = dynamic_cast<VectorAttribute * >(nics[i]);
+
          if ( nic == 0 )
          {
              continue;
@@ -356,8 +358,7 @@ int VirtualMachine::insert(SqliteDB * db)
      
          if ( vn->get_lease(oid, ip, mac, bridge) != 0 )
          {
-                vn->unlock();
-                return -1;
+        	 goto error_leases;
          }
          
          vn->unlock();
@@ -377,8 +378,7 @@ int VirtualMachine::insert(SqliteDB * db)
 
     if ( rc != 0 )
     {
-        log("ONE", Log::ERROR, "Can not insert template");
-        return -1;
+    	goto error_template;
     }
 
     //Insert the VM
@@ -386,13 +386,24 @@ int VirtualMachine::insert(SqliteDB * db)
 
     if ( rc != 0 )
     {
-        log("ONE", Log::ERROR, "Can not update vm");
-        vm_template.drop(db);
-
-        return -1;
+    	goto error_update;
     }
 
     return 0;
+
+error_update:
+	log("ONE", Log::ERROR, "Can not update vm");
+	vm_template.drop(db);
+	return -1;
+
+error_template:
+	log("ONE", Log::ERROR, "Can not insert template");
+	return -1;
+
+error_leases:
+	log("ONE", Log::ERROR, "Could not get lease for VM");
+	vn->unlock();
+	return -1;
 }
 
 /* -------------------------------------------------------------------------- */
