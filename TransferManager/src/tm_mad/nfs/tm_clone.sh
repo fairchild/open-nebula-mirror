@@ -15,6 +15,7 @@ DST_DIR=`dirname $DST_PATH`
 
 log "Creating directory $DST_DIR"
 exec_and_log "mkdir -p $DST_DIR"
+exec_and_log "chmod a+w $DST_DIR"
 
 case $SRC in
 http://*)
