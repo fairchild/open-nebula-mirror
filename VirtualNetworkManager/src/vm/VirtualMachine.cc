@@ -362,12 +362,11 @@ int VirtualMachine::insert(SqliteDB * db)
          
          vn->unlock();
          
-         new_nic << "NIC=["               <<
-                            ip            << "," <<
-                            mac           << "," <<
-                            bridge        << "," <<
-                            vn->get_oid() << 
-                         "]";
+         new_nic << "NETWORK= " << network << "," <<
+                    "MAC= "     << mac     << "," <<
+                    "BRIDGE= "  << bridge  << "," <<
+                    "VNID= "    << vn->get_oid();
+                //    "IP="  << ip    << "," <<
          
          nic->replace(new_nic.str());
                  
