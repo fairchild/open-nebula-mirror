@@ -69,15 +69,15 @@ public:
      *  @param mac mac of  the returned lease
      *  @return 0 if success
      */
-     virtual int get_lease(int          vid,
-                           string&      ip,
-                           string&      mac) = 0;
+     virtual int get(int          vid,
+                     string&      ip,
+                     string&      mac) = 0;
      
      /**
       * Release an used lease, which becomes unused
       *   @param ip of the lease in use
       */
-     virtual void release_lease(const string& ip) = 0;
+     virtual void release(const string& ip) = 0;
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------

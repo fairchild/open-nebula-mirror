@@ -71,7 +71,17 @@ public:
     int get_lease(int vid, string& _ip, string& _mac, string& _bridge)
     {
         _bridge = bridge;
-        return leases->get_lease(vid,_ip,_mac);
+        return leases->get(vid,_ip,_mac);
+    };
+    
+    /**
+     *    Release previously given lease
+     *    @param _ip IP identifying the lease
+     *    @return 0 if success
+     */
+    void release_lease(const string& ip)
+    {
+        return leases->release(ip);
     };
     
     /**

@@ -142,7 +142,7 @@ int FixedLeases::del(const string& ip)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int FixedLeases::get_lease(int vid, string&  ip, string&  mac)
+int FixedLeases::get(int vid, string&  ip, string&  mac)
 {	
 	int rc = -1;
 	

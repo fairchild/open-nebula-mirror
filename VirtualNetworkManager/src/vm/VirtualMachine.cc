@@ -299,10 +299,11 @@ int VirtualMachine::insert(SqliteDB * db)
     int                  rc;
     string               name;
                                
-    int                  num_nics;
-    string               nic_name="NIC";
-    vector<Attribute * > nics;
-    VectorAttribute *    nic;
+    int                        num_nics;
+    vector<Attribute  * >      nics;
+    VirtualNetworkPool       * vnpool; 
+    VirtualNetwork           * vn;
+    ostringstream              new_nic;
     
     VirtualNetworkPool * vnpool; 
     VirtualNetwork *     vn;
@@ -336,7 +337,11 @@ int VirtualMachine::insert(SqliteDB * db)
      Nebula& nd = Nebula::instance();
      vnpool     = nd.get_vnpool();
      
+<<<<<<< HEAD:src/vm/VirtualMachine.cc
      num_nics   = vm_template.get(nic_name,nics);
+=======
+     num_nics   = vm_template.get("NIC",nics);
+>>>>>>> Releasing network leases.:src/vm/VirtualMachine.cc
      
      for(int i=0; i<num_nics; i++,new_nic.str(""))
      {
@@ -355,6 +360,11 @@ int VirtualMachine::insert(SqliteDB * db)
          }
      
          vn = vnpool->get(network,true);
+         
+         if ( vn == 0 )
+         {
+             continue;
+         }
      
          if ( vn->get_lease(oid, ip, mac, bridge) != 0 )
          {
@@ -363,11 +373,11 @@ int VirtualMachine::insert(SqliteDB * db)
          
          vn->unlock();
          
-         new_nic << "NETWORK= " << network << "," <<
-                    "MAC= "     << mac     << "," <<
-                    "BRIDGE= "  << bridge  << "," <<
-                    "VNID= "    << vn->get_oid();
-                //    "IP="  << ip    << "," <<
+         new_nic << "NETWORK="  << network << "," <<
+                    "MAC="      << mac     << "," <<
+                    "BRIDGE="   << bridge  << "," <<
+                    "VNID="     << vn->get_oid() << "," <<
+                    "IP="       << ip;   
          
          nic->replace(new_nic.str());
                  
@@ -557,6 +567,59 @@ void VirtualMachine::get_requirements (int& cpu, int& memory, int& disk)
     disk   = 0;
 
     return;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void VirtualMachine::release_leases()
+{
+    Nebula& nd = Nebula::instance();
+    
+    VirtualNetworkPool * vnpool = nd.get_vnpool();
+
+    string                        vnid;
+    string                        ip;
+    int                           num_nics;
+
+    vector<Attribute const  * >   nics;
+    VirtualNetwork          *     vn;    
+
+    num_nics   = get_template_attribute("NIC",nics);
+
+    for(int i=0; i<num_nics; i++)
+    {
+        VectorAttribute const *  nic = dynamic_cast<VectorAttribute const * >(nics[i]);
+
+        if ( nic == 0 )
+        {
+            continue;
+        }
+
+        vnid = nic->vector_value("VNID");
+
+        if ( vnid.empty() )
+        {
+            continue;
+        }
+        
+        ip   = nic->vector_value("IP");
+
+        if ( ip.empty() )
+        {
+            continue;
+        }
+        
+        vn = vnpool->get(atoi(vnid.c_str()),true);
+        
+        if ( vn == 0 )
+        {
+            continue;
+        }
+
+        vn->release_lease(ip);   
+        vn->unlock();      
+    }
 }
 
 /* ************************************************************************** */

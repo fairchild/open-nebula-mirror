@@ -44,13 +44,13 @@ public:
      *   @param mac mac of  the returned lease
      *   @return 0 if success
      */
-    int get_lease(int vid, string&  ip, string&  mac);
+    int get(int vid, string&  ip, string&  mac);
 
     /**
      * Release an used lease, which becomes unused
      *   @param ip of the lease in use
      */
-    void release_lease(const string& ip)
+    void release(const string& ip)
     {
     	del(ip);
     }

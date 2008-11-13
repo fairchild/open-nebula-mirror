@@ -48,7 +48,7 @@ RangedLeases::RangedLeases(
 /* Ranged Leases :: Methods                                                   */
 /* ************************************************************************** */
 
-int RangedLeases::get_lease(int vid, string&  ip, string&  mac)
+int RangedLeases::get(int vid, string&  ip, string&  mac)
 {
 	unsigned int num_ip;
 	int			 rc = -1;

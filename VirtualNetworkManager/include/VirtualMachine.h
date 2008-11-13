@@ -561,6 +561,15 @@ public:
      *    @param disk 
      */
     void get_requirements (int& cpu, int& memory, int& disk);
+    
+    // ------------------------------------------------------------------------
+    // Leases
+    // ------------------------------------------------------------------------
+    
+    /**
+     *  Releases all network leases taken by this Virtual Machine
+     */
+    void release_leases();
         
 private:
 

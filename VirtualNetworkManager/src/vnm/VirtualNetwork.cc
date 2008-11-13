@@ -259,7 +259,7 @@ int VirtualNetwork::insert(SqliteDB * db)
      {
     	 string nclass = "";
     	 string naddr  = "";
-    	 int 	size = 0;
+    	 int    size   = 0;
     	 
          // retrieve specific information from template
          get_template_attribute("NETWORK_ADDRESS",naddr);
@@ -407,6 +407,8 @@ ostream& operator<<(ostream& os, VirtualNetwork& vn)
     os << "Bridge            : " << vn.bridge << endl;
 
     os << "Template" << endl << vn.vn_template << endl;
+    
+    os << "Leases"   << endl << *(vn.leases) << endl;
     
     return os;
 };
