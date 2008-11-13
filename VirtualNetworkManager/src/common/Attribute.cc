@@ -89,11 +89,9 @@ void VectorAttribute::unmarshall(const string& sattr)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void VectorAttribute::replace(const string& sattr)
+void VectorAttribute::replace(const map<string,string>& attr)
 {
-	attribute_value.erase(attribute_value.begin(),attribute_value.end());
-
-	unmarshall(sattr);
+	attribute_value = attr;
 }
 
 /* -------------------------------------------------------------------------- */

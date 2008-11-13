@@ -304,13 +304,14 @@ int VirtualMachine::insert(SqliteDB * db)
     VirtualNetworkPool       * vnpool; 
     VirtualNetwork           * vn;
     VectorAttribute          * nic;
-
-    ostringstream              new_nic;
+    map<string,string>         new_nic;
     
     string                     ip;
     string                     mac;
     string                     bridge;
     string                     network;
+
+    ostringstream              vnid;
 
     //Set a name if the VM has not got one
     
@@ -336,8 +337,10 @@ int VirtualMachine::insert(SqliteDB * db)
      
      num_nics   = vm_template.get("NIC",nics);
      
-     for(int i=0; i<num_nics; i++,new_nic.str(""))
+     for(int i=0; i<num_nics; i++,vnid.str(""))
      {
+         new_nic.erase(new_nic.begin(),new_nic.end());
+
     	 nic = dynamic_cast<VectorAttribute * >(nics[i]);
 
          if ( nic == 0 )
@@ -365,14 +368,16 @@ int VirtualMachine::insert(SqliteDB * db)
          }
          
          vn->unlock();
+
+         vnid << vn->get_oid();
+
+         new_nic.insert(make_pair("NETWORK",network));
+         new_nic.insert(make_pair("MAC"    ,mac));
+         new_nic.insert(make_pair("BRIDGE" ,bridge));
+         new_nic.insert(make_pair("VNID"   ,vnid.str()));
+         new_nic.insert(make_pair("IP"     ,ip));
          
-         new_nic << "NETWORK="  << network << "," <<
-                    "MAC="      << mac     << "," <<
-                    "BRIDGE="   << bridge  << "," <<
-                    "VNID="     << vn->get_oid() << "," <<
-                    "IP="       << ip;   
-         
-         nic->replace(new_nic.str());
+         nic->replace(new_nic);
                  
     }
 

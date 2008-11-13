@@ -80,11 +80,6 @@ public:
     virtual void unmarshall(const string& sattr) = 0;
     
     /**
-     *  Replaces the attribute value from a string.
-     */
-    virtual void replace(const string& sattr) = 0;
-    
-    /**
      *  Returns the attribute type
      */
     virtual AttributeType type() = 0;
@@ -218,8 +213,9 @@ public:
 
     /**
      *  Replace the value of the given attribute with the provided map
-     */    
-    void replace(const string& sattr);
+     */
+    void replace(const map<string,string>& attr);
+
 
     /**
      *  Returns the attribute type
