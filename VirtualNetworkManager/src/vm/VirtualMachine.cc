@@ -303,17 +303,14 @@ int VirtualMachine::insert(SqliteDB * db)
     vector<Attribute  * >      nics;
     VirtualNetworkPool       * vnpool; 
     VirtualNetwork           * vn;
+    VectorAttribute          * nic;
+
     ostringstream              new_nic;
     
-    VirtualNetworkPool * vnpool; 
-    VirtualNetwork *     vn;
-    
-    ostringstream        new_nic;
-    
-    string               ip;
-    string               mac;
-    string               bridge;
-    string               network;
+    string                     ip;
+    string                     mac;
+    string                     bridge;
+    string                     network;
 
     //Set a name if the VM has not got one
     
@@ -337,11 +334,7 @@ int VirtualMachine::insert(SqliteDB * db)
      Nebula& nd = Nebula::instance();
      vnpool     = nd.get_vnpool();
      
-<<<<<<< HEAD:src/vm/VirtualMachine.cc
-     num_nics   = vm_template.get(nic_name,nics);
-=======
      num_nics   = vm_template.get("NIC",nics);
->>>>>>> Releasing network leases.:src/vm/VirtualMachine.cc
      
      for(int i=0; i<num_nics; i++,new_nic.str(""))
      {
