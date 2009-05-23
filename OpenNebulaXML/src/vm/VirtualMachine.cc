@@ -391,18 +391,18 @@ int VirtualMachine::unmarshall(ostringstream& oss,
                                char **        names,
                                char **        values)
 {
-    if ((!values[OID]) ||
-        (!values[UID]) ||
-        (!values[LAST_POLL]) ||
-        (!values[STATE]) ||
-        (!values[LCM_STATE]) ||
-        (!values[STIME]) ||
-        (!values[ETIME]) ||
-        (!values[DEPLOY_ID]) ||
-        (!values[MEMORY]) ||
-        (!values[CPU]) ||
-        (!values[NET_TX]) ||
-        (!values[NET_RX]) ||
+    if ((!values[OID])||
+        (!values[UID])||
+        (!values[LAST_POLL])||
+        (!values[STATE])||
+        (!values[LCM_STATE])||
+        (!values[STIME])||
+        (!values[ETIME])||
+        (!values[DEPLOY_ID])||
+        (!values[MEMORY])||
+        (!values[CPU])||
+        (!values[NET_TX])||
+        (!values[NET_RX])||
         (num != LIMIT + History::LIMIT + 1 ))
     {
         return -1;
@@ -414,7 +414,7 @@ int VirtualMachine::unmarshall(ostringstream& oss,
             "<UID>"      << values[UID]      << "</UID>"      <<
             "<LAST_POLL>"<< values[LAST_POLL]<< "</LAST_POLL>"<<
             "<STATE>"    << values[STATE]    << "</STATE>"    <<
-            "<LCM_STATE>"<<values[LCM_STATE] << "</LCM_STATE>"<<
+            "<LCM_STATE>"<< values[LCM_STATE]<< "</LCM_STATE>"<<
             "<STIME>"    << values[STIME]    << "</STIME>"    <<
             "<ETIME>"    << values[ETIME]    << "</ETIME>"    <<
             "<DEPLOY_ID>"<< values[DEPLOY_ID]<< "</DEPLOY_ID>"<<
@@ -423,37 +423,8 @@ int VirtualMachine::unmarshall(ostringstream& oss,
             "<NET_TX>"   << values[NET_TX]   << "</NET_TX>"   <<
             "<NET_RX>"   << values[NET_RX]   << "</NET_RX>";
 
-    if ((values[History::VID          + LIMIT]) &&
-        (values[History::SEQ          + LIMIT]) &&
-        (values[History::HOSTNAME     + LIMIT]) &&
-        (values[History::HID          + LIMIT]) &&
-        (values[History::STIME        + LIMIT]) &&
-        (values[History::ETIME        + LIMIT]) &&
-        (values[History::PROLOG_STIME + LIMIT]) &&
-        (values[History::PROLOG_ETIME + LIMIT]) &&
-        (values[History::RUNNING_STIME+ LIMIT]) &&
-        (values[History::RUNNING_ETIME+ LIMIT]) &&
-        (values[History::EPILOG_STIME + LIMIT]) &&
-        (values[History::EPILOG_ETIME + LIMIT]) &&
-        (values[History::REASON       + LIMIT]))
-    {
-    oss <<
-        "<HISTORY>" <<
-          "<SEQ>"     << values[History::SEQ          + LIMIT]<<"</SEQ>"   <<
-          "<HOSTNAME>"<< values[History::HOSTNAME     + LIMIT]<<"</HOSTNAME>"<<
-          "<HID>"     << values[History::HID          + LIMIT]<<"</HID>"   <<
-          "<STIME>"   << values[History::STIME        + LIMIT]<<"</STIME>" <<
-          "<ETIME>"   << values[History::ETIME        + LIMIT]<<"</ETIME>" <<
-          "<PSTIME>"  << values[History::PROLOG_STIME + LIMIT]<<"</PSTIME>"<<
-          "<PETIME>"  << values[History::PROLOG_ETIME + LIMIT]<<"</PETIME>"<<
-          "<RSTIME>"  << values[History::RUNNING_STIME+ LIMIT]<<"</RSTIME>"<<
-          "<RETIME>"  << values[History::RUNNING_ETIME+ LIMIT]<<"</RETIME>"<<
-          "<ESTIME>"  << values[History::EPILOG_STIME + LIMIT]<<"</ESTIME>"<<
-          "<EETIME>"  << values[History::EPILOG_ETIME + LIMIT]<<"</EETIME>"<<
-          "<REASON>"  << values[History::REASON       + LIMIT]<<"</REASON>"<<
-        "</HISTORY>";
-    }
-
+	History::unmarshall(oss,num - LIMIT - 1, names + LIMIT, values + LIMIT);
+	
     oss << "</VM>";
 
     return 0;    

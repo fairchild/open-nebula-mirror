@@ -213,6 +213,20 @@ private:
      *    @return 0 on success
      */
     int unmarshall(int num, char **names, char ** values);
+
+    /**
+     *  Function to unmarshall a History object into an output stream with XML
+     *  format.
+     *    @param oss the output stream
+     *    @param num the number of columns read from the DB
+     *    @param names the column names
+     *    @param vaues the column values
+     *    @return 0 on success
+     */
+    static int unmarshall(ostringstream& oss,
+                          int            num,
+                          char **        names,
+                          char **        values);
 };
 
 #endif /*HISTORY_H_*/
