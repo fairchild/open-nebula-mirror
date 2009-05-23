@@ -216,7 +216,20 @@ private:
      *    @para vaues the column values
      *    @return 0 on success
      */
-    int unmarshall(int num, char **names, char ** values);    
+    int unmarshall(int num, char **names, char ** values);
+
+    /**
+     *  Function to unmarshall a HostShare object in to an output stream in XML
+     *    @param oss the output stream
+     *    @param num the number of columns read from the DB
+     *    @param names the column names
+     *    @param vaues the column values
+     *    @return 0 on success
+     */
+    static int unmarshall(ostringstream& oss,
+                          int            num,
+                          char **        names,
+                          char **        values);
 };
 
 

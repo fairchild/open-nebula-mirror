@@ -121,6 +121,54 @@ int HostShare::unmarshall(int num, char **names, char ** values)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
+int HostShare::unmarshall(ostringstream& oss,
+                          int            num,
+                          char **        names,
+                          char **        values)
+{
+	if ((!values[HID]) ||
+        (!values[DISK_USAGE]) ||
+	    (!values[MEM_USAGE]) ||
+	    (!values[CPU_USAGE]) ||
+	    (!values[MAX_DISK]) ||
+	    (!values[MAX_MEMORY]) ||
+	    (!values[MAX_CPU]) ||
+	    (!values[FREE_DISK]) ||
+	    (!values[FREE_MEMORY]) ||
+	    (!values[FREE_CPU]) ||
+	    (!values[USED_DISK]) ||
+	    (!values[USED_MEMORY]) ||
+	    (!values[USED_CPU]) ||
+	    (!values[RUNNING_VMS]) ||
+		(num != LIMIT))
+	{
+		return -1;
+	}
+	
+	oss <<
+	    "<HOST_SHARE>"  <<
+		    "<HID>"       << values[HID]         << "</HID>"       <<
+		    "<DISK_USAGE>"<< values[DISK_USAGE]  << "</DISK_USAGE>"<<
+		    "<MEM_USAGE>" << values[MEM_USAGE]   << "</MEM_USAGE>" <<
+		    "<CPU_USAGE>" << values[CPU_USAGE]   << "</CPU_USAGE>" <<
+		    "<MAX_DISK>"  << values[MAX_DISK]    << "</MAX_DISK>"  <<
+		    "<MAX_MEM>"   << values[MAX_MEMORY]  << "</MAX_MEM>"   <<
+		    "<MAX_CPU>"   << values[MAX_CPU]     << "</MAX_CPU>"   <<
+		    "<FREE_DISK>" << values[FREE_DISK]   << "</FREE_DISK>" <<
+		    "<FREE_MEM>"  << values[FREE_MEMORY] << "</FREE_MEM>"  <<
+		    "<FREE_CPU>"  << values[FREE_CPU]    << "</FREE_CPU>"  <<
+		    "<USED_DISK>" << values[USED_DISK]   << "</USED_DISK>" <<
+		    "<USED_MEM>"  << values[USED_MEMORY] << "</USED_MEM>"  <<
+		    "<USED_CPU>"  << values[USED_CPU]    << "</USED_CPU>"  <<
+		    "<RUNNING_VMS>"<<values[RUNNING_VMS] << "</RUNNING_VMS>"<<
+		"</HOST_SHARE>";
+		
+	return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 extern "C" int host_share_select_cb (
         void *                  _hs,
         int                     num,

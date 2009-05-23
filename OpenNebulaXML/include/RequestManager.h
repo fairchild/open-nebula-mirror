@@ -341,6 +341,28 @@ private:
     };
 
     /* ---------------------------------------------------------------------- */
+     
+    class HostPoolInfo: public xmlrpc_c::method
+    {
+    public:
+        HostPoolInfo(HostPool * _hpool):hpool(_hpool)
+        {
+            _signature="A:s";
+            _help="Returns the host pool information";
+        };
+
+        ~HostPoolInfo(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        HostPool * hpool;
+
+    };
+
+    /* ---------------------------------------------------------------------- */
     
     class HostDelete: public xmlrpc_c::method
     {

@@ -237,6 +237,9 @@ void RequestManager::register_xml_methods()
         
     xmlrpc_c::methodPtr host_info(new 
         RequestManager::HostInfo(hpool));
+
+    xmlrpc_c::methodPtr hostpool_info(new 
+        RequestManager::HostPoolInfo(hpool));
         
     xmlrpc_c::methodPtr host_delete(new 
         RequestManager::HostDelete(hpool));
@@ -255,25 +258,28 @@ void RequestManager::register_xml_methods()
 
     /* VM related methods  */    
         
-    RequestManagerRegistry.addMethod("one.vmallocate", vm_allocate);
-    RequestManagerRegistry.addMethod("one.vmdeploy", vm_deploy);
-    RequestManagerRegistry.addMethod("one.vmaction", vm_action);
-    RequestManagerRegistry.addMethod("one.vmmigrate", vm_migrate);
-    RequestManagerRegistry.addMethod("one.vminfo", vm_info);
-    RequestManagerRegistry.addMethod("one.vmpool_info", vm_pool_info);
+    RequestManagerRegistry.addMethod("one.vm.allocate", vm_allocate);
+    RequestManagerRegistry.addMethod("one.vm.deploy", vm_deploy);
+    RequestManagerRegistry.addMethod("one.vm.action", vm_action);
+    RequestManagerRegistry.addMethod("one.vm.migrate", vm_migrate);
+    RequestManagerRegistry.addMethod("one.vm.info", vm_info);
+
+    RequestManagerRegistry.addMethod("one.vmpool.info", vm_pool_info);
      
     /* Host related methods*/
      
-    RequestManagerRegistry.addMethod("one.hostallocate", host_allocate);   
-    RequestManagerRegistry.addMethod("one.hostinfo", host_info); 
-    RequestManagerRegistry.addMethod("one.hostdelete", host_delete);
-    RequestManagerRegistry.addMethod("one.hostenable", host_enable);
-    
+    RequestManagerRegistry.addMethod("one.host.allocate", host_allocate);   
+    RequestManagerRegistry.addMethod("one.host.info", host_info);
+    RequestManagerRegistry.addMethod("one.host.delete", host_delete);
+    RequestManagerRegistry.addMethod("one.host.enable", host_enable);
+
+	RequestManagerRegistry.addMethod("one.hostpool.info", hostpool_info); 
+	    
     /* Network related methods*/
      
-    RequestManagerRegistry.addMethod("one.vnallocate", vn_allocate);   
-    RequestManagerRegistry.addMethod("one.vninfo", vn_info); 
-    RequestManagerRegistry.addMethod("one.vndelete", vn_delete);
+    RequestManagerRegistry.addMethod("one.vn.allocate", vn_allocate);   
+    RequestManagerRegistry.addMethod("one.vn.info", vn_info); 
+    RequestManagerRegistry.addMethod("one.vn.delete", vn_delete);
     
 };
 

@@ -33,6 +33,7 @@ source_files=[
     'RequestManagerHostAllocate.cc',
     'RequestManagerHostDelete.cc',
     'RequestManagerHostInfo.cc',
+    'RequestManagerHostPoolInfo.cc',
     'RequestManagerHostEnable.cc',
     'RequestManagerVirtualNetworkAllocate.cc',
     'RequestManagerVirtualNetworkInfo.cc',

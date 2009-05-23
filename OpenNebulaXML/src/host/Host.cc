@@ -294,51 +294,24 @@ int Host::unmarshall(ostringstream& oss,
         (!values[VM_MAD]) ||
         (!values[TM_MAD]) ||
         (!values[LAST_MON_TIME]) ||
-        (!values[HostShare::HID + LIMIT]) ||
-        (!values[HostShare::DISK_USAGE + LIMIT]) ||
-        (!values[HostShare::MEM_USAGE  + LIMIT]) ||
-        (!values[HostShare::CPU_USAGE  + LIMIT]) ||
-        (!values[HostShare::MAX_DISK   + LIMIT]) ||
-        (!values[HostShare::MAX_MEMORY + LIMIT]) ||
-        (!values[HostShare::MAX_CPU    + LIMIT]) ||
-        (!values[HostShare::FREE_DISK  + LIMIT]) ||
-        (!values[HostShare::FREE_MEMORY+ LIMIT]) ||
-        (!values[HostShare::FREE_CPU   + LIMIT]) ||
-        (!values[HostShare::USED_DISK  + LIMIT]) ||
-        (!values[HostShare::USED_MEMORY+ LIMIT]) ||
-        (!values[HostShare::USED_CPU   + LIMIT]) ||
-        (!values[HostShare::RUNNING_VMS+ LIMIT]) ||
         (num != LIMIT + HostShare::LIMIT ))
     {
         return -1;
     }
 
     oss <<
-    "<HOST>" <<
-     "<OID>"          << values[OID]          <<"</OID>"          <<
-     "<HOST_NAME>"    << values[HOST_NAME]    <<"</HOST_NAME>"    <<
-     "<STATE>"        << values[STATE]        <<"</STATE>"        <<
-     "<IM_MAD>"       << values[IM_MAD]       <<"</IM_MAD>"       <<
-     "<VM_MAD>"       << values[VM_MAD]       <<"</VM_MAD>"       <<
-     "<TM_MAD>"       << values[TM_MAD]       <<"</TM_MAD>"       <<
-     "<LAST_MON_TIME>"<< values[LAST_MON_TIME]<<"</LAST_MON_TIME>"<<
-     "<HOST_SHARE>"  <<
-       "<HID>"       << values[HostShare::HID        +LIMIT]<<"</HID>"       <<
-       "<DISK_USAGE>"<< values[HostShare::DISK_USAGE +LIMIT]<<"</DISK_USAGE>"<<
-       "<MEM_USAGE>" << values[HostShare::MEM_USAGE  +LIMIT]<<"</MEM_USAGE>" <<
-       "<CPU_USAGE>" << values[HostShare::CPU_USAGE  +LIMIT]<<"</CPU_USAGE>" <<
-       "<MAX_DISK>"  << values[HostShare::MAX_DISK   +LIMIT]<<"</MAX_DISK>"  <<
-       "<MAX_MEM>"   << values[HostShare::MAX_MEMORY +LIMIT]<<"</MAX_MEM>"   <<
-       "<MAX_CPU>"   << values[HostShare::MAX_CPU    +LIMIT]<<"</MAX_CPU>"   <<
-       "<FREE_DISK>" << values[HostShare::FREE_DISK  +LIMIT]<<"</FREE_DISK>" <<
-       "<FREE_MEM>"  << values[HostShare::FREE_MEMORY+LIMIT]<<"</FREE_MEM>"  <<
-       "<FREE_CPU>"  << values[HostShare::FREE_CPU   +LIMIT]<<"</FREE_CPU>"  <<
-       "<USED_DISK>" << values[HostShare::USED_DISK  +LIMIT]<<"</USED_DISK>" <<
-       "<USED_MEM>"  << values[HostShare::USED_MEMORY+LIMIT]<<"</USED_MEM>"  <<
-       "<USED_CPU>"  << values[HostShare::USED_CPU   +LIMIT]<<"</USED_CPU>"  <<
-       "<RUNNING_VMS>"<<values[HostShare::RUNNING_VMS+LIMIT]<<"</RUNNING_VMS>"<<
-     "</HOST_SHARE>" <<
-    "</HOST>";
+        "<HOST>" <<
+            "<OID>"          << values[OID]          <<"</OID>"          <<
+ 		    "<HOST_NAME>"    << values[HOST_NAME]    <<"</HOST_NAME>"    <<
+		    "<STATE>"        << values[STATE]        <<"</STATE>"        <<
+		    "<IM_MAD>"       << values[IM_MAD]       <<"</IM_MAD>"       <<
+		    "<VM_MAD>"       << values[VM_MAD]       <<"</VM_MAD>"       <<
+		    "<TM_MAD>"       << values[TM_MAD]       <<"</TM_MAD>"       <<
+			"<LAST_MON_TIME>"<< values[LAST_MON_TIME]<<"</LAST_MON_TIME>";
+			
+	HostShare::unmarshall(oss,num - LIMIT, names + LIMIT, values + LIMIT);
+	
+    oss << "</HOST>";
 
     return 0;
 
