@@ -850,6 +850,20 @@ private:
     int unmarshall(int num, char **names, char ** values);
 
     /**
+     *  Function to unmarshall a VM object into an output stream with XML
+     *  format.
+     *    @param oss the output stream
+     *    @param num the number of columns read from the DB
+     *    @param names the column names
+     *    @param vaues the column values
+     *    @return 0 on success
+     */
+    static int unmarshall(ostringstream& oss,
+                          int            num,
+                          char **        names,
+                          char **        values);
+
+    /**
      *  Updates the VM history record
      *    @param db pointer to the db
      *    @return 0 on success
@@ -1003,17 +1017,6 @@ protected:
      *    @return 0 on success
      */
     virtual int update(SqliteDB * db);
-
-    /**
-     *  Dumps the contect of a set of VirtualMachine objects in the given stream
-     *  using XML format
-     *    @param db pointer to the db
-     *    @param oss the output stream
-     *    @param where string to filter the VirtualMachine objects
-     *    @return 0 on success
-     */
-    static int dump(SqliteDB * db, ostringstream& oss, const string&
-where);
     
     /**
      * Deletes a VM from the database and all its associated information:
@@ -1035,6 +1038,16 @@ where);
 
     	return rc;
     }
+
+    /**
+     *  Dumps the contect of a set of VirtualMachine objects in the given stream
+     *  using XML format
+     *    @param db pointer to the db
+     *    @param oss the output stream
+     *    @param where string to filter the VirtualMachine objects
+     *    @return 0 on success
+     */
+    static int dump(SqliteDB * db, ostringstream& oss, const string& where);    
 };
 
 #endif /*VIRTUAL_MACHINE_H_*/

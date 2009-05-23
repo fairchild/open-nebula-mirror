@@ -25,14 +25,12 @@ void RequestManager::HostInfo::execute(
     xmlrpc_c::paramList const& paramList,
     xmlrpc_c::value *   const  retval)
 { 
-    string              session;
+    string  session;
 
-    // <hid> of the host to retrieve the information for
-    int                 hid;   
+    int     hid;   
+    Host *  host;
     
-    Host *              host;
-    
-    ostringstream       oss;
+    ostringstream oss;
 
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;

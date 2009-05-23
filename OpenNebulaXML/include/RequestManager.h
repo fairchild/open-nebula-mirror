@@ -303,7 +303,7 @@ private:
     public:
         HostAllocate(HostPool * _hpool):hpool(_hpool)
         {
-            _signature="A:sssssb";
+            _signature="A:sssss";
             _help="Allocates a host in the pool";
         };
 

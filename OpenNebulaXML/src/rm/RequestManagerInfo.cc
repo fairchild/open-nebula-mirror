@@ -25,14 +25,12 @@ void RequestManager::VirtualMachineInfo::execute(
     xmlrpc_c::paramList const& paramList,
     xmlrpc_c::value *   const  retval)
 { 
-    string              session;
+    string  session;
 
-    // <vid> of the vid to retrieve the information for
-    int                 vid;   
-    
-    VirtualMachine *    vm;
-    
-    ostringstream       oss;
+    int              vid;       
+    VirtualMachine * vm;
+
+    ostringstream  oss;
 
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
@@ -47,8 +45,7 @@ void RequestManager::VirtualMachineInfo::execute(
 
     // Perform the allocation in the vmpool 
     vm = VirtualMachineInfo::vmpool->get(vid,true);
-       
-                                                 
+
     if ( vm == 0 )                             
     {                                            
         goto error_vm_get;                     
@@ -63,6 +60,7 @@ void RequestManager::VirtualMachineInfo::execute(
     
     arrayData.push_back(xmlrpc_c::value_string(oss.str()));
     arrayresult = new xmlrpc_c::value_array(arrayData);
+
     // Copy arrayresult into retval mem space
     *retval = *arrayresult;
     // and get rid of the original

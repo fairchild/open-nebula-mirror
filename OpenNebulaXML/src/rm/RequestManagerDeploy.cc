@@ -69,15 +69,8 @@ void RequestManager::VirtualMachineDeploy::execute(
     vmm_mad  = host->get_vmm_mad();
     tm_mad   = host->get_tm_mad();
     
-    if (host->isManaged() == true)
-    {
-        nd.get_configuration_attribute("VM_DIR",vmdir);
-    }
-    else
-    {
-        goto error_host_managed;
-    }
-        
+    nd.get_configuration_attribute("VM_DIR",vmdir);
+
     host->unlock();
     
     //Get the VM
@@ -122,12 +115,6 @@ void RequestManager::VirtualMachineDeploy::execute(
     delete arrayresult;
      
     return;
-    
-error_host_managed:
-	host->unlock();
-	
-    oss << "Not managed hosts (id:" << hid << ") not supported";
-    goto error_common;
 
 error_host_get:
     oss << "The host " << hid << " does not exists";

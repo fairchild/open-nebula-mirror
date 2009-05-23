@@ -51,8 +51,7 @@ public:
         string hostname,
         string im_mad_name, 
         string vmm_mad_name, 
-        string tm_mad_name,
-        bool   managed = true);        
+        string tm_mad_name);
 
     /**
      *  Function to get a Host from the pool, if the object is not in memory
@@ -103,11 +102,19 @@ public:
     
     /**
      * Get the 10 least monitored hosts
-     * param discovered hosts map to store the retrieved hosts hids and hostnames are 
-     * return int 0 if success
+     *   @param discovered hosts, map to store the retrieved hosts hids and
+     *   hostnames
+     *   @return int 0 if success
      */
     int discover(map<int, string> * discovered_hosts);
 
+    /**
+     * Allocates a given capacity to the host
+     *   @param oid the id of the host to allocate the capacity
+     *   @param cpu amount of CPU
+     *   @param mem amount of main memory
+     *   @param disk amount of disk
+     */
     void add_capacity(int oid,int cpu, int mem, int disk)
     {
     	Host *  host = get(oid, true);
@@ -121,7 +128,13 @@ public:
     	    host->unlock();
     	}
     };
-    
+    /**
+     * De-Allocates a given capacity to the host
+     *   @param oid the id of the host to allocate the capacity
+     *   @param cpu amount of CPU
+     *   @param mem amount of main memory
+     *   @param disk amount of disk
+     */    
     void del_capacity(int oid,int cpu, int mem, int disk)
     {
     	Host *  host = get(oid, true);
@@ -135,6 +148,27 @@ public:
     	    host->unlock();
     	}    	
     };
+
+    /**
+     *  Dumps the HOST pool in XML format. A filter can be also added to the
+     *  query
+     *  @param oss the output stream to dump the pool contents
+     *  @param where filter for the objects, defaults to all
+     *
+     *  @return 0 on success
+     */
+    int dump(ostringstream& oss, const string& where)
+    {
+        int rc;
+
+        oss << "<HOST_POOL>";
+
+        rc = Host::dump(db,oss,where);
+
+        oss << "</HOST_POOL>";
+
+        return rc;
+    }
     
 private:
     /**

@@ -337,3 +337,67 @@ int History::drop(SqliteDB * db)
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
+
+ostream& operator<<(ostream& os, const History& history)
+{
+    string history_str;
+
+    os << history.to_xml(history_str);
+
+    return os;
+};
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+
+string& History::to_str(string& str) const
+{
+    ostringstream oss;
+
+    oss<< "\tSEQ      = " << seq           << endl
+       << "\tHOSTNAME = " << hostname      << endl
+       << "\tHID      = " << hid           << endl
+       << "\tSTIME    = " << stime         << endl
+       << "\tETIME    = " << etime         << endl
+       << "\tPSTIME   = " << prolog_stime  << endl
+       << "\tPETIME   = " << prolog_etime  << endl
+       << "\tRSTIME   = " << running_stime << endl
+       << "\tRETIME   = " << running_etime << endl
+       << "\tESTIME   = " << epilog_stime  << endl
+       << "\tEETIME   = " << epilog_etime  << endl
+       << "\tREASON   = " << reason;
+
+   str = oss.str();
+
+   return str;
+
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+string& History::to_xml(string& xml) const
+{
+    ostringstream oss;
+    
+    oss <<
+        "<HISTORY>" <<
+          "<SEQ>"     << seq           << "</SEQ>"   <<
+          "<HOSTNAME>"<< hostname      << "</HOSTNAME>"<<
+          "<HID>"     << hid           << "</HID>"   <<
+          "<STIME>"   << stime         << "</STIME>" <<
+          "<ETIME>"   << etime         << "</ETIME>" <<
+          "<PSTIME>"  << prolog_stime  << "</PSTIME>"<<
+          "<PETIME>"  << prolog_etime  << "</PETIME>"<<
+          "<RSTIME>"  << running_stime << "</RSTIME>"<<
+          "<RETIME>"  << running_etime << "</RETIME>"<<
+          "<ESTIME>"  << epilog_stime  << "</ESTIME>"<<
+          "<EETIME>"  << epilog_etime  << "</EETIME>"<<
+          "<REASON>"  << reason        << "</REASON>"<<
+        "</HISTORY>";
+
+   xml = oss.str();
+
+   return xml;
+}

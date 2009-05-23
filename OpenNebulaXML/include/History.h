@@ -58,6 +58,27 @@ public:
 
     ~History(){};
 
+    /**
+     *  Function to write the History Record in an output stream
+     */
+    friend ostream& operator<<(ostream& os, const History& history);
+
+    /**
+     * Function to print the History object into a string in
+     * plain text
+     *  @param str the resulting string
+     *  @return a reference to the generated string
+     */
+    string& to_str(string& str) const;
+
+    /**
+     * Function to print the History object into a string in
+     * XML format
+     *  @param xml the resulting XML string
+     *  @return a reference to the generated string
+     */
+    string& to_xml(string& xml) const;
+    
 private:
     friend class VirtualMachine;
 

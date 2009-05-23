@@ -259,8 +259,8 @@ void RequestManager::register_xml_methods()
     RequestManagerRegistry.addMethod("one.vmdeploy", vm_deploy);
     RequestManagerRegistry.addMethod("one.vmaction", vm_action);
     RequestManagerRegistry.addMethod("one.vmmigrate", vm_migrate);
-    RequestManagerRegistry.addMethod("one.vmget_info", vm_info);
-    RequestManagerRegistry.addMethod("one.vmget_pool_info", vm_pool_info);
+    RequestManagerRegistry.addMethod("one.vminfo", vm_info);
+    RequestManagerRegistry.addMethod("one.vmpool_info", vm_pool_info);
      
     /* Host related methods*/
      
