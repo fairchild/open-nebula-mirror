@@ -350,7 +350,7 @@ int Host::dump(SqliteDB * db, ostringstream& oss, const string& where)
 
     if ( !where.empty() )
     {
-        cmd << " WHERE" << where;
+        cmd << " WHERE " << where;
     }
 
     rc = db->exec(cmd,host_dump_cb,(void *) &oss);
