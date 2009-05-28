@@ -31,7 +31,7 @@ User::User(
     int     id,
     string  _username,
     string  _password,
-    bool    enabled):
+    bool    _enabled):
         PoolObjectSQL(id),
         username     (_username),
         password     (_password),
@@ -45,11 +45,11 @@ User::~User(){};
 /* User :: Database Access Functions                               */
 /* ************************************************************************** */
 
-const char * Host::table = "user_pool";
+const char * User::table = "user_pool";
 
-const char * Host::db_names = "(oid,user_name,password,enabled)";
+const char * User::db_names = "(oid,user_name,password,enabled)";
 
-const char * Host::db_bootstrap = "CREATE TABLE user_pool ("
+const char * User::db_bootstrap = "CREATE TABLE user_pool ("
 	"oid INTEGER PRIMARY KEY,user_name TEXT,password TEXT,"
 	"enabled INTEGER)";
 
@@ -109,7 +109,7 @@ int User::select(SqliteDB *db)
     boid = oid;
     oid  = -1;
 
-    rc = db->exec(oss, host_select_cb, (void *) this);
+    rc = db->exec(oss, user_select_cb, (void *) this);
 
     if ((rc != 0) || (oid != boid ))
     {
@@ -247,7 +247,7 @@ int User::dump(SqliteDB * db, ostringstream& oss, const string& where)
     int             rc;
     ostringstream   cmd;
 
-    cmd << "SELECT * FROM " << User::table
+    cmd << "SELECT * FROM " << User::table;
 
     if ( !where.empty() )
     {
@@ -280,7 +280,7 @@ ostream& operator<<(ostream& os, User& user)
 {
 	string user_str;
 	
-	os << user.to_xml(host_str);
+	os << user.to_xml(user_str);
 	
     return os;
 };
@@ -292,13 +292,15 @@ ostream& operator<<(ostream& os, User& user)
 string& User::to_xml(string& xml) const
 {
     ostringstream   oss;
+    
+    int  enabled_int = enabled?1:0;
  
     oss << 
     "<USER>"                             
-         "<UID>"          << oid           <<"</UID>"       <<
-         "<USER_NAME>"    << username      <<"</USER_NAME>" <<
-         "<PASSWORD>"     << password      <<"</PASSWORD>"  <<
-         "<ENABLED>"      << enabled?1:0   <<"</ENABLED>"   <<
+         "<UID>"          << oid            <<"</UID>"       <<
+         "<USER_NAME>"    << username       <<"</USER_NAME>" <<
+         "<PASSWORD>"     << password       <<"</PASSWORD>"  <<
+         "<ENABLED>"      << enabled_int    <<"</ENABLED>"   <<
     "</USER>";
 
     xml = oss.str();
@@ -317,7 +319,7 @@ string& User::to_str(string& str) const
 
     os << 
         "UID      = "  << oid            << endl <<
-        "USERNAME = "  << hostname       << endl <<
+        "USERNAME = "  << username       << endl <<
         "PASSWORD = "  << password       << endl <<
         "ENABLED  = "  << enbaled_str;
 

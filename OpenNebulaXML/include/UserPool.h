@@ -37,7 +37,7 @@ class UserPool : public PoolSQL
 {
 public:
 
-	UserPool(SqliteDB * db):PoolSQL(db,Host::table){};
+	UserPool(SqliteDB * db):PoolSQL(db,User::table){};
 
     ~UserPool(){};
 

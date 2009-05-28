@@ -19,12 +19,18 @@
 #define USER_H_
 
 #include "PoolSQL.h"
-#include "HostShare.h"
-#include "HostTemplate.h"
 
 using namespace std;
 
-extern "C" int host_select_cb (void * _user, int num,char ** values, char ** names);
+extern "C" int user_select_cb (void *  _host,
+                               int     num,
+                               char ** values,
+                               char ** names);
+                               
+extern "C" int user_dump_cb (void *  _oss,
+                             int     num,
+                             char ** values,
+                             char ** names);
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -40,6 +46,21 @@ public:
      *  Function to write a User on an output stream
      */
      friend ostream& operator<<(ostream& os, User& u);
+     
+ 	/**
+ 	 * Function to print the User object into a string in plain text
+ 	 *  @param str the resulting string
+ 	 *  @return a reference to the generated string 
+ 	 */
+ 	string& to_str(string& str) const;
+
+ 	/**
+ 	 * Function to print the User object into a string in XML format
+ 	 *  @param xml the resulting XML string
+ 	 *  @return a reference to the generated string 
+ 	 */
+ 	string& to_xml(string& xml) const;
+     
 
     /**
      * Get the User unique identifier UID, that matches the OID of the object
@@ -100,17 +121,17 @@ public:
 	/**
      *  Sets user username
      */
- 	void set_username(String _username) 
+ 	void set_username(string _username) 
     {
-	    return username = _username;
+	    username = _username;
 	};
 	
 	/**
      *  Sets user password
      */
- 	void set_password(String _password) 
+ 	void set_password(string _password) 
     {
-	    return password = _password;
+	    password = _password;
 	};
 	
     
@@ -121,11 +142,15 @@ private:
     
 	friend class UserPool;
     
-    friend int user_select_cb (
-        void *  _user, 
-        int     num, 
-        char ** values, 
-        char ** names);
+    friend int user_select_cb (void *  _host,
+                               int     num,
+                               char ** values,
+                               char ** names);
+
+    friend int user_dump_cb (void *  _oss,
+                             int     num,
+                             char ** values,
+                             char ** names);
 
     // -------------------------------------------------------------------------
     // User Attributes
@@ -161,6 +186,19 @@ private:
     int unmarshall(int num, char **names, char ** values);
 
     /**
+     *  Function to unmarshall a User object in to an output stream in XML
+     *    @param oss the output stream
+     *    @param num the number of columns read from the DB
+     *    @param names the column names
+     *    @param vaues the column values
+     *    @return 0 on success
+     */
+    static int unmarshall(ostringstream& oss,
+                          int            num,
+                          char **        names,
+                          char **        values);
+
+    /**
      *  Bootstraps the database table(s) associated to the User
      */
     static void bootstrap(SqliteDB * db)
@@ -177,7 +215,7 @@ protected:
     User(int     id=-1,
          string _username="",
          string _password="",
-         bool   _enabled);
+         bool   _enabled=true);
 
     virtual ~User();
     
@@ -227,6 +265,16 @@ protected:
      *    @return 0 on success
      */
     virtual int drop(SqliteDB *db);    
+    
+    /**
+     *  Dumps the contect of a set of User objects in the given stream
+     *  using XML format
+     *    @param db pointer to the db
+     *    @param oss the output stream
+     *    @param where string to filter the VirtualMachine objects
+     *    @return 0 on success
+     */
+    static int dump(SqliteDB * db, ostringstream& oss, const string& where);
 };
 
 #endif /*USER_H_*/
