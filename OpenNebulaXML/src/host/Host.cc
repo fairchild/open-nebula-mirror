@@ -301,7 +301,7 @@ int Host::unmarshall(ostringstream& oss,
 
     oss <<
         "<HOST>" <<
-            "<OID>"          << values[OID]          <<"</OID>"          <<
+            "<HID>"          << values[OID]          <<"</HID>"          <<
  		    "<HOST_NAME>"    << values[HOST_NAME]    <<"</HOST_NAME>"    <<
 		    "<STATE>"        << values[STATE]        <<"</STATE>"        <<
 		    "<IM_MAD>"       << values[IM_MAD]       <<"</IM_MAD>"       <<
@@ -364,8 +364,6 @@ int Host::dump(SqliteDB * db, ostringstream& oss, const string& where)
 int Host::drop(SqliteDB * db)
 {
     ostringstream   oss;
-    
-    map<int,HostShare *>::iterator iter;
 
     // First, drop the template
     host_template.drop(db);
@@ -434,7 +432,7 @@ string& Host::to_xml(string& xml) const
  
     oss << 
     "<HOST>"                             
-       "<OID>"           << oid       	   << "</OID>"           <<           
+       "<HID>"           << oid       	   << "</HID>"           <<           
        "<HOST_NAME>"     << hostname 	   << "</HOST_NAME>"     << 
        "<STATE>"         << state          << "</STATE>"         << 
        "<IM_MAD>"        << im_mad_name    << "</IM_MAD>"        << 
