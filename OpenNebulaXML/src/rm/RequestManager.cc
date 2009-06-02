@@ -253,6 +253,9 @@ void RequestManager::register_xml_methods()
     xmlrpc_c::methodPtr vn_info(new 
         RequestManager::VirtualNetworkInfo(vnpool));
         
+    xmlrpc_c::methodPtr vnpool_info(new 
+        RequestManager::VirtualNetworkPoolInfo(vnpool));
+
     xmlrpc_c::methodPtr vn_delete(new 
         RequestManager::VirtualNetworkDelete(vnpool));
 
@@ -280,6 +283,8 @@ void RequestManager::register_xml_methods()
     RequestManagerRegistry.addMethod("one.vn.allocate", vn_allocate);   
     RequestManagerRegistry.addMethod("one.vn.info", vn_info); 
     RequestManagerRegistry.addMethod("one.vn.delete", vn_delete);
+
+    RequestManagerRegistry.addMethod("one.vnpool.info", vnpool_info); 
     
 };
 

@@ -37,6 +37,7 @@ source_files=[
     'RequestManagerHostEnable.cc',
     'RequestManagerVirtualNetworkAllocate.cc',
     'RequestManagerVirtualNetworkInfo.cc',
+    'RequestManagerVirtualNetworkPoolInfo.cc',
     'RequestManagerVirtualNetworkDelete.cc',
 ]
 

@@ -326,7 +326,6 @@ extern "C" int host_dump_cb (
         char **                 names)
 {
     ostringstream * oss;
-    ostringstream dbg;
 
     oss = static_cast<ostringstream *>(_oss);
 

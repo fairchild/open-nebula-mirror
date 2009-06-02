@@ -155,9 +155,14 @@ private:
     int setup_socket();
 
     // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     //                          XML-RPC Methods
     // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
+    /* ---------------------------------------------------------------------- */
+    /*                     Virtual Machine Interface                          */    
+    /* ---------------------------------------------------------------------- */
     class VirtualMachineAllocate: public xmlrpc_c::method
     {
     public:
@@ -297,7 +302,9 @@ private:
     };    
     
     /* ---------------------------------------------------------------------- */
-    
+    /*                            Host Interface                              */    
+    /* ---------------------------------------------------------------------- */
+
     class HostAllocate: public xmlrpc_c::method
     {
     public:
@@ -452,6 +459,28 @@ private:
 
     };
     
+    /* ---------------------------------------------------------------------- */
+     
+    class VirtualNetworkPoolInfo: public xmlrpc_c::method
+    {
+    public:
+        VirtualNetworkPoolInfo(VirtualNetworkPool * _vnpool):vnpool(_vnpool)
+        {
+            _signature="A:s";
+            _help="Returns the virtual network pool information";
+        };
+
+        ~VirtualNetworkPoolInfo(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        VirtualNetworkPool * vnpool;
+
+    };
+
     /* ---------------------------------------------------------------------- */
 
     class VirtualNetworkDelete: public xmlrpc_c::method
