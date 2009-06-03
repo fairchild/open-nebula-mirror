@@ -125,17 +125,7 @@ int UserPool::allocate (
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-User * UserPool::get(int  oid,  bool lock)
-{
-    User * user = static_cast<User *>(PoolSQL::get(oid,lock));
-    
-    return user;
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-int UserPool::authenticate(string session)
+int UserPool::authenticate(string& session)
 {
     map<string, int>::iterator     index;
     unsigned int                   pos;

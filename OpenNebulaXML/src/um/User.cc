@@ -51,8 +51,8 @@ const char * User::table = "user_pool";
 const char * User::db_names = "(oid,user_name,password,enabled)";
 
 const char * User::db_bootstrap = "CREATE TABLE user_pool ("
-	"oid INTEGER PRIMARY KEY,user_name TEXT,password TEXT,"
-	"enabled INTEGER)";
+	"oid INTEGER,user_name TEXT,password TEXT,"
+	"enabled INTEGER, PRIMARY KEY(oid,user_name))";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -127,7 +127,6 @@ int User::insert(SqliteDB *db)
 {
     int rc;
     
-    //Insert the Host and its template
     rc = update(db);
 
     if ( rc != 0 )
@@ -229,7 +228,6 @@ extern "C" int user_dump_cb (
         char **                 names)
 {
     ostringstream * oss;
-    ostringstream dbg;
 
     oss = static_cast<ostringstream *>(_oss);
 
@@ -267,7 +265,6 @@ int User::drop(SqliteDB * db)
 {
     ostringstream   oss;
     
-    // Third, drop the user itself
     oss << "DELETE FROM " << table << " WHERE oid=" << oid;
 
     return db->exec(oss);

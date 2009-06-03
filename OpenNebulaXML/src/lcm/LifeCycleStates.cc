@@ -810,3 +810,8 @@ void  LifeCycleManager::failure_action(VirtualMachine * vm)
 
     tm->trigger(TransferManager::EPILOG_DELETE,vm->get_oid());
 }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+

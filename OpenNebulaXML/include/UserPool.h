@@ -61,7 +61,12 @@ public:
      */
     User * get(
         int     oid,
-        bool    lock);
+        bool    lock)
+    {
+        User * user = static_cast<User *>(PoolSQL::get(oid,lock));
+    
+        return user;
+    }
     
     /** Update a particular User 
      *    @param user pointer to User
@@ -102,8 +107,29 @@ public:
      *   @param session, colon separated username and password string
      *   @return -1 if there is no such a user, uid of the user if it exists
      */
-    int authenticate(string session);
+    int authenticate(string& session);
         
+    /**
+     *  Dumps the User pool in XML format. A filter can be also added to the
+     *  query
+     *  @param oss the output stream to dump the pool contents
+     *  @param where filter for the objects, defaults to all
+     *
+     *  @return 0 on success
+     */
+    int dump(ostringstream& oss, const string& where)
+    {
+        int rc;
+
+        oss << "<USER_POOL>";
+
+        rc = User::dump(db,oss,where);
+
+        oss << "</USER_POOL>";
+
+        return rc;
+    }
+
 private:
     /**
      *  Factory method to produce User objects
