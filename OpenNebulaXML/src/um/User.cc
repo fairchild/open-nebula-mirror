@@ -315,17 +315,32 @@ string& User::to_str(string& str) const
 {
     ostringstream   os;
 
-    string enbaled_str = enabled?"True":"False";
+    string enabled_str = enabled?"True":"False";
 
     os << 
         "UID      = "  << oid            << endl <<
         "USERNAME = "  << username       << endl <<
         "PASSWORD = "  << password       << endl <<
-        "ENABLED  = "  << enbaled_str;
+        "ENABLED  = "  << enabled_str;
 
     str = os.str();
     
     return str;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int User::authenticate(string _password)
+{
+    if (enabled && _password==password)
+    {
+        return oid;
+    }
+    else
+    {
+        return -1; 
+    }
 }
 
 /* -------------------------------------------------------------------------- */

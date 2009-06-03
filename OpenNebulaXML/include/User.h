@@ -134,6 +134,11 @@ public:
 	    password = _password;
 	};
 	
+    /**
+     *  Looks for a match between _password and user password 
+     *  @return -1 if disabled or wrong password, uid otherwise
+     **/
+    int authenticate(string _password);
     
 private:
     // -------------------------------------------------------------------------

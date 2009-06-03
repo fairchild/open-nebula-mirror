@@ -151,6 +151,8 @@ void Nebula::start()
         nebula_configuration->get("NETWORK_SIZE", size);
                 
         vnpool = new VirtualNetworkPool(db,mac_prefix,size);
+        
+        upool  = new UserPool(db);
     }
     catch (exception&)
     {
@@ -162,6 +164,7 @@ void Nebula::start()
     vmpool->bootstrap();
      hpool->bootstrap();
     vnpool->bootstrap();
+     upool->bootstrap();
     
     // ----------------------------------------------------------- 
     // Close stds, we no longer need them                          

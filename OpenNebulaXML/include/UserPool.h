@@ -37,7 +37,7 @@ class UserPool : public PoolSQL
 {
 public:
 
-	UserPool(SqliteDB * db):PoolSQL(db,User::table){};
+	UserPool(SqliteDB * db);
 
     ~UserPool(){};
 
@@ -61,10 +61,7 @@ public:
      */
     User * get(
         int     oid,
-        bool    lock)
-    {
-        return static_cast<User *>(PoolSQL::get(oid,lock));
-    };
+        bool    lock);
     
     /** Update a particular User 
      *    @param user pointer to User
@@ -85,7 +82,8 @@ public:
     	
     	if ( rc == 0)
     	{
-    		remove(static_cast<PoolObjectSQL *>(user));	
+            known_users.erase(user->get_username());
+    		remove(static_cast<PoolObjectSQL *>(user)); 
     	}
         
         return rc;
@@ -98,6 +96,14 @@ public:
     {
         User::bootstrap(db);
     };
+    
+    /**
+     * Returns whether there is a user with given username/password or not
+     *   @param username, username
+     *   @param password, password
+     *   @return -1 if there is no such a user, uid of the user if it exists
+     */
+    int authenticate(string username, string password);
         
 private:
     /**
@@ -108,6 +114,11 @@ private:
     {
         return new User;
     };
+    
+    /**
+     *  This map stores the association between UIDs and Usernames
+     */
+    map<string, int>	known_users;
 
 };
 
