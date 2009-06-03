@@ -268,6 +268,16 @@ public:
     };
 
     /**
+     *  Returns the TM driver name for the previous host. The 
+     *  hasPreviousHistory() function MUST be called before this one.
+     *    @return the TM mad name
+     */
+    const string & get_previous_tm_mad() const
+    {
+        return previous_history->tm_mad_name;
+    };
+
+    /**
      *  Returns the transfer filename. The transfer file is in the form:
      *  		$ONE_LOCATION/var/$VM_ID/transfer.$SEQ
      *  or, in case that OpenNebula is installed in root

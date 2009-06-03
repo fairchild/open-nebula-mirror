@@ -52,6 +52,8 @@ public:
         PROLOG_RESUME,
         EPILOG,
         EPILOG_STOP,
+        EPILOG_DELETE,
+        EPILOG_DELETE_PREVIOUS,
         CHECKPOINT,
         FINALIZE
     };
@@ -187,6 +189,16 @@ private:
      */
     void epilog_stop_action(int vid);
     
+    /**
+     *  This function starts the epilog_delete sequence
+     */
+    void epilog_delete_action(int vid);
+
+    /**
+     *  This function starts the epilog_delete sequence on the previous host
+     */
+    void epilog_delete_previous_action(int vid);
+
     /**
      *  This function starts the epilog sequence
      */

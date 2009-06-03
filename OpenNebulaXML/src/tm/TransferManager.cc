@@ -97,6 +97,14 @@ void TransferManager::trigger(Actions action, int _vid)
         aname = "EPILOG_STOP";
         break;
 
+    case EPILOG_DELETE:
+        aname = "EPILOG_DELETE";
+        break;
+
+    case EPILOG_DELETE_PREVIOUS:
+        aname = "EPILOG_DELETE_PREVIOUS";
+        break;
+
     case CHECKPOINT:
         aname = "CHECKPOINT";
         break;
@@ -148,6 +156,14 @@ void TransferManager::do_action(const string &action, void * arg)
     else if (action == "EPILOG_STOP")
     {
         epilog_stop_action(vid);
+    }
+    else if (action == "EPILOG_DELETE")
+    {
+        epilog_delete_action(vid);
+    }
+    else if (action == "EPILOG_DELETE_PREVIOUS")
+    {
+        epilog_delete_previous_action(vid);
     }
     else if (action == "CHECKPOINT")
     {
@@ -587,7 +603,6 @@ void TransferManager::epilog_action(int vid)
     vector<const Attribute *>   attrs;
     int                         num;
 
-
     // ------------------------------------------------------------------------
     // Setup & Transfer script
     // ------------------------------------------------------------------------
@@ -767,6 +782,193 @@ error_common:
     return;
 }
 
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void TransferManager::epilog_delete_action(int vid)
+{
+    ofstream        xfr;
+    ostringstream   os;
+    string          xfr_name;
+
+    const VectorAttribute * disk;
+    string          source;
+    string          save;
+    string          clon;
+
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
+
+    const TransferManagerDriver * tm_md;
+
+    vector<const Attribute *>   attrs;
+    int                         num;
+
+
+    // ------------------------------------------------------------------------
+    // Setup & Transfer script
+    // ------------------------------------------------------------------------
+
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0)
+    {
+        return;
+    }
+
+    if (!vm->hasHistory())
+    {
+        goto error_history;
+    }
+
+    tm_md = get(vm->get_uid(),vm->get_tm_mad());
+
+    if ( tm_md == 0 )
+    {
+        goto error_driver;
+    }
+
+    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+
+    if (xfr.fail() == true)
+    {
+        goto error_file;
+    }
+
+    // ------------------------------------------------------------------------
+    // Delete the remote VM Directory
+    // ------------------------------------------------------------------------
+    
+    xfr << "DELETE " << vm->get_hostname() <<":"<< vm->get_remote_dir() << endl;
+
+    xfr.close();
+
+    tm_md->transfer(vid,vm->get_transfer_file());
+
+    vm->unlock();
+
+    return;
+
+error_history:
+    os.str("");
+    os << "epilog_delete, VM " << vid << " has no history";
+    goto error_common;
+
+error_file:
+    os.str("");
+    os << "epilog_delete, could not open file: " << vm->get_transfer_file();
+    os << ". You may need to manually clean " << vm->get_hostname() 
+       << ":" << vm->get_remote_dir();
+    goto error_common;
+
+error_driver:
+    os.str("");
+    os << "epilog_delete, error getting driver " << vm->get_vmm_mad();
+    os << ". You may need to manually clean " << vm->get_hostname() 
+       << ":" << vm->get_remote_dir();
+    goto error_common;
+
+error_common:
+    vm->log("TM", Log::ERROR, os);
+
+    vm->unlock();
+    return;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void TransferManager::epilog_delete_previous_action(int vid)
+{
+    ofstream        xfr;
+    ostringstream   os;
+    string          xfr_name;
+
+    const VectorAttribute * disk;
+    string          source;
+    string          save;
+    string          clon;
+
+    VirtualMachine *    vm;
+    Nebula&             nd = Nebula::instance();
+
+    const TransferManagerDriver * tm_md;
+
+    vector<const Attribute *>   attrs;
+    int                         num;
+
+
+    // ------------------------------------------------------------------------
+    // Setup & Transfer script
+    // ------------------------------------------------------------------------
+
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0)
+    {
+        return;
+    }
+
+    if (!vm->hasHistory() || !vm->hasPreviousHistory())
+    {
+        goto error_history;
+    }
+
+    tm_md = get(vm->get_uid(),vm->get_previous_tm_mad());
+
+    if ( tm_md == 0 )
+    {
+        goto error_driver;
+    }
+
+    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+
+    if (xfr.fail() == true)
+    {
+        goto error_file;
+    }
+
+    // ------------------------------------------------------------------------
+    // Delete the remote VM Directory
+    // ------------------------------------------------------------------------
+    
+    xfr << "DELETE " << vm->get_previous_hostname() <<":"<< vm->get_remote_dir()
+        << endl;
+
+    xfr.close();
+
+    tm_md->transfer(vid,vm->get_transfer_file());
+
+    vm->unlock();
+
+    return;
+
+error_history:
+    os.str("");
+    os << "epilog_delete_previous, VM " << vid << " has no history";
+    goto error_common;
+
+error_file:
+    os.str("");
+    os << "epilog_delete, could not open file: " << vm->get_transfer_file();
+    os << ". You may need to manually clean " << vm->get_previous_hostname() 
+       << ":" << vm->get_remote_dir();
+    goto error_common;
+
+error_driver:
+    os.str("");
+    os << "epilog_delete, error getting driver " << vm->get_vmm_mad();
+    os << ". You may need to manually clean " << vm->get_previous_hostname() 
+       << ":" << vm->get_remote_dir();
+    goto error_common;
+
+error_common:
+    vm->log("TM", Log::ERROR, os);
+
+    vm->unlock();
+    return;
+}
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
