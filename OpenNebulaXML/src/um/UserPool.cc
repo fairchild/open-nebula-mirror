@@ -69,8 +69,9 @@ UserPool::UserPool(SqliteDB * db):PoolSQL(db,User::table)
         string oneadmin_name;
         string oneadmin_password;
         
-        Nebula&  nd = Nebula::instance();
+        oneadmin_name = getlogin();
         
+        Nebula&  nd = Nebula::instance();  
         nd.get_configuration_attribute("ONEADMIN_DEFAULT_PASSWORD",oneadmin_password);
         
         allocate(&oneadmin_uid, oneadmin_name, oneadmin_password, true);
