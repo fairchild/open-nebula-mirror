@@ -181,6 +181,8 @@ private:
 
     void shutdown_action(int vid);
 
+    void failure_action(VirtualMachine * vm);
+
     void timer_action();        
 };
 

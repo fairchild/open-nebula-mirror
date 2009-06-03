@@ -340,29 +340,11 @@ void  LifeCycleManager::deploy_failure_action(int vid)
     }
     else if (vm->get_lcm_state() == VirtualMachine::BOOT)
     {
-    	int		cpu,mem,disk;
-    	time_t	the_time = time(0);
-
-    	Nebula&             nd = Nebula::instance();
-        DispatchManager *   dm = nd.get_dm();
+	    time_t	the_time = time(0);
 
         vm->set_running_etime(the_time);
-        
-        vm->set_etime(the_time);
-        
-        vm->set_reason(History::ERROR);
 
-        vmpool->update_history(vm);
-
-        vm->get_requirements(cpu,mem,disk);
-        
-        hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
-
-        vm->log("LCM", Log::INFO, "Fail to boot VM.");
-
-        //----------------------------------------------------
-        
-        dm->trigger(DispatchManager::FAILED,vid);
+        failure_action(vm);
     }
     
     vm->unlock();
@@ -515,12 +497,8 @@ error:
 void  LifeCycleManager::prolog_failure_action(int vid)
 {
     VirtualMachine *    vm;
-    time_t				the_time = time(0);
-    int					cpu,mem,disk;
-    
-    Nebula&             nd = Nebula::instance();
-    DispatchManager *   dm = nd.get_dm();
-    
+	time_t	the_time = time(0);
+
     vm = vmpool->get(vid,true);
     
     if ( vm == 0 )
@@ -529,21 +507,9 @@ void  LifeCycleManager::prolog_failure_action(int vid)
     }
         
     vm->set_prolog_etime(the_time);
-    
-    vm->set_etime(the_time);
-    
-    vm->set_reason(History::ERROR);
-    
-    vmpool->update_history(vm);
 
-    vm->get_requirements(cpu,mem,disk);
-    
-    hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
+    failure_action(vm);
 
-    //----------------------------------------------------
-
-    dm->trigger(DispatchManager::FAILED,vid);
-    
     vm->unlock();
     
     return;    
@@ -611,12 +577,8 @@ error:
 
 void  LifeCycleManager::epilog_failure_action(int vid)
 {
-    Nebula&             nd = Nebula::instance();
-    DispatchManager *   dm = nd.get_dm();
-    
-    VirtualMachine *    vm;
-    time_t              the_time = time(0);
-    int					cpu,mem,disk;
+    VirtualMachine * vm;
+    time_t           the_time = time(0);
     
     vm = vmpool->get(vid,true);
     
@@ -627,20 +589,8 @@ void  LifeCycleManager::epilog_failure_action(int vid)
 
     vm->set_epilog_etime(the_time);
     
-    vm->set_etime(the_time);
-    
-    vm->set_reason(History::ERROR);
-            
-    vmpool->update_history(vm);
-    
-    vm->get_requirements(cpu,mem,disk);
-    
-    hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
-    
-    //----------------------------------------------------
-    
-    dm->trigger(DispatchManager::FAILED,vid);
-    
+    failure_action(vm);
+
     vm->unlock();
     
     return;        
@@ -722,13 +672,9 @@ void  LifeCycleManager::cancel_failure_action(int vid)
 
 void  LifeCycleManager::monitor_failure_action(int vid)
 {
-    VirtualMachine *    vm;
+    VirtualMachine * vm;
 
-	int		cpu,mem,disk;
 	time_t	the_time = time(0);
-
-	Nebula&             nd = Nebula::instance();
-    DispatchManager *   dm = nd.get_dm();
     
     vm = vmpool->get(vid,true);
     
@@ -738,22 +684,8 @@ void  LifeCycleManager::monitor_failure_action(int vid)
     }
 	
     vm->set_running_etime(the_time);
-    
-    vm->set_etime(the_time);
-    
-    vm->set_reason(History::ERROR);
 
-    vmpool->update_history(vm);
-
-    vm->get_requirements(cpu,mem,disk);
-    
-    hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
-
-    vm->log("LCM", Log::INFO, "VM failed.");
-
-    //----------------------------------------------------
-    
-    dm->trigger(DispatchManager::FAILED,vid);
+    failure_action(vm);
 
     vm->unlock();
 }
@@ -839,4 +771,42 @@ void  LifeCycleManager::monitor_done_action(int vid)
     tm->trigger(TransferManager::EPILOG,vid);
     
     vm->unlock();  
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void  LifeCycleManager::failure_action(VirtualMachine * vm)
+{
+	Nebula&             nd = Nebula::instance();
+	TransferManager *   tm = nd.get_tm();
+    DispatchManager *   dm = nd.get_dm();
+    
+	time_t	the_time = time(0);
+   	int		cpu,mem,disk;
+    
+    //----------------------------------------------------
+    //                LCM FAILURE STATE
+    //----------------------------------------------------
+
+    vm->set_state(VirtualMachine::FAILURE);
+
+    vmpool->update(vm);
+     
+    vm->set_etime(the_time);
+        
+    vm->set_reason(History::ERROR);
+
+    vmpool->update_history(vm);
+
+    vm->get_requirements(cpu,mem,disk);
+        
+    hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
+
+    //------------- Clean up remote files ----------------
+
+    dm->trigger(DispatchManager::FAILED,vm->get_oid());
+
+    tm->trigger(TransferManager::EPILOG_DELETE,vm->get_oid());
 }
