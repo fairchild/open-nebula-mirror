@@ -281,6 +281,18 @@ void VirtualMachineManagerDriver::protocol(
         return;
     }
 
+    if ( vm->get_state () == VirtualMachine::DONE ||
+         vm->get_state () == VirtualMachine::FAILED )
+    {
+        os.str("");
+        os << "Message: " << message << ", from VMM but VM is DONE or FAILED.";
+        vm->log("VMM",Log::WARNING,os);
+
+        vm->unlock();
+
+        return;
+    }
+
     // Driver Actions
     if ( action == "DEPLOY" )
     {

@@ -95,6 +95,18 @@ void TransferManagerDriver::protocol(
         return;
     }
 
+    if ( vm->get_state () == VirtualMachine::DONE ||
+         vm->get_state () == VirtualMachine::FAILED )
+    {
+        os.str("");
+        os << "Message: " << message << ", from TM but VM is DONE or FAILED.";
+        vm->log("TM",Log::WARNING,os);
+
+        vm->unlock();
+
+        return;
+    }
+
     // Driver Actions
     if (action == "TRANSFER")
     {
