@@ -22,6 +22,9 @@
 #include "UserPool.h"
 #include "Nebula.h"
 
+#include <sys/types.h>
+#include <pwd.h>
+
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
@@ -64,17 +67,24 @@ UserPool::UserPool(SqliteDB * db):PoolSQL(db,User::table)
     if ((int) known_users.size() == 0)   
     {
         // User oneadmin needs to be added in the bootstrap
+        struct passwd * pw_ent;
+        int    oneadmin_uid = -1;
+
+        pw_ent = getpwuid(getuid());
+
+        if ((pw_ent != NULL) && (pw_ent->pw_name != NULL))
+        {                                                 
+            Nebula&  nd = Nebula::instance();
+
+            string oneadmin_name;
+            string oneadmin_password;
+
+            oneadmin_name = pw_ent->pw_name;
+            nd.get_configuration_attribute("ONEADMIN_DEFAULT_PASSWORD",
+                        oneadmin_password);
         
-        int    oneadmin_uid;
-        string oneadmin_name;
-        string oneadmin_password;
-        
-        oneadmin_name = getlogin();
-        
-        Nebula&  nd = Nebula::instance();  
-        nd.get_configuration_attribute("ONEADMIN_DEFAULT_PASSWORD",oneadmin_password);
-        
-        allocate(&oneadmin_uid, oneadmin_name, oneadmin_password, true);
+            allocate(&oneadmin_uid, oneadmin_name, oneadmin_password, true);
+        }
         
         if (oneadmin_uid != 0)
         {

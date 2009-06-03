@@ -17,6 +17,7 @@
 
 #include <limits.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <iostream>
 #include <sstream>
