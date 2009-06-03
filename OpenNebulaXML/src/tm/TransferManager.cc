@@ -591,9 +591,7 @@ void TransferManager::epilog_action(int vid)
     string          xfr_name;
 
     const VectorAttribute * disk;
-    string          source;
     string          save;
-    string          clon;
 
     VirtualMachine *    vm;
     Nebula&             nd = Nebula::instance();
@@ -792,19 +790,9 @@ void TransferManager::epilog_delete_action(int vid)
     ostringstream   os;
     string          xfr_name;
 
-    const VectorAttribute * disk;
-    string          source;
-    string          save;
-    string          clon;
-
     VirtualMachine *    vm;
-    Nebula&             nd = Nebula::instance();
 
     const TransferManagerDriver * tm_md;
-
-    vector<const Attribute *>   attrs;
-    int                         num;
-
 
     // ------------------------------------------------------------------------
     // Setup & Transfer script
@@ -885,19 +873,9 @@ void TransferManager::epilog_delete_previous_action(int vid)
     ostringstream   os;
     string          xfr_name;
 
-    const VectorAttribute * disk;
-    string          source;
-    string          save;
-    string          clon;
-
     VirtualMachine *    vm;
-    Nebula&             nd = Nebula::instance();
 
     const TransferManagerDriver * tm_md;
-
-    vector<const Attribute *>   attrs;
-    int                         num;
-
 
     // ------------------------------------------------------------------------
     // Setup & Transfer script
