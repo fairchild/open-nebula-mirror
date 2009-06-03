@@ -59,7 +59,28 @@ UserPool::UserPool(SqliteDB * db):PoolSQL(db,User::table)
     
     sql  << "SELECT oid,user_name FROM " <<  User::table;
          
-    db->exec(sql, getuids_cb, (void *) &known_users);        
+    db->exec(sql, getuids_cb, (void *) &known_users);     
+    
+    if ((int) known_users.size() == 0)   
+    {
+        // User oneadmin needs to be added in the bootstrap
+        
+        int    oneadmin_uid;
+        string oneadmin_name;
+        string oneadmin_password;
+        
+        Nebula&  nd = Nebula::instance();
+        
+        nd.get_configuration_attribute("ONEADMIN_DEFAULT_PASSWORD",oneadmin_password);
+        
+        allocate(&oneadmin_uid, oneadmin_name, oneadmin_password, true);
+        
+        if (oneadmin_uid != 0)
+        {
+            Nebula::log("ONE",Log::ERROR,"Error adding superuser oneadmin");
+            throw;
+        }
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -97,29 +118,38 @@ User * UserPool::get(int  oid,  bool lock)
 {
     User * user = static_cast<User *>(PoolSQL::get(oid,lock));
     
-    if (user != 0)
-    {
-        known_users.insert(make_pair(user->get_username(),user->oid));
-    }
-    
     return user;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int UserPool::authenticate(string username, string password)
+int UserPool::authenticate(string session)
 {
     map<string, int>::iterator     index;
+    unsigned int                   pos;
+    
+    string                         username;
+    string                         password;
     
     int                            user_id = -1; 
     
-    index = known_users.find(username);
+    // session holds username:password
+    
+    pos=session.find(":");
 
-    if ( index != known_users.end() )
-    {
-        User * user = get((int)index->second,false);
-        user_id     = user->get_uid();
+    if (pos != string::npos)
+    { 
+        username = session.substr(0,pos-1);
+        password = session.substr(pos+1);    
+    
+        index = known_users.find(username);
+
+        if ( index != known_users.end() )
+        {
+            User * user = get((int)index->second,false);
+            user_id     = user->authenticate(password);
+        }
     }
     
     return user_id;

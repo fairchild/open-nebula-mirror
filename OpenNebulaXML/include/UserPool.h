@@ -99,11 +99,10 @@ public:
     
     /**
      * Returns whether there is a user with given username/password or not
-     *   @param username, username
-     *   @param password, password
+     *   @param session, colon separated username and password string
      *   @return -1 if there is no such a user, uid of the user if it exists
      */
-    int authenticate(string username, string password);
+    int authenticate(string session);
         
 private:
     /**
