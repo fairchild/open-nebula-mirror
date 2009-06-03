@@ -77,7 +77,9 @@ public:
         EPILOG_STOP    = 10,
         EPILOG         = 11,
         SHUTDOWN       = 12,
-        CANCEL         = 13
+        CANCEL         = 13,
+        FAILURE        = 14,
+        DELETE         = 15
     };
 
     // -------------------------------------------------------------------------

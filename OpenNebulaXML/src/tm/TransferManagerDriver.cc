@@ -95,8 +95,9 @@ void TransferManagerDriver::protocol(
         return;
     }
 
-    if ( vm->get_state () == VirtualMachine::DONE ||
-         vm->get_state () == VirtualMachine::FAILED )
+    if ( vm->get_lcm_state() == VirtualMachine::DELETE ||
+         vm->get_lcm_state() == VirtualMachine::FAILURE||
+         vm->get_lcm_state() == VirtualMachine::LCM_INIT )
     {
         os.str("");
         os << "Message: " << message << ", from TM but VM is DONE or FAILED.";
