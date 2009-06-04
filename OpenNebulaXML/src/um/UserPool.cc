@@ -128,7 +128,7 @@ int UserPool::allocate (
 int UserPool::authenticate(string& session)
 {
     map<string, int>::iterator     index;
-    unsigned int                   pos;
+    size_t                         pos;
     
     string                         username;
     string                         password;
