@@ -95,9 +95,9 @@ public:
     /**
      *  Bootstraps the database table(s) associated to the Host pool
      */
-    void bootstrap()
+    static void bootstrap(SqliteDB *_db)
     {
-        Host::bootstrap(db);
+        Host::bootstrap(_db);
     };
     
     /**

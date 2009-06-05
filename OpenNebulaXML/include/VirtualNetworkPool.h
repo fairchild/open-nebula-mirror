@@ -100,9 +100,9 @@ public:
     /**
      *  Bootstraps the database table(s) associated to the VirtualNetwork pool
      */
-    void bootstrap()
+    static void bootstrap(SqliteDB * _db)
     {
-        VirtualNetwork::bootstrap(db);
+        VirtualNetwork::bootstrap(_db);
     };
     
     /** Drops a VN from the cache & DB, the VN mutex MUST BE locked

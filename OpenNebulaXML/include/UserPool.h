@@ -97,9 +97,9 @@ public:
     /**
      *  Bootstraps the database table(s) associated to the User pool
      */
-    void bootstrap()
+    static void bootstrap(SqliteDB * _db)
     {
-        User::bootstrap(db);
+        User::bootstrap(_db);
     };
     
     /**

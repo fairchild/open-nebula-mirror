@@ -120,11 +120,6 @@ public:
      */
     void clean();
      
-    /**
-     *  Bootstraps the database table(s) associated to the pool
-     */
-    virtual void bootstrap() = 0;
-        
 protected:
 
     /**
