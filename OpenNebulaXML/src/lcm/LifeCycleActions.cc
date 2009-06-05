@@ -463,3 +463,51 @@ error:
     vm->log("LCM", Log::ERROR, "cancel_action, VM in a wrong state.");
     vm->unlock();
 }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void  LifeCycleManager::restart_action(int vid)
+{
+    VirtualMachine *    vm;
+    
+    vm = vmpool->get(vid,true);
+    
+    if ( vm == 0 )
+    {
+        return;
+    }
+    
+    if (vm->get_state() == VirtualMachine::ACTIVE &&
+        vm->get_lcm_state() == VirtualMachine::UNKNOWN)
+    {
+        Nebula&                 nd = Nebula::instance();
+        VirtualMachineManager * vmm = nd.get_vmm();
+
+        //----------------------------------------------------
+        //       RE-START THE VM IN THE SAME HOST
+        //----------------------------------------------------
+        
+        vm->set_state(VirtualMachine::BOOT);
+        
+        vmpool->update(vm);
+
+        vm->log("LCM", Log::INFO, "New VM state is BOOT");
+        
+        //----------------------------------------------------
+        
+        vmm->trigger(VirtualMachineManager::DEPLOY,vid);       
+    }
+    else
+    {
+        goto error; 
+    }
+    
+    vm->unlock();
+    
+    return;
+    
+error:
+    vm->log("LCM", Log::ERROR, "restart_action, VM in a wrong state.");
+    vm->unlock();
+}

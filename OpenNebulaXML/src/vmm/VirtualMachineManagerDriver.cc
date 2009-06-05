@@ -557,9 +557,10 @@ void VirtualMachineManagerDriver::protocol(
 
                     break;
 
-                case 'd': //Failed
+                case 'd': //The VM was not found
                     os.str("");
-                    os  << "VM running but it was not found. Assuming it is done.\n";
+                    os  << "VM running but it was not found. Restart and delete ";
+                    os  << "actions available or try to recover it manually";
                     vm->log("VMM",Log::INFO,os);
 
                     lcm->trigger(LifeCycleManager::MONITOR_DONE, id);

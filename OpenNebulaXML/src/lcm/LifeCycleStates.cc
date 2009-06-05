@@ -738,10 +738,6 @@ void  LifeCycleManager::monitor_suspend_action(int vid)
 void  LifeCycleManager::monitor_done_action(int vid)
 {
     VirtualMachine *    vm;
-	time_t	the_time = time(0);
-
-	Nebula&             nd = Nebula::instance();
-	TransferManager *   tm = nd.get_tm();
     
     vm = vmpool->get(vid,true);
     
@@ -754,21 +750,13 @@ void  LifeCycleManager::monitor_done_action(int vid)
     //                   EPILOG STATE
     //----------------------------------------------------
     
-    vm->set_state(VirtualMachine::EPILOG);
+    vm->set_state(VirtualMachine::UNKNOWN);
     
     vmpool->update(vm);
     
-    vm->set_epilog_stime(the_time);
-    
-    vm->set_running_etime(the_time);
-    
-    vmpool->update_history(vm);
-    
-    vm->log("LCM", Log::INFO, "New VM state is EPILOG");
+    vm->log("LCM", Log::INFO, "New VM state is UNKNOWN");
     
     //----------------------------------------------------
-        
-    tm->trigger(TransferManager::EPILOG,vid);
     
     vm->unlock();  
 }

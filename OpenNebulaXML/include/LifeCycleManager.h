@@ -66,7 +66,8 @@ public:
         CANCEL,           /**< Send by the DM to cancel an running VM         */
         MIGRATE,          /**< Send by the DM to migrate a VM to other host   */
         LIVE_MIGRATE,     /**< Send by the DM to live-migrate a VM            */
-        SHUTDOWN,         /**< Send by the DM to shutdown an running VM       */
+        SHUTDOWN,         /**< Send by the DM to shutdown a running VM        */
+        RESTART,          /**< Send by the DM to restart a deployed VM        */
         FINALIZE
     };
 
@@ -182,6 +183,8 @@ private:
     void shutdown_action(int vid);
 
     void failure_action(VirtualMachine * vm);
+
+    void restart_action(int vid);
 
     void timer_action();        
 };

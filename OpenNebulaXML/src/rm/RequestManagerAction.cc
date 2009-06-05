@@ -70,6 +70,10 @@ void RequestManager::VirtualMachineAction::execute(
     {
         rc = dm->resume(vid);
     }
+    else if (action == "restart")
+    {
+        rc = dm->restart(vid);
+    }
     else if (action == "finalize")
     {
         rc = dm->finalize(vid);

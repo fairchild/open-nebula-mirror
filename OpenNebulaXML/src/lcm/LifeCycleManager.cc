@@ -162,6 +162,10 @@ void LifeCycleManager::trigger(Actions action, int _vid)
         aname = "SHUTDOWN";
         break;
         
+    case RESTART:
+        aname = "RESTART";
+        break;
+
     case FINALIZE:
         aname = ACTION_FINALIZE;
         break;
@@ -282,6 +286,10 @@ void LifeCycleManager::do_action(const string &action, void * arg)
     else if (action == "SHUTDOWN")
     {
         shutdown_action(vid);
+    }
+    else if (action == "RESTART")
+    {
+        restart_action(vid);
     }
     else if (action == ACTION_FINALIZE)
     {
