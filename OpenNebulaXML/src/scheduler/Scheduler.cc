@@ -421,7 +421,7 @@ void Scheduler::dispatch()
             {
                 xmlrpc_client.call(
                     one_url,
-                    "one.vmdeploy",
+                    "one.vm.deploy",
                     "sii",
                     &deploy_result,
                     "session",
