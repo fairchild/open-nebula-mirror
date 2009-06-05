@@ -126,9 +126,21 @@ void Nebula::start()
 
     try
     {
-        string db_name = var_location + "one.db";
+        string      db_name = var_location + "one.db";
+        struct stat db_stat;
+        bool        db_bootstrap = stat(db_name.c_str(), &db_stat) != 0;
         
         db = new SqliteDB(db_name,Nebula::log);
+
+	if (db_bootstrap)
+	{
+	    Nebula::log("ONE",Log::INFO,"Bootstraping OpenNebula database.");
+	    
+	    VirtualMachinePool::bootstrap(db);
+	    HostPool::bootstrap(db);
+	    VirtualNetworkPool::bootstrap(db);
+	    UserPool::bootstrap(db);
+	}
     }
     catch (exception&)
     {
@@ -158,13 +170,6 @@ void Nebula::start()
     {
         throw;
     }
-    
-    Nebula::log("ONE",Log::INFO,"Bootstraping OpenNebula database.");
-    
-    vmpool->bootstrap();
-     hpool->bootstrap();
-    vnpool->bootstrap();
-     upool->bootstrap();
     
     // ----------------------------------------------------------- 
     // Close stds, we no longer need them                          
@@ -385,12 +390,14 @@ void Nebula::start()
     
     vmm->trigger(VirtualMachineManager::FINALIZE,0);
     lcm->trigger(LifeCycleManager::FINALIZE,0);    
+
     tm->trigger(TransferManager::FINALIZE,0);
     dm->trigger(DispatchManager::FINALIZE,0);
     
     im->finalize();    
     rm->finalize();
-    
+    hm->finalize();
+
     //sleep to wait drivers???
     
     pthread_join(vmm->get_thread_id(),0);
@@ -400,6 +407,7 @@ void Nebula::start()
     
     pthread_join(im->get_thread_id(),0);
     pthread_join(rm->get_thread_id(),0);
+    pthread_join(hm->get_thread_id(),0);
     
     Nebula::log("ONE", Log::INFO, "All modules finalized, exiting.\n");
 }
