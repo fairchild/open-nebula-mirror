@@ -56,7 +56,7 @@ void RequestManager::UserDelete::execute(
     // Now let's get the user 
     user = UserDelete::upool->get(username,true);
    
-    if ( rc == 0) 
+    if ( user == 0) 
     {
         goto error_get_user;
     }

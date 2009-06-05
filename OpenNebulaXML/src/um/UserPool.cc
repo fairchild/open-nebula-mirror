@@ -141,7 +141,7 @@ int UserPool::authenticate(string& session)
 
     if (pos != string::npos)
     { 
-        username = session.substr(0,pos-1);
+        username = session.substr(0,pos);
         password = session.substr(pos+1);    
     
         index = known_users.find(username);
@@ -155,4 +155,3 @@ int UserPool::authenticate(string& session)
     
     return user_id;
 }
-

@@ -68,7 +68,7 @@ void RequestManager::UserPoolInfo::execute(
     return;
 
 error_authenticate:
-    oss << "User not authorized to pull user pool info";
+    oss << "User not authorized to pull user pool info. Error code: " << rc;
     goto error_common;
     
 error_dumping:
