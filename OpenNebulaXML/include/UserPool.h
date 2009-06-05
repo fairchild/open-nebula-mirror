@@ -68,6 +68,32 @@ public:
         return user;
     }
     
+
+    /**
+     *  Function to get a User from the pool, if the object is not in memory
+     *  it is loaded from the DB
+     *    @param username
+     *    @param lock locks the User mutex
+     *    @return a pointer to the Host, 0 if the User could not be loaded
+     */
+    User * get(
+        string  username,
+        bool    lock)
+    {
+        map<string, int>::iterator     index;
+    
+        index = known_users.find(username);
+
+        if ( index != known_users.end() )
+        {
+            return get((int)index->second,true);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     /** Update a particular User 
      *    @param user pointer to User
      *    @return 0 on success
@@ -88,7 +114,7 @@ public:
     	if ( rc == 0)
     	{
             known_users.erase(user->get_username());
-    		remove(static_cast<PoolObjectSQL *>(user)); 
+            remove(static_cast<PoolObjectSQL *>(user)); 
     	}
         
         return rc;

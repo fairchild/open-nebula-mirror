@@ -324,6 +324,7 @@ void Nebula::start()
             vmpool,
             hpool,
             vnpool,
+            upool,
             rm_port,
             log_location + "one_xmlrpc.log");
     }

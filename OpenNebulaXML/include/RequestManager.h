@@ -21,6 +21,7 @@
 #include "ActionManager.h"
 #include "VirtualMachinePool.h"
 #include "HostPool.h"
+#include "UserPool.h"
 #include "VirtualNetworkPool.h"
 
 #include <xmlrpc-c/base.hpp>
@@ -41,10 +42,11 @@ public:
         VirtualMachinePool *    _vmpool,
         HostPool *              _hpool,
         VirtualNetworkPool *    _vnpool,
+        UserPool           *    _upool,
         int                     _port,
         string                  _xml_log_file)
-            :vmpool(_vmpool),hpool(_hpool),vnpool(_vnpool),port(_port),socket_fd(-1),
-            xml_log_file(_xml_log_file)
+            :vmpool(_vmpool),hpool(_hpool),vnpool(_vnpool),upool(_upool),
+            port(_port),socket_fd(-1),xml_log_file(_xml_log_file)
     {
         am.addListener(this);
     };
@@ -106,12 +108,17 @@ private:
     /**
      *  Pointer to the Host Pool, to access hosts
      */
-    HostPool *              hpool;
+    HostPool           *    hpool;
     
     /**
      *  Pointer to the VN Pool, to access Virtual Netowrks
      */
     VirtualNetworkPool *    vnpool;
+    
+    /**
+     *  Pointer to the User Pool, to access users
+     */
+    UserPool           *    upool;
 
     /**
      *  Port number where the connection will be open
@@ -502,8 +509,97 @@ private:
         VirtualNetworkPool * vnpool;
 
     };
-};
 
+    /* ---------------------------------------------------------------------- */
+    /*                      User Management Interface                         */    
+    /* ---------------------------------------------------------------------- */
+    
+    
+    class UserAllocate: public xmlrpc_c::method
+    {
+    public:
+        UserAllocate(UserPool * _upool):upool(_upool)
+        {
+            _signature="A:sss";
+            _help="Creates a new user";
+        };
+
+        ~UserAllocate(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        UserPool * upool;
+    };
+
+
+    /* ---------------------------------------------------------------------- */
+    
+    class UserInfo: public xmlrpc_c::method
+    {
+    public:
+        UserInfo(UserPool * _upool):upool(_upool)
+        {
+            _signature="A:ss";
+            _help="Creates a new user";
+        };
+
+        ~UserInfo(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        UserPool * upool;
+    };
+
+    /* ---------------------------------------------------------------------- */
+
+    class UserDelete: public xmlrpc_c::method
+    {
+    public:
+        UserDelete(UserPool * _upool):upool(_upool)
+        {
+            _signature="A:ss";
+            _help="Creates a new user";
+        };
+
+        ~UserDelete(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        UserPool * upool;
+    };
+
+    
+    /* ---------------------------------------------------------------------- */
+
+    class UserPoolInfo: public xmlrpc_c::method
+    {
+    public:
+        UserPoolInfo(UserPool * _upool):upool(_upool)
+        {
+            _signature="A:s";
+            _help="Creates a new user";
+        };
+
+        ~UserPoolInfo(){};
+
+        void execute(
+            xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP);
+
+    private:
+        UserPool * upool;
+    };
+
+};
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

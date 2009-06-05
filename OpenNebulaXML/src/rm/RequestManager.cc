@@ -259,6 +259,18 @@ void RequestManager::register_xml_methods()
     xmlrpc_c::methodPtr vn_delete(new 
         RequestManager::VirtualNetworkDelete(vnpool));
 
+    xmlrpc_c::methodPtr user_allocate(new    
+        RequestManager::UserAllocate(upool));
+
+    xmlrpc_c::methodPtr user_info(new    
+        RequestManager::UserInfo(upool));
+
+    xmlrpc_c::methodPtr user_delete(new    
+        RequestManager::UserDelete(upool));
+    
+    xmlrpc_c::methodPtr userpool_info(new    
+        RequestManager::UserPoolInfo(upool));
+
     /* VM related methods  */    
         
     RequestManagerRegistry.addMethod("one.vm.allocate", vm_allocate);
@@ -285,6 +297,15 @@ void RequestManager::register_xml_methods()
     RequestManagerRegistry.addMethod("one.vn.delete", vn_delete);
 
     RequestManagerRegistry.addMethod("one.vnpool.info", vnpool_info); 
+    
+    
+    /* User related methods*/
+        
+    RequestManagerRegistry.addMethod("one.user.allocate", user_allocate);
+    RequestManagerRegistry.addMethod("one.user.info", user_info);
+    RequestManagerRegistry.addMethod("one.user.delete", user_delete);
+
+	RequestManagerRegistry.addMethod("one.userpool.info", userpool_info);
     
 };
 
