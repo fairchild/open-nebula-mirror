@@ -51,19 +51,19 @@ void RequestManager::HostInfo::execute(
         goto error_host_get;                     
     }
     
-    // All nice, return the host info to the client  
-    arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
-    oss.str("");
     oss << *host;
     
     host->unlock();
     
+    // All nice, return the host info to the client  
+    arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
     arrayData.push_back(xmlrpc_c::value_string(oss.str()));
-    arrayresult = new xmlrpc_c::value_array(arrayData);
+
     // Copy arrayresult into retval mem space
+    arrayresult = new xmlrpc_c::value_array(arrayData);
     *retval = *arrayresult;
-    // and get rid of the original
-    delete arrayresult;
+
+    delete arrayresult; // and get rid of the original
 
     return;
 

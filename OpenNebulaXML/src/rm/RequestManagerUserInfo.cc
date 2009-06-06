@@ -30,8 +30,6 @@ void RequestManager::UserInfo::execute(
     
     User    *           user;
 
-    string              user_xml;
-
     int                 rc;     
     ostringstream       oss;
 
@@ -45,7 +43,6 @@ void RequestManager::UserInfo::execute(
     session      = xmlrpc_c::value_string(paramList.getString(0));
     username     = xmlrpc_c::value_string(paramList.getString(1));
     
-
     // Only oneadmin can retrieve user information
     rc = UserInfo::upool->authenticate(session);
     
@@ -61,20 +58,20 @@ void RequestManager::UserInfo::execute(
     {                                            
         goto error_get_user;                     
     }    
-    
-    user_xml = user->to_xml(user_xml);
+   
+    oss << *user; 
 
     user->unlock();
     
     // All nice, return the new uid to client  
     arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
-    arrayData.push_back(xmlrpc_c::value_string(user_xml));
-    
-    arrayresult = new xmlrpc_c::value_array(arrayData);
+    arrayData.push_back(xmlrpc_c::value_string(oss.str()));
+
     // Copy arrayresult into retval mem space
+    arrayresult = new xmlrpc_c::value_array(arrayData);
     *retval = *arrayresult;
-    // and get rid of the original
-    delete arrayresult;
+
+    delete arrayresult; // and get rid of the original
 
     return;
 

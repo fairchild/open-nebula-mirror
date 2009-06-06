@@ -88,10 +88,8 @@ public:
         {
             return get((int)index->second,true);
         }
-        else
-        {
-            return 0;
-        }
+
+        return 0;
     }
 
     /** Update a particular User 

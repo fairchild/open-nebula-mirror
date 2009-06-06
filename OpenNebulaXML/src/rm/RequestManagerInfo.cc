@@ -51,20 +51,19 @@ void RequestManager::VirtualMachineInfo::execute(
         goto error_vm_get;                     
     }
     
-    // All nice, return the vm info to the client  
-    arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
-    oss.str("");
     oss << *vm;
     
     vm->unlock();
     
+    // All nice, return the vm info to the client  
+    arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
     arrayData.push_back(xmlrpc_c::value_string(oss.str()));
-    arrayresult = new xmlrpc_c::value_array(arrayData);
 
     // Copy arrayresult into retval mem space
+    arrayresult = new xmlrpc_c::value_array(arrayData);
     *retval = *arrayresult;
-    // and get rid of the original
-    delete arrayresult;
+
+    delete arrayresult; // and get rid of the original
 
     return;
 
