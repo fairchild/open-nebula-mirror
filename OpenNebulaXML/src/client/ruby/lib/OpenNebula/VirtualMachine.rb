@@ -68,9 +68,9 @@ module OpenNebula
         end
         
         # Initializes an empty VirtualMachine
-        def initialize
+        def initialize(vmid=nil)
             @vm_data=Hash.new
-            @vm_id=nil
+            @vm_id=vmid
         end
 
         # Populates a VirtualMachine object with information from
