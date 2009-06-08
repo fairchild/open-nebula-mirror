@@ -26,18 +26,6 @@ module OpenNebula
         end
     end
 
-    def self.connection
-        #if @connection
-        #    @connection
-        #else
-        #    @connection=Client.new
-        #end
-        Client.new
-    end
-
-    def self.call(*args)
-        self.connection.call(*args)
-    end
 
     # Server class. This is the one that makes xml-rpc calls.
     class Client
@@ -54,23 +42,31 @@ module OpenNebula
             @one_auth  = "#{$1}:#{Digest::SHA1.hexdigest($2)}"
 
             if endpoint
-                one_endpoint=endpoint
+                @one_endpoint=endpoint
             elsif ENV["ONE_XMLRPC"]
-                one_endpoint=ENV["ONE_XMLRPC"]
+                @one_endpoint=ENV["ONE_XMLRPC"]
             else
-                one_endpoint="http://localhost:2633/RPC2"
+                @one_endpoint="http://localhost:2633/RPC2"
             end
-            @server=XMLRPC::Client.new2(one_endpoint)
-            @server.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
         end
 
         def call(action, *args)
+
+            server=XMLRPC::Client.new2(@one_endpoint)
+            server.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
+
             begin
-                response=@server.call("one."+action, @one_auth, *args)
-                response<<nil if response.length<2
-                response
+                response = server.call("one."+action, @one_auth, *args)
+                
+                if response.length < 2
+                    Error.new("Wrong number of arguments in XML-RPC response")
+                elsif response[0] == false
+                    Error.new(response[1])
+                else
+                   response[1..-1] 
+                end
             rescue Exception => e
-                [false, e.message]
+                Error.new(e.message) 
             end
         end
     end
