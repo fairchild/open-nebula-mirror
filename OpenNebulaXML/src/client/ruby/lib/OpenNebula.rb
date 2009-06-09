@@ -6,11 +6,13 @@ rescue Exception
 end
 require 'xmlrpc/client'
 require 'digest/sha1'
+require 'REXML/Document'
 require 'pp'
 
 require 'crack'
 
 require 'OpenNebula/VirtualMachine'
+require 'OpenNebula/VirtualMachinePool'
 
 module OpenNebula
 
@@ -51,7 +53,6 @@ module OpenNebula
         end
 
         def call(action, *args)
-
             server=XMLRPC::Client.new2(@one_endpoint)
             server.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
 
@@ -63,7 +64,8 @@ module OpenNebula
                 elsif response[0] == false
                     Error.new(response[1])
                 else
-                   response[1..-1] 
+                   #response[1..-1] 
+                   response[1]
                 end
             rescue Exception => e
                 Error.new(e.message) 
