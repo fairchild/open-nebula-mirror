@@ -17,9 +17,14 @@ module OpenNebula
             if @xml
                 doc=REXML::Document.new(@xml)
                 doc.elements.each("/#{@pool_name}/#{@element_name}") {|pelem|
-                    yield OpenNebula::PoolNode.new(pelem)
+                    yield self.factory(pelem)
                 }
             end
+        end
+        
+        # Default Factory Method for the Pools
+        def factory(element_xml)
+            OpenNebula::PoolNode.new(element_xml)
         end
     end
     
@@ -52,16 +57,23 @@ module OpenNebula
         attr_reader :xml
 
         # ---------------------------------------------------------------------
-        # Class constructor
+        # Class constructor & Pool Methods
         # ---------------------------------------------------------------------
         
         # +secret+ is the authentication token used with the OpenNebula core
         # +user_id+ is to refer to a Pool with VirtualNetworks from that user
         def initialize(user_id=0, secret=nil)
+            super('VNET_POOL','VNET')
+
             @user_id  = user_id
             @xml      = nil
 
             @client = OpenNebula::Client.new(secret); 
+        end
+
+        # Default Factory Method for the Pools
+        def factory(element_xml)
+            OpenNebula::VirtualNetwork.new(element_xml)
         end
 
         # ---------------------------------------------------------------------
@@ -90,14 +102,12 @@ module OpenNebula
             :delete   => "vn.delete"
         }
 
-        attr_reader :vn_xml
-
         # ---------------------------------------------------------------------
         # Class constructor
         # ---------------------------------------------------------------------
-        def initialize(vn_id=nil, secret=nil)
+        def initialize(xml=nil, vn_id=nil, secret=nil)
+            super(xml)
             @vn_id = vn_id
-            @xml   = nil
 
             @client = OpenNebula::Client.new(secret)
         end
