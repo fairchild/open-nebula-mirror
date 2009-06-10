@@ -39,7 +39,6 @@ void RequestManager::VirtualMachineInfo::execute(
     Nebula::log("ReM",Log::DEBUG,"VirtualMachineInfo method invoked");
 
     // Get the parameters
-        //TODO the session id to validate with the SessionManager
     session      = xmlrpc_c::value_string(paramList.getString(0));
     vid          = xmlrpc_c::value_int   (paramList.getInt(1));
 

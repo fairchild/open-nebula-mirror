@@ -39,9 +39,10 @@ void RequestManager::HostInfo::execute(
     Nebula::log("ReM",Log::DEBUG,"HostInfo method invoked");
 
     // Get the parameters
-        //TODO the session id to validate with the SessionManager
     session      = xmlrpc_c::value_string(paramList.getString(0));
     hid          = xmlrpc_c::value_int   (paramList.getInt(1));
+
+
 
     // Perform the allocation in the hostpool 
     host = HostInfo::hpool->get(hid,true);    

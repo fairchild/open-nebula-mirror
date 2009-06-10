@@ -62,6 +62,17 @@ public:
     // *************************************************************************
     // Virtual Network Public Methods
     // *************************************************************************
+    
+
+    /**
+     * Gets the uid of the owner of the Virtual Network
+     * @return uid
+     **/
+    int get_uid()
+    {
+        return uid;
+    }
+
     /**
      *    Gets a new lease for a specific VM
      *    @param vid VM identifier

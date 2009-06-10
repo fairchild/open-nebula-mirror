@@ -44,13 +44,19 @@ void RequestManager::HostAllocate::execute(
     Nebula::log("ReM",Log::DEBUG,"HostAllocate method invoked");
 
     // Get the parameters
-        //TODO the session id to validate with the SessionManager
     session      = xmlrpc_c::value_string(paramList.getString(0));
     hostname     = xmlrpc_c::value_string(paramList.getString(1));
     im_mad_name  = xmlrpc_c::value_string(paramList.getString(2));
     vmm_mad_name = xmlrpc_c::value_string(paramList.getString(3));
     tm_mad_name  = xmlrpc_c::value_string(paramList.getString(4));
 
+    // Only oneadmin can add new hosts
+    rc = HostAllocate::upool->authenticate(session);
+    
+    if ( rc != 0 )                             
+    {                                            
+        goto error_authenticate;                     
+    }
     // Perform the allocation in the hostpool
     rc = HostAllocate::hpool->allocate(&hid,
                                        hostname,
@@ -72,6 +78,10 @@ void RequestManager::HostAllocate::execute(
     delete arrayresult;
 
     return;
+
+error_authenticate:
+    oss << "User not authorized to add new hosts";
+    goto error_common;
 
 error_host_allocate:
     oss << "Can not allocate host " << hostname << 

@@ -28,6 +28,7 @@ void RequestManager::VirtualMachineMigrate::execute(
     string              session;
     int                 vid;
     int                 hid;
+    int                 uid;
     int                 rc;
     bool                live;
     
@@ -65,7 +66,7 @@ void RequestManager::VirtualMachineMigrate::execute(
     {
         goto error_host_get;
     }
-    
+       
     hostname = host->get_hostname();
     vmm_mad  = host->get_vmm_mad();
     tm_mad   = host->get_tm_mad();
@@ -81,6 +82,16 @@ void RequestManager::VirtualMachineMigrate::execute(
     if ( vm == 0 )
     {
         goto error_vm_get;
+    }
+
+    uid = vm->get_uid(); 
+    
+    // Only oneadmin or the VM owner can perform operations upon the VM
+    rc = VirtualMachineMigrate::upool->authenticate(session);
+    
+    if ( rc != 0 && rc != uid)                             
+    {                                            
+        goto error_authenticate;                     
     }
     
     if ((vm->get_state() != VirtualMachine::ACTIVE) ||
@@ -122,6 +133,11 @@ void RequestManager::VirtualMachineMigrate::execute(
     delete arrayresult;
      
     return;
+
+error_authenticate:
+    vm->unlock();
+    oss << "User not authorized to perform migration upon this VM";
+    goto error_common;
 
 error_host_get:
     oss << "The host " << hid << " does not exists";
