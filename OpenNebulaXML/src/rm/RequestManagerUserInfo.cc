@@ -25,13 +25,13 @@ void RequestManager::UserInfo::execute(
     xmlrpc_c::paramList const& paramList,
     xmlrpc_c::value *   const  retval)
 { 
-    string              session;
-    string              username;
+    string session;
+    int    uid;
     
-    User    *           user;
+    User * user;
 
-    int                 rc;     
-    ostringstream       oss;
+    int rc;     
+    ostringstream oss;
 
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
@@ -40,8 +40,8 @@ void RequestManager::UserInfo::execute(
     Nebula::log("ReM",Log::DEBUG,"UserInfo method invoked");
 
     // Get the parameters
-    session      = xmlrpc_c::value_string(paramList.getString(0));
-    username     = xmlrpc_c::value_string(paramList.getString(1));
+    session = xmlrpc_c::value_string(paramList.getString(0));
+    uid     = xmlrpc_c::value_int(paramList.getInt(1));
     
     // Only oneadmin can retrieve user information
     rc = UserInfo::upool->authenticate(session);
@@ -52,7 +52,7 @@ void RequestManager::UserInfo::execute(
     }
     
     // Now let's get the user 
-    user = UserInfo::upool->get(username,true);
+    user = UserInfo::upool->get(uid,true);
     
     if ( user == 0 )                             
     {                                            
@@ -69,7 +69,7 @@ void RequestManager::UserInfo::execute(
 
     // Copy arrayresult into retval mem space
     arrayresult = new xmlrpc_c::value_array(arrayData);
-    *retval = *arrayresult;
+    *retval     = *arrayresult;
 
     delete arrayresult; // and get rid of the original
 

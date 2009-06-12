@@ -587,8 +587,8 @@ private:
     public:
         UserInfo(UserPool * _upool):upool(_upool)
         {
-            _signature="A:ss";
-            _help="Creates a new user";
+            _signature="A:si";
+            _help="Returns the Info of the user";
         };
 
         ~UserInfo(){};
@@ -608,8 +608,8 @@ private:
     public:
         UserDelete(UserPool * _upool):upool(_upool)
         {
-            _signature="A:ss";
-            _help="Creates a new user";
+            _signature="A:si";
+            _help="Deletes a user account";
         };
 
         ~UserDelete(){};

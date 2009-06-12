@@ -25,14 +25,13 @@ void RequestManager::UserDelete::execute(
     xmlrpc_c::paramList const& paramList,
     xmlrpc_c::value *   const  retval)
 { 
-    string              session;
+    string session;
 
-    string              username;
+    int    uid;
+    User * user;
 
-    User *              user;
-
-    int                 rc;     
-    ostringstream       oss;
+    int rc;     
+    ostringstream oss;
 
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
@@ -41,8 +40,8 @@ void RequestManager::UserDelete::execute(
     Nebula::log("ReM",Log::DEBUG,"UserDelete method invoked");
 
     // Get the parameters
-    session      = xmlrpc_c::value_string(paramList.getString(0));
-    username     = xmlrpc_c::value_string(paramList.getString(1));
+    session = xmlrpc_c::value_string(paramList.getString(0));
+    uid     = xmlrpc_c::value_int(paramList.getInt(1));
     
     // Only oneadmin can delete users
     rc = UserDelete::upool->authenticate(session);
@@ -52,9 +51,8 @@ void RequestManager::UserDelete::execute(
         goto error_authenticate;                     
     }
 
-
     // Now let's get the user 
-    user = UserDelete::upool->get(username,true);
+    user = UserDelete::upool->get(uid,true);
    
     if ( user == 0) 
     {
@@ -70,11 +68,12 @@ void RequestManager::UserDelete::execute(
     
     // All nice, return the new uid to client  
     arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
-    arrayresult = new xmlrpc_c::value_array(arrayData);
+
     // Copy arrayresult into retval mem space
-    *retval = *arrayresult;
-    // and get rid of the original
-    delete arrayresult;
+    arrayresult = new xmlrpc_c::value_array(arrayData);
+    *retval     = *arrayresult;
+
+     delete arrayresult; // and get rid of the original
 
     return;
 
@@ -83,15 +82,14 @@ error_authenticate:
     goto error_common;
     
 error_get_user:
-    oss << "Error retrieving user " << username;
+    oss << "Error retrieving user " << uid;
     goto error_common;
 
 error_delete:
-    oss << "Error deleting user " << username;
+    oss << "Error deleting user " << uid;
     goto error_common;
 
 error_common:
-
     arrayData.push_back(xmlrpc_c::value_boolean(false));  // FAILURE
     arrayData.push_back(xmlrpc_c::value_string(oss.str()));
     

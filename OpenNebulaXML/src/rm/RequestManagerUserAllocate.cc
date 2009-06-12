@@ -47,7 +47,6 @@ void RequestManager::UserAllocate::execute(
     username     = xmlrpc_c::value_string(paramList.getString(1));
     password     = xmlrpc_c::value_string(paramList.getString(2));
     
-
     // Only oneadmin can add users
     rc = UserAllocate::upool->authenticate(session);
     
@@ -68,11 +67,12 @@ void RequestManager::UserAllocate::execute(
     // All nice, return the new uid to client  
     arrayData.push_back(xmlrpc_c::value_boolean(true)); // SUCCESS
     arrayData.push_back(xmlrpc_c::value_int(uid));
-    arrayresult = new xmlrpc_c::value_array(arrayData);
+
     // Copy arrayresult into retval mem space
+    arrayresult = new xmlrpc_c::value_array(arrayData);
     *retval = *arrayresult;
-    // and get rid of the original
-    delete arrayresult;
+    
+    delete arrayresult; // and get rid of the original
 
     return;
 
