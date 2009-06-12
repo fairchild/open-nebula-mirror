@@ -7,12 +7,12 @@ require 'digest/sha1'
 require 'rexml/document'
 require 'pp'
 
-#require 'crack'
-
 require 'OpenNebula/VirtualMachine'
 require 'OpenNebula/VirtualMachinePool'
 require 'OpenNebula/VirtualNetwork'
 require 'OpenNebula/VirtualNetworkPool'
+require 'OpenNebula/User'
+require 'OpenNebula/UserPool'
 
 module OpenNebula
 

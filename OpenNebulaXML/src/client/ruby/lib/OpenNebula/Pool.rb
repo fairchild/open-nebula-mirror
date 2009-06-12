@@ -94,8 +94,8 @@ module OpenNebula
             return rc
         end
 
-        def allocate(xml_method,description)
-            rc = @client.call(xml_method, description)
+        def allocate(xml_method, *args)
+            rc = @client.call(xml_method, *args)
 
             if !OpenNebula.is_error?(rc)
                 @pe_id = rc
