@@ -1,196 +1,127 @@
+require 'OpenNebula/Pool'
 
 module OpenNebula
-
-    class VirtualMachine
-        attr_reader :vm_data
-
-        #######################
-        # ENUMS AND CONSTANTS #
-        #######################
-        
-        VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED}
-        
-        LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
-            SAVE_MIGRATE PROLOG_MIGRATE EPILOG_STOP EPILOG SHUTDOWN CANCEL}
-
-        SHORT_VM_STATES={
-            "INIT"      => "init",
-            "PENDING"   => "pend",
-            "HOLD"      => "hold",
-            "ACTIVE"    => "actv",
-            "STOPPED"   => "stop",
-            "SUSPENDED" => "susp",
-            "DONE"      => "done",
-            "FAILED"    => "fail"
+    class VirtualMachine < PoolElement
+        # ---------------------------------------------------------------------
+        # Constants and Class Methods
+        # ---------------------------------------------------------------------
+        VM_METHODS = {
+            :info     => "vm.info",
+            :allocate => "vm.allocate",
+            :action   => "vm.action",
+            :migrate  => "vm.migrate",
+            :deploy   => "vm.deploy"
         }
 
-        SHORT_LCM_STATES={
-            "PROLOG"        => "prol",
-            "BOOT"          => "boot",
-            "RUNNING"       => "runn",
-            "MIGRATE"       => "migr",
-            "SAVE_STOP"     => "save",
-            "SAVE_SUSPEND"  => "save",
-            "SAVE_MIGRATE"  => "save",
-            "PROLOG_MIGRATE"=> "migr",
-            "EPILOG_STOP"   => "epil",
-            "EPILOG"        => "epil",
-            "SHUTDOWN"      => "shut",
-            "CANCEL"        => "shut"
-        }
-        
-
-        ################
-        # CONSTRUCTORS #
-        ################
-
-        # Creates a new VM described by template
-        def self.create(template)
-            res=OpenNebula.call('vm.allocate', template)
-            if res[0]
-                self.new_id(res[1])
+        # Creates a VirtualMachine description with just its identifier
+        # this method should be used to create plain VirtualMachine objects.
+        # +id+ the id of the vm
+        #
+        # Example:
+        #   vnet = VirtualMachine.new(VirtualMachine.build_xml(3),rpc_client)
+        #
+        def VirtualMachine.build_xml(pe_id=nil)
+            if pe_id
+                vm_xml = "<VM><VID>#{pe_id}</VID></VM>"
             else
-                false
-            end
-        end
-
-        # Creates a new VirtualMachine object described by xml
-        def self.new_xml(xml)
-            object=self.new
-            object.parse_xml(xml)
-        end
-
-        # Gets a VirtualMachine from the server
-        def self.new_id(vmid)
-            object=self.new
-            object.get_info(vmid)
-            object
-        end
-        
-        # Initializes an empty VirtualMachine
-        def initialize(vmid=nil)
-            @vm_data=Hash.new
-            @vm_id=vmid
-        end
-
-        # Populates a VirtualMachine object with information from
-        # server. If vmid is not provided internal vmid will be used,
-        # this is useful to refresh data.
-        def get_info(vmid=nil)
-            vm_to_get=@vm_id
-            vm_to_get=vmid if vmid
-
-            res=OpenNebula.call('vm.info', vm_to_get)
-
-            if res[0]
-                parse_xml(res[1])
-            else
-                @vm_data=res[1]
+                vm_xml = "<VM></VM>"
             end
 
-            self
+            REXML::Document.new(vm_xml).root
         end
 
-        # Parses the provided xml and modifies information in the
-        # object accordingly.
-        def parse_xml(xml)
-            @vm_data=Crack::XML.parse(xml)['VM']
-            @vm_id=@vm_data['VID'].to_i if @vm_data['VID']
-            self
+        # ---------------------------------------------------------------------
+        # Class constructor
+        # ---------------------------------------------------------------------
+        def initialize(xml, client)
+            super(xml,client)
+
+            @client = client
+            @pe_id  = xml.elements['VID'].text.to_i if xml.elements['VID']
         end
 
-        # Returns the id of the VirtualMachine
-        def id
-            @vm_id
-        end
-        
-        # Returns the VM state of the VirtualMachine (numeric value)
-        def state
-            @vm_data['STATE'].to_i
+        # ---------------------------------------------------------------------
+        # XML-RPC Methods for the Virtual Network Object
+        # ---------------------------------------------------------------------
+        def info()
+            super(VM_METHODS[:info])
         end
 
-        # Returns the VM state of the VirtualMachine (string value)
-        def state_str
-            VM_STATE[state]
+        def allocate(description)
+            super(VM_METHODS[:allocate],description)
         end
-
-        # Returns the LCM state of the VirtualMachine (numeric value)
-        def lcm_state
-            @vm_data['LCM_STATE'].to_i
-        end
-
-        # Returns the LCM state of the VirtualMachine (string value)
-        def lcm_state_str
-            LCM_STATE[lcm_state]
-        end
-
-        # Returns the short status string for the VirtualMachine
-        def status
-            short_state_str=SHORT_VM_STATES[state_str]
-
-            if short_state_str=="actv"
-                short_state_str=SHORT_LCM_STATES[lcm_state_str]
-            end
-
-            short_state_str
-        end
-
-        def [](key)
-            @vm_data[key]
-        end
-
-
-        ###########
-        # ACTIONS #
-        ###########
 
         def deploy(host_id)
-            res=OpenNebula.call('vm.deploy', @vm_id, host_id)
+            return Error.new('ID not defined') if !@pe_id
+
+            rc = @client.call(VM_METHODS[:allocate], @pe_id, host_id)
+            rc = nil if !OpenNebula.is_error?(rc)
+        
+            return rc
         end
 
         def shutdown
-            res=OpenNebula.call('vm.action', 'shutdown', @vm_id)
+            action('shutdown')
         end
 
         def cancel
-            res=OpenNebula.call('vm.action', 'cancel', @vm_id)
+            action('cancel')
         end
 
         def hold
-            res=OpenNebula.call('vm.action', 'hold', @vm_id)
+            action('hold')
         end
 
         def release
-            res=OpenNebula.call('vm.action', 'release', @vm_id)
+            action('release')
         end
 
         def stop
-            res=OpenNebula.call('vm.action', 'stop', @vm_id)
+            action('stop')
         end
 
         def suspend
-            res=OpenNebula.call('vm.action', 'suspend', @vm_id)
+            action('suspend')
         end
 
         def resume
-            res=OpenNebula.call('vm.action', 'resume', @vm_id)
+            action('resume')
         end
 
-        def delete
-            res=OpenNebula.call('vm.action', 'delete', @vm_id)
+        def finalize
+            action('finalize')
+        end
+
+        def restart
+            action('restart')
         end
 
         def migrate(host_id)
-            res=OpenNebula.call('vm.migrate', @vm_id, host_id, false)
+            return Error.new('ID not defined') if !@pe_id
+
+            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id, false)
+            rc = nil if !OpenNebula.is_error?(rc)
+        
+            return rc
         end
 
         def live_migrate(host_id)
-            res=OpenNebula.call('vm.migrate', @vm_id, host_id, true)
+            return Error.new('ID not defined') if !@pe_id
+
+            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id, true)
+            rc = nil if !OpenNebula.is_error?(rc)
+            
+            return rc
+        end
+
+    private
+        def action(name)
+            return Error.new('ID not defined') if !@pe_id
+
+            rc = @client.call(VM_METHODS[:action], name, @pe_id)
+            rc = nil if !OpenNebula.is_error?(rc)
+
+            return rc
         end
     end
 end
-
-
-
-
-

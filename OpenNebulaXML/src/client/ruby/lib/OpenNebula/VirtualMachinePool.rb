@@ -1,67 +1,38 @@
+require 'OpenNebula/Pool'
 
 module OpenNebula
-    class VirtualMachinePool
-        include Enumerable
+    class VirtualMachinePool < Pool
+        # ---------------------------------------------------------------------
+        # Constants and Class attribute accessors
+        # ---------------------------------------------------------------------
 
-        def initialize(user_id=0)
-            @user_id=user_id
-            @xml=nil
-            @client=OpenNebula::Client.new
+        VM_POOL_METHODS = {
+            :info => "vmpool.info"
+        }
 
-            response=@client.call('vmpool.info', @user_id)
+        # ---------------------------------------------------------------------
+        # Class constructor & Pool Methods
+        # ---------------------------------------------------------------------
+        
+        # +client+ a Client object that represents a XML-RPC connection
+        # +user_id+ is to refer to a Pool with VirtualNetworks from that user
+        def initialize(client, user_id=0)
+            super('VM_POOL','VM',client)
 
-            if OpenNebula.is_error?(response)
-                # TODO: deal with the error
-            else
-                @xml=response
-            end
+            @user_id  = user_id
         end
 
-        # Iterates over every VM and calls the block with a
-        # VirtualMachinePoolNode
-        def each
-            if @xml
-                doc=REXML::Document.new(@xml)
-                doc.elements.each("/VM_POOL/VM") {|vm|
-                    yield OpenNebula::VirtualMachinePoolNode.new(vm)
-                }
-            end
+        # Default Factory Method for the Pools
+        def factory(element_xml)
+            OpenNebula::VirtualMachine.new(element_xml,@client)
         end
 
-        # Returns an arry of VirtualMachine id's
-        def get_ids
-            self.collect {|vm| vm[:vid].to_i }
-        end
+        # ---------------------------------------------------------------------
+        # XML-RPC Methods for the Virtual Network Object
+        # ---------------------------------------------------------------------
 
-        # Returns an array of VirtualMachine objects initialized
-        # with VM id's. The objects are not populated, you have
-        # to call VirtualMachine#refresh to get the information
-        # from the server.
-        def get_vms
-            get_ids.collect {|vid| OpenNebula::VirtualMachine.new(vid) }
-        end
-
-        def to_str
-            @xml
-        end
-    end
-
-    # Proxy to easilly get information from xml nodes.
-    class VirtualMachinePoolNode
-        # +node+ is a REXML node
-        def initialize(node)
-            @node=node
-        end
-
-        # Extract an element from the node:
-        #
-        #   ['VID'] # gets VM id
-        #   ['HISTORY/HOSTNAME'] # get the hostname from the history
-        def [](key)
-            @node.elements[key.to_s.upcase].text
+        def info()
+            super(VM_POOL_METHODS[:info],@user_id)
         end
     end
 end
-
-
-

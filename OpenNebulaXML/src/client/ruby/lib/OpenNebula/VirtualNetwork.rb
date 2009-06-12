@@ -1,49 +1,9 @@
+require 'OpenNebula/Pool'
 
 module OpenNebula
-
-    class VirtualNetworkPool
+    class VirtualNetwork < PoolElement
         # ---------------------------------------------------------------------
-        # Constants and Class attribute accessors
-        # ---------------------------------------------------------------------
-        VN_POOL_METHODS = {
-            :info => "vnpool.info"
-        }
-
-        attr_reader :pool_xml
-
-        # ---------------------------------------------------------------------
-        # Class constructor
-        # ---------------------------------------------------------------------
-        def initialize(user_id=0, secret=nil)
-            @user_id  = user_id
-            @pool_xml = nil
-
-            @client   = OpenNebula::Client.new(secret); #TODO Check for Errors
-        end
-
-        # ---------------------------------------------------------------------
-        # XML-RPC Methods for the Virtual Network Object
-        # ---------------------------------------------------------------------
-        def info()
-            rc = @client.call(VN_POOL_METHODS[:info],@user_id)
-
-            if OpenNebula.is_error?(rc)
-                @pool_xml = nil
-            else
-                @pool_xml = rc[0];
-                rc = nil
-            end
-
-            rc
-        end
-    end
-    
-    ###########################################################################
-    ###########################################################################
-
-    class VirtualNetwork
-        # ---------------------------------------------------------------------
-        # Constants and Class attribute accessors
+        # Constants and Class Methods
         # ---------------------------------------------------------------------
         VN_METHODS = {
             :info     => "vn.info",
@@ -51,54 +11,46 @@ module OpenNebula
             :delete   => "vn.delete"
         }
 
-        attr_reader :vn_xml
+        # Creates a VirtualNetwork description with just its identifier
+        # this method should be used to create plain VirtualNetwork objects.
+        # +id+ the id of the network
+        #
+        # Example:
+        #   vnet = VirtualNetwork.new(VirtualNetwork.build_xml(3),rpc_client)
+        #
+        def VirtualNetwork.build_xml(pe_id=nil)
+            if pe_id
+                vn_xml = "<VNET><VNID>#{pe_id}</VNID></VNET>"
+            else
+                vn_xml = "<VNET></VNET>"
+            end
+
+            REXML::Document.new(vn_xml).root
+        end
 
         # ---------------------------------------------------------------------
         # Class constructor
         # ---------------------------------------------------------------------
-        def initialize(vn_id=nil, secret=nil)
-            @vn_id  = vn_id
-            @vn_xml = nil
+        def initialize(xml, client)
+            super(xml,client)
 
-            @client = OpenNebula::Client.new(secret)
+            @client = client
+            @pe_id  = xml.elements['VNID'].text.to_i if xml.elements['VNID']
         end
 
         # ---------------------------------------------------------------------
         # XML-RPC Methods for the Virtual Network Object
         # ---------------------------------------------------------------------
         def info()
-            return Error.new('Virtual Network ID not defined') if !@vn_id
-            rc = @client.call(VN_METHODS[:info],@vn_id)
-
-            if OpenNebula.is_error?(rc)
-                @vn_xml = nil
-            else
-                @vn_xml = rc[0]
-                rc = nil
-            end
-
-            rc
+            super(VN_METHODS[:info])
         end
 
         def allocate(description)
-            rc = @client.call(VN_METHODS[:allocate],description)
-
-            if !OpenNebula.is_error?(rc)
-                @vn_id = rc[0]
-                rc = nil
-            end
-
-            return rc
+            super(VN_METHODS[:allocate],description)
         end
 
         def delete()
-            return Error.new('Virtual Network ID not defined') if !@vn_id
-
-            rc = @client.call(VN_METHODS[:delete],@vn_id)
-            rc = nil if !OpenNebula.is_error?(rc)
-
-            return rc
+            super(VN_METHODS[:delete])
         end
     end
-
 end
