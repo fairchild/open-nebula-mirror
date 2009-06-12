@@ -68,27 +68,50 @@ UserPool::UserPool(SqliteDB * db):PoolSQL(db,User::table)
     {
         // User oneadmin needs to be added in the bootstrap
         struct passwd * pw_ent;
-        int    oneadmin_uid = -1;
+        int    one_uid = -1;
 
+        ostringstream oss;
+        
         pw_ent = getpwuid(getuid());
 
         if ((pw_ent != NULL) && (pw_ent->pw_name != NULL))
         {                                                 
-            Nebula&  nd = Nebula::instance();
+            string one_name;
+            string one_pass;
+            
+            const char * one_auth;
 
-            string oneadmin_name;
-            string oneadmin_password;
+            one_name = pw_ent->pw_name;
+            one_auth = getenv("ONE_AUTH");
 
-            oneadmin_name = pw_ent->pw_name;
-            nd.get_configuration_attribute("ONEADMIN_DEFAULT_PASSWORD",
-                        oneadmin_password);
-        
-            allocate(&oneadmin_uid, oneadmin_name, oneadmin_password, true);
+            if ( one_auth != 0 )
+            {
+                string one_auth_str(one_auth);
+
+                if ( User::split_secret(one_auth,one_name,one_pass) == 0 )
+                {
+                    string sha1_pass = User::sha1_digest(one_pass);
+
+                    allocate(&one_uid, one_name, sha1_pass, true);
+                }
+                else
+                {
+                    oss << "ONE_AUTH must be <username>:<password>";
+                }
+            }
+            else
+            {
+                oss << "Environment variable ONE_AUTH is not set";
+            }
+        }
+        else
+        {
+            oss << "Error getting the user info";
         }
         
-        if (oneadmin_uid != 0)
+        if (one_uid != 0)
         {
-            Nebula::log("ONE",Log::ERROR,"Error adding superuser oneadmin");
+            Nebula::log("ONE",Log::ERROR,oss);
             throw;
         }
     }
@@ -127,23 +150,17 @@ int UserPool::allocate (
 
 int UserPool::authenticate(string& session)
 {
-    map<string, int>::iterator     index;
-    size_t                         pos;
+    map<string, int>::iterator index;
     
-    string                         username;
-    string                         password;
+    string username;
+    string password;
     
-    int                            user_id = -1; 
+    int   user_id = -1; 
     
     // session holds username:password
-    
-    pos=session.find(":");
 
-    if (pos != string::npos)
-    { 
-        username = session.substr(0,pos);
-        password = session.substr(pos+1);    
-    
+    if ( User::split_secret(session,username,password) == 0 )
+    {
         index = known_users.find(username);
 
         if ( index != known_users.end() )

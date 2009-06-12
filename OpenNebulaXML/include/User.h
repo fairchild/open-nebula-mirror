@@ -139,7 +139,23 @@ public:
      *  @return -1 if disabled or wrong password, uid otherwise
      **/
     int authenticate(string _password);
-    
+
+    /**
+     *  Splits an authentication token (<usr>:<pass>)
+     *    @param secret, the authentication token
+     *    @param username
+     *    @param password
+     *    @return 0 on success 
+     **/
+    static int split_secret(const string secret, string& user, string& pass);
+
+    /**
+     *  "Encrypts" the password with SHA1 digest
+     *  @param password
+     *  @return sha1 encrypted password
+     */
+    static string sha1_digest(const string& pass);
+
 private:
     // -------------------------------------------------------------------------
     // Friends
