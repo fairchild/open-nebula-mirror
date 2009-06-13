@@ -86,8 +86,6 @@ UserPool::UserPool(SqliteDB * db):PoolSQL(db,User::table)
 
             if ( one_auth != 0 )
             {
-                string one_auth_str(one_auth);
-
                 if ( User::split_secret(one_auth,one_name,one_pass) == 0 )
                 {
                     string sha1_pass = User::sha1_digest(one_pass);
