@@ -295,7 +295,7 @@ string& HostShare::to_xml(string& xml) const
           << "<USED_DISK>"  << used_disk  << "</USED_DISK>"
           << "<USED_MEM>"   << used_mem   << "</USED_MEM>"
           << "<USED_CPU>"   << used_cpu   << "</USED_CPU>"        
-          << "<RUNNING_VMS>"<<running_vms <<"</RUNNING_VMS"
+          << "<RUNNING_VMS>"<<running_vms <<"</RUNNING_VMS>"
         << "</HOST_SHARE>";
 
     xml = oss.str();
