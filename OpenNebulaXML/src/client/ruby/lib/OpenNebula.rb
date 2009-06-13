@@ -13,6 +13,8 @@ require 'OpenNebula/VirtualNetwork'
 require 'OpenNebula/VirtualNetworkPool'
 require 'OpenNebula/User'
 require 'OpenNebula/UserPool'
+require 'OpenNebula/Host'
+require 'OpenNebula/HostPool'
 
 module OpenNebula
 
