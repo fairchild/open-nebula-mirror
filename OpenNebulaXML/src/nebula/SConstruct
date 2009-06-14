@@ -50,6 +50,7 @@ env.Append(LIBS=[
     'nebula_vm',
     'nebula_common',
     'sqlite3',
+    'crypto'
 ])
 
 

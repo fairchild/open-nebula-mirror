@@ -41,6 +41,7 @@ env.StaticLibrary(lib_name, source_files)
 
 env.Append(LIBS=[
     'sqlite3',
+    'crypto',
     lib_name,
     'nebula_core',
     'nebula_host',
