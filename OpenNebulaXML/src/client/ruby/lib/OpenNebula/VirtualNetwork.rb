@@ -36,6 +36,7 @@ module OpenNebula
 
             @client = client
             @pe_id  = xml.elements['VNID'].text.to_i if xml.elements['VNID']
+            @name   = self['NAME']
         end
 
         # ---------------------------------------------------------------------

@@ -115,6 +115,14 @@ module OpenNebula
         end
 
     public
+    
+        def id
+            @pe_id
+        end
+        
+        def name
+            @name
+        end
 
         # Extract an element from the node.
         # +key+ The name of the element
