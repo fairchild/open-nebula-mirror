@@ -214,6 +214,14 @@ def get_one_client(session=nil)
     OpenNebula::Client.new(session)
 end
 
+def is_error?(result)
+    OpenNebula.is_error?(result)
+end
+
+def is_successful?(result)
+    !OpenNebula.is_error?(result)
+end
+
 def check_parameters(name, number)
     if ARGV.length < number
         print "Command #{name} requires "
@@ -266,4 +274,16 @@ end
 
 def get_vn_id(name)
     get_entity_id(name, OpenNebula::VirtualNetworkPool)
+end
+
+def str_running_time(data)
+    stime=Time.at(data["stime"].to_i)
+    if data["etime"]=="0"
+        etime=Time.now
+    else
+        etime=Time.at(data["etime"].to_i)
+    end
+    dtime=Time.at(etime-stime).getgm
+
+    "%02d %02d:%02d:%02d" % [dtime.yday-1, dtime.hour, dtime.min, dtime.sec]
 end

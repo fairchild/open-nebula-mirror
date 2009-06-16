@@ -116,6 +116,10 @@ module OpenNebula
 
     public
     
+        def self.new_with_id(id, client=nil)
+            self.new(self.build_xml(id), client)
+        end
+    
         def id
             @pe_id
         end
