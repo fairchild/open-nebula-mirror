@@ -27,7 +27,10 @@ end
 
 $: << RUBY_LIB_LOCATION
 
-require 'one'
+$: << "./lib"
+
+#require 'one'
+require 'OpenNebula'
 require 'client_utilities'
 require 'command_parse'
 
@@ -36,14 +39,14 @@ ShowTableVN={
         :name => "NID",
         :desc => "ONE identifier for virtual network",
         :size => 4,
-        :proc => lambda {|d,e| d["oid"] }
+        :proc => lambda {|d,e| d.id }
     },
     :name => {
         :name => "NAME",
         :desc => "name of the virtual network",
         :size => 15,
         :left => true,
-        :proc => lambda {|d,e| d["name"] }
+        :proc => lambda {|d,e| d.name }
     },
     :type => {
         :name => "TYPE",
@@ -77,9 +80,9 @@ ShowTableVN={
 }
 
 class VNShow
-    def initialize(vn)
-        @vn=vn
-        @table=ShowTable.new(ShowTableVN, :vn => @vn)
+    def initialize
+        @vnpool=OpenNebula::VirtualNetworkPool.new(get_one_client)
+        @table=ShowTable.new(ShowTableVN)
     end
     
     def close
@@ -94,29 +97,19 @@ class VNShow
     end
     
     def list_short(options=nil)
-        res=@vn.get
+        res=@vnpool.info
         if options
             @table.columns=options[:columns] if options[:columns]
         end
 
-        if res[0]
+        if OpenNebula.is_error?(res)
             result=res
-            header_vn_small
-            res[1].each {|row|
-                res2=@vn.get_vn_attributes(row["oid"])
-                if res2[0]
-                    attributes=res2[1]
-                    attributes.each {|a|
-                        if %w{SIZE}.include? a["name"]
-                            row[a["name"]]=a["value"]
-                        end
-                    }
-                end
-            }
-            puts @table.data_str(result[1], options)
-            result
         else
             result=res
+            header_vn_small
+            
+            puts @table.data_str(@vnpool, options)
+            result
         end
     end
     
@@ -175,9 +168,6 @@ EOT
 
 end
 
-server=ONE::Server.new
-vn=ONE::VN.new(server)
-
 onevn_opts=OneVNParse.new
 onevn_opts.parse(ARGV)
 ops=onevn_opts.options
@@ -189,15 +179,18 @@ command=ARGV.shift
 case command
 when "create"
     check_parameters("create", 1)
-    result=vn.allocate(*ARGV)
-    if result[0]
-        puts "NID: " + result[1].to_s if ops[:verbose]
+    vn=OpenNebula::VirtualNetwork.new(
+        OpenNebula::VirtualNetwork.build_xml, get_one_client)
+    template=File.read(ARGV[0])
+    result=vn.allocate(template)
+    if !OpenNebula.is_error?(result)
+        puts "NID: " + vn.id.to_s if ops[:verbose]
         exit 0
     end
     
 when "show"
     check_parameters("show", 1)
-    vn_id=get_vn_id(vn, ARGV[0])
+    vn_id=get_vn_id(ARGV[0])
     result=vn.info(vn_id)
     if result[0]
         puts result[1]
@@ -208,15 +201,17 @@ when "show"
     
 when "delete"
     check_parameters("delete", 1)
-    vn_id=get_vn_id(vn, ARGV[0])
-    result=vn.delete(vn_id)
-    if result[0]
+    vn_id=get_vn_id(ARGV[0])
+    vn=OpenNebula::VirtualNetwork.new(
+        OpenNebula::VirtualNetwork.build_xml(vn_id), get_one_client)
+    result=vn.delete
+    if !OpenNebula.is_error?(result)
         puts "Virtual Network deleted" if ops[:verbose]
         exit 0
     end
     
 when "list"
-    vnlist=VNShow.new(vn)
+    vnlist=VNShow.new
     ops[:columns]=ops[:list] if ops[:list]
     result=vnlist.list_short(ops)
     vnlist.close
@@ -226,7 +221,7 @@ else
     exit -1
 end
 
-if !result[0]
-    puts "Error: " + result[1].to_s
+if OpenNebula.is_error?(result)
+    puts "Error: " + result.message
     exit -1
 end
