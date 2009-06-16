@@ -15,6 +15,8 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
+require 'OpenNebula'
+
 #####################
 # CONSOLE UTILITIES #
 #####################
@@ -207,6 +209,11 @@ end
 # Miscelaneous #
 ################
 
+def get_one_client(session=nil)
+    session||="jfontan:opennebula"
+    OpenNebula::Client.new(session)
+end
+
 def check_parameters(name, number)
     if ARGV.length < number
         print "Command #{name} requires "
@@ -220,62 +227,43 @@ def check_parameters(name, number)
 end
 
 
-def get_vm_id(vm, name)
-    vm_id=vm.get_vm_id(name)
+
+def get_entity_id(name, pool_class)
+    return name if name.match(/^[0123456789]+$/)
+
+    # TODO: get vm's from the actual user
+    pool=pool_class.new(get_one_client, 0)
+    result=pool.info
+
+    # TODO: Check for errors
+
+    objects=pool.select {|object| object.name==name }
     
-    result=nil
+    class_name=pool_class.name.split('::').last.gsub(/Pool$/, '')
     
-    if vm_id
-        if vm_id.kind_of?(Array)
-            puts "There are multiple VM's with name #{name}."
+    if objects.length>0
+        if objects.length>1
+            puts "There are multiple #{class_name}'s with name #{name}."
             exit -1
         else
-            result=vm_id
+            result=objects.first.id
         end
     else
-        puts "VM named #{name} not found."
+        puts "#{class_name} named #{name} not found."
         exit -1
     end
     
     result
 end
 
-def get_host_id(host, name)
-    host_id=host.get_host_id(name)
-    
-    result=nil
-    
-    if host_id
-        if host_id.kind_of?(Array)
-            puts "There are multiple hosts with name #{name}."
-            exit -1
-        else
-            result=host_id
-        end
-    else
-        puts "Host named #{name} not found."
-        exit -1
-    end
-    
-    result
+def get_vm_id(name)
+    get_entity_id(name, OpenNebula::VirtualMachinePool)
 end
 
-def get_vn_id(vn, name)
-    vn_id=vn.get_vn_id(name)
-    
-    result=nil
-    
-    if vn_id
-        if vn_id.kind_of?(Array)
-            puts "There are multiple virtual networks with name #{name}."
-            exit -1
-        else
-            result=vn_id
-        end
-    else
-        puts "Virtual networks named #{name} not found."
-        exit -1
-    end
-    
-    result
+def get_host_id(name)
+    get_entity_id(name, OpenNebula::HostPool)
+end
+
+def get_vn_id(name)
+    get_entity_id(name, OpenNebula::VirtualNetworkPool)
 end
