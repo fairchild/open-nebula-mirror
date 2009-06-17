@@ -51,13 +51,17 @@ void RequestManager::VirtualMachineAllocate::execute(
     vm_template = xmlrpc_c::value_string(paramList.getString(1));
     vm_template += "\n";
 
+
+    // First, we need to authenticate the user
+    rc = VirtualMachineAllocate::upool->authenticate(session);
+
+    if ( rc == -1 )
+    {
+        goto error_authenticate;
+    }
+
     pos=session.find(":");
 
-    if (pos == string::npos)
-    {
-        goto error_session;
-    }
-    
     username = session.substr(0,pos);
    
     // Now let's get the user
@@ -71,7 +75,6 @@ void RequestManager::VirtualMachineAllocate::execute(
     uid = user->get_uid();
 
     user->unlock();
-    
     
     rc = dm->allocate(uid,vm_template,&vid);
     
@@ -93,8 +96,8 @@ void RequestManager::VirtualMachineAllocate::execute(
 
     return;
 
-error_session:
-    oss << "Session information malformed, cannot allocate VirtualMachine";
+error_authenticate:
+    oss << "User not authenticated, aborting RequestManagerAllocate call.";
     goto error_common;
 
 error_get_user:

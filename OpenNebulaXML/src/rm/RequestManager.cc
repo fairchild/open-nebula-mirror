@@ -230,7 +230,7 @@ void RequestManager::register_xml_methods()
         RequestManager::VirtualMachineInfo(vmpool,upool));
 
     xmlrpc_c::methodPtr vm_pool_info(new
-        RequestManager::VirtualMachinePoolInfo(vmpool));
+        RequestManager::VirtualMachinePoolInfo(vmpool,upool));
         
     xmlrpc_c::methodPtr host_allocate(new 
         RequestManager::HostAllocate(hpool,upool));
@@ -239,7 +239,7 @@ void RequestManager::register_xml_methods()
         RequestManager::HostInfo(hpool, upool));
 
     xmlrpc_c::methodPtr hostpool_info(new 
-        RequestManager::HostPoolInfo(hpool));
+        RequestManager::HostPoolInfo(hpool,upool));
         
     xmlrpc_c::methodPtr host_delete(new 
         RequestManager::HostDelete(hpool,upool));
@@ -254,7 +254,7 @@ void RequestManager::register_xml_methods()
         RequestManager::VirtualNetworkInfo(vnpool,upool));
         
     xmlrpc_c::methodPtr vnpool_info(new 
-        RequestManager::VirtualNetworkPoolInfo(vnpool));
+        RequestManager::VirtualNetworkPoolInfo(vnpool,upool));
 
     xmlrpc_c::methodPtr vn_delete(new 
         RequestManager::VirtualNetworkDelete(vnpool, upool));

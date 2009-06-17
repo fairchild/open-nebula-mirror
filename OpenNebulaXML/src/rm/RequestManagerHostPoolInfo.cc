@@ -38,6 +38,15 @@ void RequestManager::HostPoolInfo::execute(
     // Get the parameters
     session = xmlrpc_c::value_string(paramList.getString(0));
 
+
+    // Check if it is a valid user
+    rc = HostPoolInfo::upool->authenticate(session);
+
+    if ( rc == -1 )
+    {
+        goto error_authenticate;
+    }
+
     // Perform the allocation in the vmpool 
     rc = HostPoolInfo::hpool->dump(oss,"");
       
@@ -59,6 +68,10 @@ void RequestManager::HostPoolInfo::execute(
     delete arrayresult;
 
     return;
+
+error_authenticate:
+    oss << "User not authenticated, RequestManagerHostPoolInfo aborted.";
+    goto error_common;
 
 error_dump:
     oss << "Error getting host pool"; 

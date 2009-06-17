@@ -307,8 +307,10 @@ private:
     {
     public:
         VirtualMachinePoolInfo(
-            VirtualMachinePool * _vmpool):
-                vmpool(_vmpool)
+            VirtualMachinePool * _vmpool,
+            UserPool           * _upool):
+                vmpool(_vmpool),
+                upool(_upool)
         {
             _signature="A:si";
             _help="Returns the virtual machine pool";
@@ -322,6 +324,7 @@ private:
 
     private:
         VirtualMachinePool * vmpool;
+        UserPool           *  upool;
     };    
     
     /* ---------------------------------------------------------------------- */
@@ -383,7 +386,10 @@ private:
     class HostPoolInfo: public xmlrpc_c::method
     {
     public:
-        HostPoolInfo(HostPool * _hpool):hpool(_hpool)
+        HostPoolInfo(HostPool * _hpool,
+                     UserPool * _upool):
+            hpool(_hpool),
+            upool(_upool)
         {
             _signature="A:s";
             _help="Returns the host pool information";
@@ -397,7 +403,7 @@ private:
 
     private:
         HostPool * hpool;
-
+        UserPool * upool;
     };
 
     /* ---------------------------------------------------------------------- */
@@ -512,7 +518,10 @@ private:
     class VirtualNetworkPoolInfo: public xmlrpc_c::method
     {
     public:
-        VirtualNetworkPoolInfo(VirtualNetworkPool * _vnpool):vnpool(_vnpool)
+        VirtualNetworkPoolInfo(VirtualNetworkPool * _vnpool,
+                               UserPool           * _upool):
+            vnpool(_vnpool),
+            upool(_upool)
         {
             _signature="A:s";
             _help="Returns the virtual network pool information";
@@ -526,7 +535,7 @@ private:
 
     private:
         VirtualNetworkPool * vnpool;
-
+        UserPool           * upool;
     };
 
     /* ---------------------------------------------------------------------- */

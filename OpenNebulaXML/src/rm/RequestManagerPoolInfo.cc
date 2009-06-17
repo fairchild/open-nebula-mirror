@@ -39,9 +39,16 @@ void RequestManager::VirtualMachinePoolInfo::execute(
     Nebula::log("ReM",Log::DEBUG,"VirtualMachinePoolInfo method invoked");
 
     // Get the parameters
-        //TODO the session id to validate with the SessionManager
     session      = xmlrpc_c::value_string(paramList.getString(0));
     vid          = xmlrpc_c::value_int   (paramList.getInt(1));
+
+    // Check if it is a valid user
+    rc = VirtualMachinePoolInfo::upool->authenticate(session);
+
+    if ( rc == -1 )
+    {
+        goto error_authenticate;
+    }
 
     // Perform the allocation in the vmpool 
     rc = VirtualMachinePoolInfo::vmpool->dump(oss,"");
@@ -62,6 +69,11 @@ void RequestManager::VirtualMachinePoolInfo::execute(
     delete arrayresult;
 
     return;
+
+error_authenticate:
+    oss << "User not authenticated, aborting RequestManagerPoolInfo call.";
+    goto error_common;
+
 
 error_dump:
     oss << "Error getting the pool info";

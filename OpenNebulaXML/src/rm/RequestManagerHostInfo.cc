@@ -27,7 +27,8 @@ void RequestManager::HostInfo::execute(
 { 
     string  session;
 
-    int     hid;   
+    int     hid;  
+    int     rc;
     Host *  host;
     
     ostringstream oss;
@@ -42,7 +43,13 @@ void RequestManager::HostInfo::execute(
     session      = xmlrpc_c::value_string(paramList.getString(0));
     hid          = xmlrpc_c::value_int   (paramList.getInt(1));
 
+    // Check if it is a valid user
+    rc = HostInfo::upool->authenticate(session);
 
+    if ( rc == -1 )
+    {
+        goto error_authenticate;
+    }
 
     // Perform the allocation in the hostpool 
     host = HostInfo::hpool->get(hid,true);    
@@ -67,6 +74,10 @@ void RequestManager::HostInfo::execute(
     delete arrayresult; // and get rid of the original
 
     return;
+
+error_authenticate:
+    oss << "User not authenticated, HostInfo call aborted.";
+    goto error_common;
 
 error_host_get:
     oss << "Error getting host with HID = " << hid; 
