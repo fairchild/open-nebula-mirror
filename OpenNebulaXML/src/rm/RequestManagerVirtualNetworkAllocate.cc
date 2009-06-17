@@ -27,6 +27,7 @@ void RequestManager::VirtualNetworkAllocate::execute(
 { 
     string              session;
     string              username;
+    string              password;
     string              name;
     string              stemplate;
     
@@ -50,15 +51,11 @@ void RequestManager::VirtualNetworkAllocate::execute(
     session   = xmlrpc_c::value_string(paramList.getString(0));
     stemplate = xmlrpc_c::value_string(paramList.getString(1));
 
-    pos=session.find(":");
-
-    if (pos == string::npos)
+    if ( User::split_secret(session,username,password) != 0 )
     {
         goto error_session;
     }
     
-    username = session.substr(0,pos);
-   
     // Now let's get the user
     user = VirtualNetworkAllocate::upool->get(username,true);
 

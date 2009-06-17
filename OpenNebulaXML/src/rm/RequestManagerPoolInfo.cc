@@ -27,6 +27,7 @@ void RequestManager::VirtualMachinePoolInfo::execute(
 { 
     string              session;
     string              username;
+    string              password;
 
     int                 filter_flag;
     int                 rc;
@@ -64,10 +65,8 @@ void RequestManager::VirtualMachinePoolInfo::execute(
      **/
     if (filter_flag == -1)
     {
-        pos=session.find(":");
-
-        username = session.substr(0,pos);
-
+        User::split_secret(session,username,password);
+        
         // Now let's get the user
         user = VirtualMachinePoolInfo::upool->get(username,true);
 

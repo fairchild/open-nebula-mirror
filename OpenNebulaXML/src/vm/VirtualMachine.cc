@@ -39,6 +39,7 @@ VirtualMachine::VirtualMachine(int id):
         PoolObjectSQL(id),
         uid(-1),
         last_poll(0),
+        name(""),
         vm_template(),
         state(INIT),
         lcm_state(LCM_INIT),

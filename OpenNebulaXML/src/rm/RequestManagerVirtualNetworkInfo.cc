@@ -53,7 +53,6 @@ void RequestManager::VirtualNetworkInfo::execute(
         goto error_authenticate;
     }
 
-
     vn = vnpool->get(nid,true);
                                               
     if ( vn == 0 )                             

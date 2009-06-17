@@ -46,7 +46,7 @@ User::User(
 User::~User(){};
 
 /* ************************************************************************** */
-/* User :: Database Access Functions                               */
+/* User :: Database Access Functions                                          */
 /* ************************************************************************** */
 
 const char * User::table = "user_pool";

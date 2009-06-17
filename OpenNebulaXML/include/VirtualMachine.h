@@ -763,6 +763,12 @@ private:
     // -------------------------------------------------------------------------
     // Virtual Machine Description
     // -------------------------------------------------------------------------
+
+    /**
+     * Name of the VM
+     */
+    string                  name;
+
     /**
      *  The Virtual Machine template, holds the VM attributes.
      */

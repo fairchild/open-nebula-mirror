@@ -27,7 +27,9 @@ void RequestManager::VirtualMachineAllocate::execute(
 {
     string              session;
     string              username;
+    string              password;
     string              vm_template;
+
     int                 vid;
     int                 uid;
     int                 rc;
@@ -60,9 +62,7 @@ void RequestManager::VirtualMachineAllocate::execute(
         goto error_authenticate;
     }
 
-    pos=session.find(":");
-
-    username = session.substr(0,pos);
+    User::split_secret(session,username,password);
    
     // Now let's get the user
     user = VirtualMachineAllocate::upool->get(username,true);

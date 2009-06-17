@@ -27,13 +27,13 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
 { 
     string        session;
     string        username;
+    string        password;
 
     ostringstream oss;
     ostringstream where_string;
 
 	int			  rc;
     int           filter_flag;
-    int           pos;
 
     User *        user;
 	
@@ -47,6 +47,14 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
     session     = xmlrpc_c::value_string(paramList.getString(0));
     filter_flag = xmlrpc_c::value_int(paramList.getInt(1));
 
+    // Check if it is a valid user
+    rc = VirtualNetworkPoolInfo::upool->authenticate(session);
+
+    if ( rc == -1 )
+    {
+        goto error_authenticate;
+    }
+
     where_string.str("");
     
     /** Filter flag meaning table
@@ -56,9 +64,7 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
      **/
     if (filter_flag == -1)
     {
-        pos=session.find(":");
-
-        username = session.substr(0,pos);
+        User::split_secret(session,username,password);
 
         // Now let's get the user
         user = VirtualNetworkPoolInfo::upool->get(username,true);
@@ -99,8 +105,12 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
 
     return;
 
+error_authenticate:
+    oss << "User not authenticated, NetworkPoolInfo call aborted.";
+    goto error_common;
+
 error_get_user:
-    oss << "Error getting user, aborting NetWorkPoolInfo call";
+    oss << "Error getting user, aborting NetworkPoolInfo call";
     goto error_common;
 
 error_dump:
