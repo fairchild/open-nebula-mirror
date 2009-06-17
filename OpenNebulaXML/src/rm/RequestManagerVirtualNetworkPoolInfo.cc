@@ -26,8 +26,16 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
     xmlrpc_c::value *   const  retval)
 { 
     string        session;
+    string        username;
+
     ostringstream oss;
+    ostringstream where_string;
+
 	int			  rc;
+    int           filter_flag;
+    int           pos;
+
+    User *        user;
 	
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
@@ -36,10 +44,41 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
     Nebula::log("ReM",Log::DEBUG,"VirtualNetworkPoolInfo method invoked");
 
     // Get the parameters
-    session = xmlrpc_c::value_string(paramList.getString(0));
+    session     = xmlrpc_c::value_string(paramList.getString(0));
+    filter_flag = xmlrpc_c::value_int(paramList.getInt(1));
+
+    where_string.str("");
+    
+    /** Filter flag meaning table
+     *    <=-2 :: ALL VMs
+     *     -1  :: User's VMs
+     *    >=0  :: UID User's VMs
+     **/
+    if (filter_flag == -1)
+    {
+        pos=session.find(":");
+
+        username = session.substr(0,pos);
+
+        // Now let's get the user
+        user = VirtualNetworkPoolInfo::upool->get(username,true);
+
+        if ( user == 0 )
+        {
+            goto error_get_user;
+        }
+
+        where_string << "OID=" << user->get_uid();
+
+        user->unlock();
+    }
+    else if (filter_flag>=0)
+         {
+            where_string << "OID=" << filter_flag;
+         }
 
     // Perform the allocation in the vmpool 
-    rc = VirtualNetworkPoolInfo::vnpool->dump(oss,"");
+    rc = VirtualNetworkPoolInfo::vnpool->dump(oss,where_string.str());
       
     if ( rc != 0 )
     {                                            
@@ -59,6 +98,10 @@ void RequestManager::VirtualNetworkPoolInfo::execute(
     delete arrayresult;
 
     return;
+
+error_get_user:
+    oss << "Error getting user, aborting NetWorkPoolInfo call";
+    goto error_common;
 
 error_dump:
     oss << "Error getting virtual network pool"; 

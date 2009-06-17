@@ -26,11 +26,16 @@ void RequestManager::VirtualMachinePoolInfo::execute(
     xmlrpc_c::value *   const  retval)
 { 
     string              session;
+    string              username;
 
-    // <vid> of the vid to retrieve the information for
-    int                 vid, rc;
+    int                 filter_flag;
+    int                 rc;
+    int                 pos;
     
     ostringstream       oss;
+    ostringstream       where_string;
+
+    User *              user;
 
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
@@ -40,7 +45,7 @@ void RequestManager::VirtualMachinePoolInfo::execute(
 
     // Get the parameters
     session      = xmlrpc_c::value_string(paramList.getString(0));
-    vid          = xmlrpc_c::value_int   (paramList.getInt(1));
+    filter_flag  = xmlrpc_c::value_int   (paramList.getInt(1));
 
     // Check if it is a valid user
     rc = VirtualMachinePoolInfo::upool->authenticate(session);
@@ -50,8 +55,38 @@ void RequestManager::VirtualMachinePoolInfo::execute(
         goto error_authenticate;
     }
 
+    where_string.str("");
+
+    /** Filter flag meaning table
+     *    <=-2 :: ALL VMs
+     *     -1  :: User's VMs
+     *    >=0  :: UID User's VMs
+     **/
+    if (filter_flag == -1)
+    {
+        pos=session.find(":");
+
+        username = session.substr(0,pos);
+
+        // Now let's get the user
+        user = VirtualMachinePoolInfo::upool->get(username,true);
+
+        if ( user == 0 )
+        {
+            goto error_get_user;
+        }
+
+        where_string << "OID=" << user->get_uid();
+
+        user->unlock();
+    }
+    else if (filter_flag>=0)
+         {
+           where_string << "OID=" << filter_flag;
+         }
+
     // Perform the allocation in the vmpool 
-    rc = VirtualMachinePoolInfo::vmpool->dump(oss,"");
+    rc = VirtualMachinePoolInfo::vmpool->dump(oss,where_string.str());
       
     if ( rc != 0 )
     {                                            
@@ -74,6 +109,9 @@ error_authenticate:
     oss << "User not authenticated, aborting RequestManagerPoolInfo call.";
     goto error_common;
 
+error_get_user:
+    oss << "An error ocurred getting the user from the UserPool, aborting RequestManagerPoolInfo call";
+    goto error_common;
 
 error_dump:
     oss << "Error getting the pool info";

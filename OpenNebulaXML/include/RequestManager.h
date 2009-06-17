@@ -523,7 +523,7 @@ private:
             vnpool(_vnpool),
             upool(_upool)
         {
-            _signature="A:s";
+            _signature="A:si";
             _help="Returns the virtual network pool information";
         };
 
