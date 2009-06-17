@@ -1,3 +1,12 @@
+
+
+begin
+    require 'nokogiri'
+    NOKOGIRI=true
+rescue
+    NOKOGIRI=false
+end
+
 module OpenNebula
     # The Pool class represents a generic OpenNebula Pool in XML format
     # and provides the basic functionality to handle the Pool elements
@@ -34,7 +43,11 @@ module OpenNebula
             rc = @client.call(xml_method,*args)
 
             if !OpenNebula.is_error?(rc)
-                @xml = REXML::Document.new(rc);
+                if NOKOGIRI
+                    @xml = Nokogiri::XML(rc)
+                else
+                    @xml = REXML::Document.new(rc)
+                end
                 rc   = nil
             end
             
@@ -47,9 +60,17 @@ module OpenNebula
         # VirtualNetworkPoolNode
         def each
             if @xml
-                @xml.elements.each("/#{@pool_name}/#{@element_name}") {|pelem|
-                    yield self.factory(pelem)
-                }
+                if NOKOGIRI
+                    @xml.xpath(
+                        "/#{@pool_name}/#{@element_name}").each {|pelem|
+                        yield self.factory(pelem)
+                    }
+                else
+                    @xml.elements.each(
+                        "/#{@pool_name}/#{@element_name}") {|pelem|
+                        yield self.factory(pelem)
+                    }
+                end
             end
         end
 
@@ -134,7 +155,15 @@ module OpenNebula
         #   ['VID'] # gets VM id
         #   ['HISTORY/HOSTNAME'] # get the hostname from the history
         def [](key)
-            @xml.elements[key.to_s.upcase].text if @xml.elements[key.to_s.upcase]
+            if NOKOGIRI
+                if @xml.xpath(key.to_s.upcase)
+                    @xml.xpath(key.to_s.upcase).text
+                end
+            else
+                if @xml.elements[key.to_s.upcase]
+                    @xml.elements[key.to_s.upcase].text
+                end
+            end
         end
 
         def to_str
