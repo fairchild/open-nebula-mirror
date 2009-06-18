@@ -246,7 +246,7 @@ int VirtualNetwork::unmarshall(ostringstream& oss,
 
     oss <<
         "<VNET>" <<
-            "<VNID>"  << values[OID]   << "</VNID>"  <<
+            "<ID>"    << values[OID]   << "</ID>"    <<
             "<UID>"   << values[UID]   << "</UID>"   <<
             "<NAME>"  << values[NAME]  << "</NAME>"  <<
             "<TYPE>"  << values[TYPE]  << "</TYPE>"  <<
@@ -506,7 +506,7 @@ string& VirtualNetwork::to_xml(string& xml) const
 
     os << 
         "<VNET>" <<
-            "<VNID>"  << oid   << "</VNID>" <<
+            "<ID>"    << oid   << "</ID>"   <<
             "<UID>"   << uid   << "</UID>"  <<
             "<NAME>"  << name  << "</NAME>" <<
             "<TYPE>"  << type  << "</TYPE>" <<
@@ -531,9 +531,9 @@ string& VirtualNetwork::to_str(string& str) const
     string template_str;
     string leases_str;
     
-    os << "VNID              : " << oid << endl;
+    os << "ID                : " << oid << endl;
     os << "UID               : " << uid << endl;
-    os << "Network Name      : " << name << endl;
+    os << "NAME              : " << name << endl;
     os << "Type              : ";
     if ( type==VirtualNetwork::RANGED )
     {

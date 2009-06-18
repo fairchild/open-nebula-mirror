@@ -212,8 +212,8 @@ int User::unmarshall(ostringstream& oss,
 
     oss <<
         "<USER>" <<
-            "<UID>"          << values[OID]           <<"</UID>"       <<
-            "<USER_NAME>"    << values[USERNAME]      <<"</USER_NAME>" <<
+            "<ID>"           << values[OID]           <<"</ID>"        <<
+            "<NAME>"         << values[USERNAME]      <<"</NAME>"      << 
             "<PASSWORD>"     << values[PASSWORD]      <<"</PASSWORD>"  <<
             "<ENABLED>"      << str_enabled           <<"</ENABLED>"   <<
         "</USER>";
@@ -298,8 +298,8 @@ string& User::to_xml(string& xml) const
  
     oss << 
     "<USER>"                             
-         "<UID>"          << oid            <<"</UID>"       <<
-         "<USER_NAME>"    << username       <<"</USER_NAME>" <<
+         "<ID>"           << oid            <<"</ID>"        <<
+         "<NAME>"         << username       <<"</NAME>"      <<
          "<PASSWORD>"     << password       <<"</PASSWORD>"  <<
          "<ENABLED>"      << enabled_int    <<"</ENABLED>"   <<
     "</USER>";
@@ -319,8 +319,8 @@ string& User::to_str(string& str) const
     string enabled_str = enabled?"True":"False";
 
     os << 
-        "UID      = "  << oid            << endl <<
-        "USERNAME = "  << username       << endl <<
+        "ID      = "   << oid            << endl <<
+        "NAME = "      << username       << endl <<
         "PASSWORD = "  << password       << endl <<
         "ENABLED  = "  << enabled_str;
 

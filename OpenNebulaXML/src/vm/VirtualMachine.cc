@@ -399,7 +399,7 @@ int VirtualMachine::unmarshall(ostringstream& oss,
 
     oss <<
         "<VM>" <<
-            "<VID>"      << values[OID]      << "</VID>"      <<
+            "<ID>"      << values[OID]      << "</ID>"      <<
             "<UID>"      << values[UID]      << "</UID>"      <<
             "<NAME>"     << values[NAME]     << "</NAME>"     << 
             "<LAST_POLL>"<< values[LAST_POLL]<< "</LAST_POLL>"<<
@@ -888,7 +888,7 @@ string& VirtualMachine::to_xml(string& xml) const
 	ostringstream	oss;
 	
 	oss << "<VM>"
-	      << "<VID>"       << oid       << "</VID>"
+	      << "<ID>"       << oid       << "</ID>"
 	      << "<UID>"       << uid       << "</UID>"
           << "<NAME>"      << name      << "</NAME>"
 	      << "<LAST_POLL>" << last_poll << "</LAST_POLL>"
@@ -923,7 +923,7 @@ string& VirtualMachine::to_str(string& str) const
     
 	ostringstream	oss;
 	
-	oss<< "VID               : " << oid << endl
+	oss<< "ID                : " << oid << endl
        << "UID               : " << uid << endl
        << "NAME              : " << name << endl
        << "STATE             : " << state << endl

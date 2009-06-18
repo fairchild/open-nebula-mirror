@@ -29,7 +29,7 @@ class VirtualNetworkTemplate : public TemplateSQL
 {
 public:
     VirtualNetworkTemplate(int tid = -1):
-    	TemplateSQL(table,tid,false,'=',"VNET_TEMPLATE"){};
+    	TemplateSQL(table,tid,false,'=',"TEMPLATE"){};
 
     ~VirtualNetworkTemplate(){};
     

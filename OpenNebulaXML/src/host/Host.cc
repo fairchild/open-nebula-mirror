@@ -301,8 +301,8 @@ int Host::unmarshall(ostringstream& oss,
 
     oss <<
         "<HOST>" <<
-            "<HID>"          << values[OID]          <<"</HID>"          <<
- 		    "<HOST_NAME>"    << values[HOST_NAME]    <<"</HOST_NAME>"    <<
+            "<ID>"           << values[OID]          <<"</ID>"           <<
+ 		    "<NAME>"         << values[HOST_NAME]    <<"</NAME>"         <<
 		    "<STATE>"        << values[STATE]        <<"</STATE>"        <<
 		    "<IM_MAD>"       << values[IM_MAD]       <<"</IM_MAD>"       <<
 		    "<VM_MAD>"       << values[VM_MAD]       <<"</VM_MAD>"       <<
@@ -431,8 +431,8 @@ string& Host::to_xml(string& xml) const
  
     oss << 
     "<HOST>"                             
-       "<HID>"           << oid       	   << "</HID>"           <<           
-       "<HOST_NAME>"     << hostname 	   << "</HOST_NAME>"     << 
+       "<ID>"            << oid       	   << "</ID>"            <<           
+       "<NAME>"          << hostname 	   << "</NAME>"          << 
        "<STATE>"         << state          << "</STATE>"         << 
        "<IM_MAD>"        << im_mad_name    << "</IM_MAD>"        << 
        "<VM_MAD>"        << vmm_mad_name   << "</VM_MAD>"        << 
@@ -458,8 +458,8 @@ string& Host::to_str(string& str) const
     ostringstream   os;
 
     os << 
-		"HID      = "  << oid            << endl <<
-    	"HOSTNAME = "  << hostname       << endl <<
+		"ID      =  "  << oid            << endl <<
+    	"NAME = "      << hostname       << endl <<
     	"STATE    = "  << state          << endl <<
     	"IM MAD   = "  << im_mad_name    << endl <<
     	"VMM MAD  = "  << vmm_mad_name   << endl <<
