@@ -31,7 +31,6 @@ void RequestManager::VirtualMachinePoolInfo::execute(
 
     int                 filter_flag;
     int                 rc;
-    int                 pos;
     
     ostringstream       oss;
     ostringstream       where_string;

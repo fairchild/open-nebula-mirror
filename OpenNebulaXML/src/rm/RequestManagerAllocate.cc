@@ -34,8 +34,6 @@ void RequestManager::VirtualMachineAllocate::execute(
     int                 uid;
     int                 rc;
 
-    size_t              pos; 
-
     Nebula&             nd = Nebula::instance();
     DispatchManager *   dm = nd.get_dm();
 

@@ -35,8 +35,6 @@ void RequestManager::VirtualNetworkAllocate::execute(
     int                 uid;
     int                 rc;
     
-    size_t              pos;
-
     User *              user;
 
     ostringstream       oss;
