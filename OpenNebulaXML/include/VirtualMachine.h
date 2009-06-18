@@ -186,6 +186,16 @@ public:
         }
     };
 
+
+    /**
+     *  Returns the name of the VM
+     *    @return the VM name
+     */
+    const string& get_name() const
+    {
+        return name;
+    };
+
     /**
      *  Returns the deployment ID
      *    @return the VMM driver specific ID
@@ -996,18 +1006,19 @@ protected:
     {
         OID             = 0,
         UID             = 1,
-        LAST_POLL       = 2,
-        TEMPLATE_ID     = 3,
-        STATE           = 4,
-        LCM_STATE       = 5,
-        STIME           = 6,
-        ETIME           = 7,
-        DEPLOY_ID       = 8,
-        MEMORY          = 9,
-        CPU             = 10,
-        NET_TX          = 11,
-        NET_RX          = 12,
-        LIMIT           = 13
+        NAME            = 2,
+        LAST_POLL       = 3,
+        TEMPLATE_ID     = 4,
+        STATE           = 5,
+        LCM_STATE       = 6,
+        STIME           = 7,
+        ETIME           = 8,
+        DEPLOY_ID       = 9,
+        MEMORY          = 10,
+        CPU             = 11,
+        NET_TX          = 12,
+        NET_RX          = 13,
+        LIMIT           = 14
     };
 
     static const char * table;

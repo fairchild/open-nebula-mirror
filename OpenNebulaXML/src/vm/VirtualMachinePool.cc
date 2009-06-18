@@ -145,10 +145,12 @@ int VirtualMachinePool::allocate (
     bool           on_hold)
 {
     VirtualMachine * vm;
+    string  name;
 
     char *  error_msg;
     int     rc, num_attr;
 
+    SingleAttribute   * attr;
     vector<Attribute *> attrs;
 
     // ------------------------------------------------------------------------
@@ -182,6 +184,23 @@ int VirtualMachinePool::allocate (
 
         return -2;
     }
+
+    // ------------------------------------------------------------------------
+    // Set a name if the VM has not got one and VM_ID
+    // ------------------------------------------------------------------------
+    vm->get_template_attribute("NAME",name);
+    if ( name.empty() == true )
+    {
+        ostringstream oss;
+
+        oss << "one-" << oid;
+        name = oss.str();
+
+        attr = new SingleAttribute("NAME",name);
+
+        vm->vm_template.set(attr);
+    }
+    vm->name = name;
 
     vm->vm_template.remove("CONTEXT",attrs);
 

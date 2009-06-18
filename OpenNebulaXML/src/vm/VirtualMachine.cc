@@ -75,12 +75,12 @@ VirtualMachine::~VirtualMachine()
 
 const char * VirtualMachine::table = "vm_pool";
 
-const char * VirtualMachine::db_names = "(oid,uid,last_poll,template_id,state"
+const char * VirtualMachine::db_names = "(oid,uid,name,last_poll,template_id,state"
                                         ",lcm_state,stime,etime,deploy_id"
                                         ",memory,cpu,net_tx,net_rx)";
 
 const char * VirtualMachine::db_bootstrap = "CREATE TABLE vm_pool ("
-        "oid INTEGER PRIMARY KEY,uid INTEGER,"
+        "oid INTEGER PRIMARY KEY,uid INTEGER,name TEXT,"
         "last_poll INTEGER, template_id INTEGER,state INTEGER,lcm_state INTEGER,"
         "stime INTEGER,etime INTEGER,deploy_id TEXT,memory INTEGER,cpu INTEGER,"
         "net_tx INTEGER,net_rx INTEGER)";
@@ -92,6 +92,7 @@ int VirtualMachine::unmarshall(int num, char **names, char ** values)
 {
     if ((values[OID] == 0) ||
             (values[UID] == 0) ||
+            (values[NAME] == 0) ||
             (values[LAST_POLL] == 0) ||
             (values[TEMPLATE_ID] == 0) ||
             (values[STATE] == 0) ||
@@ -107,8 +108,9 @@ int VirtualMachine::unmarshall(int num, char **names, char ** values)
         return -1;
     }
 
-    oid = atoi(values[OID]);
-    uid = atoi(values[UID]);
+    oid  = atoi(values[OID]);
+    uid  = atoi(values[UID]);
+    name = values[NAME];
 
     last_poll = static_cast<time_t>(atoi(values[LAST_POLL]));
 
@@ -275,22 +277,6 @@ int VirtualMachine::insert(SqliteDB * db)
     string              value;
     ostringstream       oss;
 
-    // ------------------------------------------------------------------------
-    // Set a name if the VM has not got one and VM_ID
-    // ------------------------------------------------------------------------
-
-    get_template_attribute("NAME",name);
-
-    if ( name.empty() == true )
-    {
-        oss << "one-" << oid;
-        value = oss.str();
-
-        attr = new SingleAttribute("NAME",value);
-
-        vm_template.set(attr);
-    }
-
     oss.str("");
 
     oss << oid;
@@ -365,6 +351,7 @@ int VirtualMachine::update(SqliteDB * db)
     oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
         oid << "," <<
         uid << "," <<
+        name << "," <<
         last_poll << "," <<
         vm_template.id << "," <<
         state << "," <<
@@ -394,6 +381,7 @@ int VirtualMachine::unmarshall(ostringstream& oss,
 {
     if ((!values[OID])||
         (!values[UID])||
+        (!values[NAME]) ||
         (!values[LAST_POLL])||
         (!values[STATE])||
         (!values[LCM_STATE])||
@@ -413,6 +401,7 @@ int VirtualMachine::unmarshall(ostringstream& oss,
         "<VM>" <<
             "<VID>"      << values[OID]      << "</VID>"      <<
             "<UID>"      << values[UID]      << "</UID>"      <<
+            "<NAME>"     << values[NAME]     << "</NAME>"     << 
             "<LAST_POLL>"<< values[LAST_POLL]<< "</LAST_POLL>"<<
             "<STATE>"    << values[STATE]    << "</STATE>"    <<
             "<LCM_STATE>"<< values[LCM_STATE]<< "</LCM_STATE>"<<
@@ -901,6 +890,7 @@ string& VirtualMachine::to_xml(string& xml) const
 	oss << "<VM>"
 	      << "<VID>"       << oid       << "</VID>"
 	      << "<UID>"       << uid       << "</UID>"
+          << "<NAME>"      << name      << "</NAME>"
 	      << "<LAST_POLL>" << last_poll << "</LAST_POLL>"
 	      << "<STATE>"     << state     << "</STATE>"
 	      << "<LCM_STATE>" << lcm_state << "</LCM_STATE>"
@@ -935,6 +925,7 @@ string& VirtualMachine::to_str(string& str) const
 	
 	oss<< "VID               : " << oid << endl
        << "UID               : " << uid << endl
+       << "NAME              : " << name << endl
        << "STATE             : " << state << endl
        << "LCM STATE         : " << lcm_state << endl
        << "DEPLOY ID         : " << deploy_id << endl
