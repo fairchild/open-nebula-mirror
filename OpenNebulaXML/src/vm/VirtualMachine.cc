@@ -351,7 +351,7 @@ int VirtualMachine::update(SqliteDB * db)
     oss << "INSERT OR REPLACE INTO " << table << " "<< db_names <<" VALUES ("<<
         oid << "," <<
         uid << "," <<
-        name << "," <<
+        "'" << name << "'," <<
         last_poll << "," <<
         vm_template.id << "," <<
         state << "," <<
