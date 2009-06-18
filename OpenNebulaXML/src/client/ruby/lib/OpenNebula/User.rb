@@ -35,7 +35,6 @@ module OpenNebula
             super(xml,client)
 
             @client = client
-            @pe_id  = xml.elements['UID'].text.to_i if xml.elements['UID']
         end
 
         # ---------------------------------------------------------------------

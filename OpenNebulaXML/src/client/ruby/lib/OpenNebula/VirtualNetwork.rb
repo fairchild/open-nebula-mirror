@@ -25,23 +25,20 @@ module OpenNebula
                 vn_xml = "<VNET></VNET>"
             end
 
-            REXML::Document.new(vn_xml).root
+            initialize_xml(vn_xml)
         end
 
-        # ---------------------------------------------------------------------
         # Class constructor
-        # ---------------------------------------------------------------------
         def initialize(xml, client)
             super(xml,client)
 
             @client = client
-            @pe_id  = xml.elements['VNID'].text.to_i if xml.elements['VNID']
-            @name   = self['NAME']
         end
 
-        # ---------------------------------------------------------------------
+        #######################################################################
         # XML-RPC Methods for the Virtual Network Object
-        # ---------------------------------------------------------------------
+        #######################################################################
+        
         def info()
             super(VN_METHODS[:info])
         end

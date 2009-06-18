@@ -7,6 +7,7 @@ require 'digest/sha1'
 require 'rexml/document'
 require 'pp'
 
+require 'OpenNebula/XMLUtils'
 require 'OpenNebula/VirtualMachine'
 require 'OpenNebula/VirtualMachinePool'
 require 'OpenNebula/VirtualNetwork'

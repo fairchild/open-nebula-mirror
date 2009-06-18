@@ -1,17 +1,10 @@
 
-
-begin
-    require 'nokogiri'
-    NOKOGIRI=true
-rescue
-    NOKOGIRI=false
-end
-
 module OpenNebula
     # The Pool class represents a generic OpenNebula Pool in XML format
     # and provides the basic functionality to handle the Pool elements
     class Pool
         include Enumerable
+        include XMLUtilsPool
 
     protected
 
@@ -33,9 +26,9 @@ module OpenNebula
             OpenNebula::PoolElement.new(element_xml,client)
         end
 
-        # ---------------------------------------------------------------------
+        #######################################################################
         # Common XML-RPC Methods for all the Pool Types
-        # ---------------------------------------------------------------------
+        #######################################################################
 
         # Calls to the corresponding info method to retreive the pool
         # representation in XML format
@@ -43,35 +36,19 @@ module OpenNebula
             rc = @client.call(xml_method,*args)
 
             if !OpenNebula.is_error?(rc)
-                if NOKOGIRI
-                    @xml = Nokogiri::XML(rc)
-                else
-                    @xml = REXML::Document.new(rc)
-                end
+                @xml=initialize_xml(rc)
                 rc   = nil
             end
             
             return rc
         end
 
-    public    
+    public
 
         # Iterates over every VirtualNetwork and calls the block with a
         # VirtualNetworkPoolNode
-        def each
-            if @xml
-                if NOKOGIRI
-                    @xml.xpath(
-                        "/#{@pool_name}/#{@element_name}").each {|pelem|
-                        yield self.factory(pelem)
-                    }
-                else
-                    @xml.elements.each(
-                        "/#{@pool_name}/#{@element_name}") {|pelem|
-                        yield self.factory(pelem)
-                    }
-                end
-            end
+        def each(&block)
+            each_element(block) if @xml
         end
 
         def to_str
@@ -85,6 +62,7 @@ module OpenNebula
     # The PoolElement Class represents a generic element of a Pool in
     # XML format
     class PoolElement
+        include XMLUtilsElement
 
     protected
         # +node+ is a REXML element that represents the Pool element 
@@ -96,9 +74,9 @@ module OpenNebula
             @pe_id  = nil 
         end
 
-        # ---------------------------------------------------------------------
+        #######################################################################
         # Common XML-RPC Methods for all the Pool Element Types
-        # ---------------------------------------------------------------------
+        #######################################################################
 
         def info(xml_method)
             return Error.new('ID not defined') if !@pe_id
@@ -106,10 +84,11 @@ module OpenNebula
             rc = @client.call(xml_method,@pe_id)
 
             if !OpenNebula.is_error?(rc)
-                doc  = REXML::Document.new(rc)
-
-                @xml = doc.root if doc
+                @xml=initialize_xml(rc)
                 rc   = nil
+                
+                @pe_id = self['ID'].to_i if self['ID']
+                @name  = self['NAME'] if self['NAME']
             end
 
             return rc
@@ -137,14 +116,19 @@ module OpenNebula
 
     public
     
+        # Creates new element specifying its id
+        # id:: identifyier of the element
+        # client:: initialized OpenNebula::Client object
         def self.new_with_id(id, client=nil)
             self.new(self.build_xml(id), client)
         end
     
+        # Returns element identifier
         def id
             @pe_id
         end
         
+        # Returns element name
         def name
             @name
         end
@@ -155,15 +139,7 @@ module OpenNebula
         #   ['VID'] # gets VM id
         #   ['HISTORY/HOSTNAME'] # get the hostname from the history
         def [](key)
-            if NOKOGIRI
-                if @xml.xpath(key.to_s.upcase)
-                    @xml.xpath(key.to_s.upcase).text
-                end
-            else
-                if @xml.elements[key.to_s.upcase]
-                    @xml.elements[key.to_s.upcase].text
-                end
-            end
+            get_element(key)
         end
 
         def to_str

@@ -210,7 +210,6 @@ end
 ################
 
 def get_one_client(session=nil)
-    session||="jfontan:opennebula"
     OpenNebula::Client.new(session)
 end
 

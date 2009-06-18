@@ -27,11 +27,7 @@ module OpenNebula
                 vm_xml = "<VM></VM>"
             end
             
-            if NOKOGIRI
-                Nokogiri::XML(vm_xml)
-            else
-                REXML::Document.new(vm_xml).root
-            end
+            initialize_xml(vm_xml)
         end
 
         # ---------------------------------------------------------------------
@@ -41,8 +37,6 @@ module OpenNebula
             super(xml,client)
 
             @client = client
-            #@pe_id  = xml.elements['VID'].text.to_i if xml.elements['VID']
-            @pe_id = self['VID'].to_i if self['VID']
         end
 
         # ---------------------------------------------------------------------
