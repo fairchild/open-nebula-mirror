@@ -10,6 +10,14 @@ module OpenNebula
 
     
     module XMLUtilsElement
+        def self.initialize_xml(xml)
+            if NOKOGIRI
+                Nokogiri::XML(xml)
+            else
+                REXML::Document.new(xml).root
+            end
+        end
+
         def get_element(key)
             if NOKOGIRI
                 element=@xml.xpath(key.to_s.upcase)
@@ -25,6 +33,8 @@ module OpenNebula
         
     module XMLUtilsPool
         def initialize_xml(xml)
+            puts xml
+            
             if NOKOGIRI
                 Nokogiri::XML(xml)
             else
