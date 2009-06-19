@@ -74,13 +74,13 @@ void RequestManager::VirtualMachinePoolInfo::execute(
             goto error_get_user;
         }
 
-        where_string << "OID=" << user->get_uid();
+        where_string << "UID=" << user->get_uid();
 
         user->unlock();
     }
     else if (filter_flag>=0)
          {
-           where_string << "OID=" << filter_flag;
+           where_string << "UID=" << filter_flag;
          }
 
     // Perform the allocation in the vmpool 
