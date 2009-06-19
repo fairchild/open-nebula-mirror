@@ -57,8 +57,7 @@ ShowTableVM={
         :desc => "Actual status of the VM",
         :size => 4,
         :proc => lambda {|d,e| 
-            #e[:vm].get_state(d)
-            "state"
+            d.status
         }
     },
     :cpu => {

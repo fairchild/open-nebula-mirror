@@ -12,6 +12,37 @@ module OpenNebula
             :migrate  => "vm.migrate",
             :deploy   => "vm.deploy"
         }
+        
+        VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED}
+        
+        LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
+            SAVE_MIGRATE PROLOG_MIGRATE EPILOG_STOP EPILOG SHUTDOWN CANCEL}
+
+        SHORT_VM_STATES={
+            "INIT"      => "init",
+            "PENDING"   => "pend",
+            "HOLD"      => "hold",
+            "ACTIVE"    => "actv",
+            "STOPPED"   => "stop",
+            "SUSPENDED" => "susp",
+            "DONE"      => "done",
+            "FAILED"    => "fail"
+        }
+
+        SHORT_LCM_STATES={
+            "PROLOG"        => "prol",
+            "BOOT"          => "boot",
+            "RUNNING"       => "runn",
+            "MIGRATE"       => "migr",
+            "SAVE_STOP"     => "save",
+            "SAVE_SUSPEND"  => "save",
+            "SAVE_MIGRATE"  => "save",
+            "PROLOG_MIGRATE"=> "migr",
+            "EPILOG_STOP"   => "epil",
+            "EPILOG"        => "epil",
+            "SHUTDOWN"      => "shut",
+            "CANCEL"        => "shut"
+        }
 
         # Creates a VirtualMachine description with just its identifier
         # this method should be used to create plain VirtualMachine objects.
@@ -40,8 +71,9 @@ module OpenNebula
         end
 
         #######################################################################
-        # XML-RPC Methods for the Virtual Network Object
+        # XML-RPC Methods for the Virtual Machine Object
         #######################################################################
+
         def info()
             super(VM_METHODS[:info])
         end
@@ -111,6 +143,41 @@ module OpenNebula
             rc = nil if !OpenNebula.is_error?(rc)
             
             return rc
+        end
+
+        #######################################################################
+        # Helpers to get VirtualMachine information
+        #######################################################################
+        
+        # Returns the VM state of the VirtualMachine (numeric value)
+        def state
+            self['STATE'].to_i
+        end
+
+        # Returns the VM state of the VirtualMachine (string value)
+        def state_str
+            VM_STATE[state]
+        end
+
+        # Returns the LCM state of the VirtualMachine (numeric value)
+        def lcm_state
+            self['LCM_STATE'].to_i
+        end
+
+        # Returns the LCM state of the VirtualMachine (string value)
+        def lcm_state_str
+            LCM_STATE[lcm_state]
+        end
+
+        # Returns the short status string for the VirtualMachine
+        def status
+            short_state_str=SHORT_VM_STATES[state_str]
+
+            if short_state_str=="actv"
+                short_state_str=SHORT_LCM_STATES[lcm_state_str]
+            end
+
+            short_state_str
         end
 
     private

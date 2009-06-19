@@ -71,7 +71,12 @@ module OpenNebula
             @xml    = node
             @client = client
 
-            @pe_id  = nil 
+            if self['ID']
+                @pe_id = self['ID'].to_i
+            else
+                @pe_id  = nil
+            end
+            @name  = self['NAME'] if self['NAME']
         end
 
         #######################################################################
