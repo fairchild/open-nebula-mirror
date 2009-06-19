@@ -29,12 +29,20 @@ module OpenNebula
                 element.text
             end
         end
+
+        def self.initialize_xml(xml)
+            puts xml
+
+            if NOKOGIRI
+                Nokogiri::XML(xml)
+            else
+                REXML::Document.new(xml).root
+            end
+        end
     end
         
     module XMLUtilsPool
         def initialize_xml(xml)
-            puts xml
-            
             if NOKOGIRI
                 Nokogiri::XML(xml)
             else
