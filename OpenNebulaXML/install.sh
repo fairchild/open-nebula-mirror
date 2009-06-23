@@ -174,6 +174,7 @@ BIN_FILES="src/nebula/oned \
            src/client/ruby/onevm \
            src/client/ruby/onehost \
            src/client/ruby/onevnet \
+           src/client/ruby/oneuser \
            share/scripts/one"
 
 #-------------------------------------------------------------------------------

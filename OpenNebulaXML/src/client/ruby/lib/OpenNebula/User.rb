@@ -20,12 +20,12 @@ module OpenNebula
         #
         def User.build_xml(pe_id=nil)
             if pe_id
-                user_xml = "<USER><UID>#{pe_id}</UID></USER>"
+                user_xml = "<USER><ID>#{pe_id}</ID></USER>"
             else
                 user_xml = "<USER></USER>"
             end
 
-            REXML::Document.new(user_xml).root
+            XMLUtilsElement.initialize_xml(user_xml)
         end
 
         # ---------------------------------------------------------------------

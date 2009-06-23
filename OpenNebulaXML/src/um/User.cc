@@ -55,7 +55,7 @@ const char * User::db_names = "(oid,user_name,password,enabled)";
 
 const char * User::db_bootstrap = "CREATE TABLE user_pool ("
 	"oid INTEGER,user_name TEXT,password TEXT,"
-	"enabled INTEGER, PRIMARY KEY(oid), UNIQUE(user_name))";
+	"enabled INTEGER, PRIMARY KEY(oid,user_name), UNIQUE(user_name))";
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

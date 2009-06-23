@@ -36,7 +36,7 @@ module OpenNebula
             rc = @client.call(xml_method,*args)
 
             if !OpenNebula.is_error?(rc)
-                @xml=initialize_xml(rc)
+                @xml=XMLUtilsElement::initialize_xml(rc)
                 rc   = nil
             end
             
