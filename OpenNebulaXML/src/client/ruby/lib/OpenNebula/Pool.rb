@@ -8,9 +8,9 @@ module OpenNebula
 
     protected
 
-        #+pool+ XML name of the root element
-        #+element+ XML name of the Pool elements
-        #+client+  a Client object that represents a XML-RPC connection
+        #pool:: _String_ XML name of the root element
+        #element:: _String_ XML name of the Pool elements
+        #client::  _Client_ represents a XML-RPC connection
         def initialize(pool,element,client)
             @pool_name    = pool.upcase
             @element_name = element.upcase
@@ -19,9 +19,11 @@ module OpenNebula
             @xml    = nil
         end
 
-        # Default Factory Method for the Pools. Each Pool MUST implement the 
+        # Default Factory Method for the Pools. The factory method returns an
+        # suitable PoolElement object. Each Pool MUST implement the 
         # corresponding factory method
-        # +element_xml+ a REXML element describing the pool element  
+        # element_xml:: _XML_ XML element describing the pool element  
+        # [return] a PoolElement object
         def factory(element_xml)
             OpenNebula::PoolElement.new(element_xml,client)
         end
@@ -32,11 +34,14 @@ module OpenNebula
 
         # Calls to the corresponding info method to retreive the pool
         # representation in XML format
+        # xml_method:: _String_ the name of the XML-RPC method
+        # args:: _Array_ with additional arguments for the info call
+        # [return] nil in case of success or an Error object 
         def info(xml_method,*args)
             rc = @client.call(xml_method,*args)
 
             if !OpenNebula.is_error?(rc)
-                @xml=XMLUtilsElement::initialize_xml(rc)
+                @xml = XMLUtilsElement::initialize_xml(rc)
                 rc   = nil
             end
             
@@ -45,12 +50,14 @@ module OpenNebula
 
     public
 
-        # Iterates over every VirtualNetwork and calls the block with a
-        # VirtualNetworkPoolNode
+        # Iterates over every PoolElement in the Pool and calls the block with a
+        # a PoolElement obtained calling the factory method
+        # block:: _Block_
         def each(&block)
             each_element(block) if @xml
         end
 
+        # DO NOT USE - ONLY REXML BACKEND
         def to_str
             str = ""
             REXML::Formatters::Pretty.new(1).write(@xml,str)
@@ -65,8 +72,8 @@ module OpenNebula
         include XMLUtilsElement
 
     protected
-        # +node+ is a REXML element that represents the Pool element 
-        # +client+ a Client object that represents a XML-RPC connection
+        # node:: _XML_is a XML element that represents the Pool element 
+        # client:: _Client_ represents a XML-RPC connection
         def initialize(node,client)
             @xml    = node
             @client = client
@@ -74,15 +81,19 @@ module OpenNebula
             if self['ID']
                 @pe_id = self['ID'].to_i
             else
-                @pe_id  = nil
+                @pe_id = nil
             end
-            @name  = self['NAME'] if self['NAME']
+            @name = self['NAME'] if self['NAME']
         end
 
         #######################################################################
         # Common XML-RPC Methods for all the Pool Element Types
         #######################################################################
 
+        # Calls to the corresponding info method to retreive the element
+        # detailed information in XML format
+        # xml_method:: _String_ the name of the XML-RPC method
+        # [return] nil in case of success or an Error object 
         def info(xml_method)
             return Error.new('ID not defined') if !@pe_id
 
@@ -90,7 +101,7 @@ module OpenNebula
 
             if !OpenNebula.is_error?(rc)
                 @xml=initialize_xml(rc)
-                rc   = nil
+                rc  = nil
                 
                 @pe_id = self['ID'].to_i if self['ID']
                 @name  = self['NAME'] if self['NAME']
@@ -99,6 +110,12 @@ module OpenNebula
             return rc
         end
 
+        # Calls to the corresponding allocate method to create a new element
+        # in the OpenNebula core 
+        # xml_method:: _String_ the name of the XML-RPC method
+        # args:: _Array_ additional arguments including the template for the
+        #                new element  
+        # [return] nil in case of success or an Error object 
         def allocate(xml_method, *args)
             rc = @client.call(xml_method, *args)
 
@@ -110,6 +127,10 @@ module OpenNebula
             return rc
         end
 
+        # Calls to the corresponding delete method to remove this element
+        # from the OpenNebula core 
+        # xml_method:: _String_ the name of the XML-RPC method
+        # [return] nil in case of success or an Error object 
         def delete(xml_method)
             return Error.new('ID not defined') if !@pe_id
 
@@ -129,15 +150,18 @@ module OpenNebula
         end
     
         # Returns element identifier
+        # [return] _Integer_ the PoolElement ID  
         def id
             @pe_id
         end
         
-        # Returns element name
+        # Gets element name
+        # [return] _String_ the PoolElement name
         def name
             @name
         end
 
+        # DO NOT USE - ONLY REXML BACKEND
         def to_str
             str = ""
             REXML::Formatters::Pretty.new(1).write(@xml,str)
