@@ -138,15 +138,6 @@ module OpenNebula
             @name
         end
 
-        # Extract an element from the node.
-        # +key+ The name of the element
-        # Examples:
-        #   ['VID'] # gets VM id
-        #   ['HISTORY/HOSTNAME'] # get the hostname from the history
-        def [](key)
-            get_element(key)
-        end
-
         def to_str
             str = ""
             REXML::Formatters::Pretty.new(1).write(@xml,str)

@@ -8,8 +8,15 @@ module OpenNebula
         NOKOGIRI=false
     end
 
-    
+    ###########################################################################
+    # The XMLUtilsElement module provides an abstraction of the underlying
+    # XML parser engine. It provides XML-related methods for the Pool Elements  
+    ###########################################################################
     module XMLUtilsElement
+
+        #Initialize a XML document for the element
+        #xml:: _String_ the XML document of the object
+        #[return] _XML_ object for the underlying XML engine
         def self.initialize_xml(xml)
             if NOKOGIRI
                 Nokogiri::XML(xml)
@@ -18,7 +25,13 @@ module OpenNebula
             end
         end
 
-        def get_element(key)
+        # Extract an element from the XML description of the PoolElement.
+        # key::_String_ The name of the element
+        # [return] _String_ the value of the element 
+        # Examples:
+        #   ['VID'] # gets VM id
+        #   ['HISTORY/HOSTNAME'] # get the hostname from the history
+        def [](key)
             if NOKOGIRI
                 element=@xml.xpath(key.to_s.upcase)
             else
@@ -29,19 +42,17 @@ module OpenNebula
                 element.text
             end
         end
-
-        def self.initialize_xml(xml)
-            puts xml
-
-            if NOKOGIRI
-                Nokogiri::XML(xml)
-            else
-                REXML::Document.new(xml).root
-            end
-        end
     end
         
+    ###########################################################################
+    # The XMLUtilsPool module provides an abstraction of the underlying
+    # XML parser engine. It provides XML-related methods for the Pools  
+    ###########################################################################
     module XMLUtilsPool
+
+        #Initialize a XML document for the element
+        #xml:: _String_ the XML document of the object
+        #[return] _XML_ object for the underlying XML engine
         def initialize_xml(xml)
             if NOKOGIRI
                 Nokogiri::XML(xml)
@@ -50,6 +61,8 @@ module OpenNebula
             end
         end
         
+        #Executes the given block for each element of the Pool
+        #block:: _Block_ 
         def each_element(block)
             if NOKOGIRI
                 @xml.xpath(
