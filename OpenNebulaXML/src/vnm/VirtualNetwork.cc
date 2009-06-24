@@ -288,13 +288,14 @@ int VirtualNetwork::dump(SqliteDB * db, ostringstream& oss, const string& where)
         << Leases::table << ".used) FROM " << VirtualNetwork::table
         << " LEFT OUTER JOIN " << Leases::table << " ON "
         << VirtualNetwork::table << ".oid = " <<  Leases::table << ".oid"
-        << " AND " << Leases::table << ".used = 1 GROUP BY "
-        << VirtualNetwork::table << ".oid";
-
+        << " AND " << Leases::table << ".used = 1";
+       
     if ( !where.empty() )
     {
         cmd << " WHERE " << where;
     }
+
+    cmd << " GROUP BY " << VirtualNetwork::table << ".oid";
 
     rc = db->exec(cmd,vn_dump_cb,(void *) &oss);
 

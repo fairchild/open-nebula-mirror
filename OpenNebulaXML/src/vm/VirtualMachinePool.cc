@@ -185,10 +185,14 @@ int VirtualMachinePool::allocate (
         return -2;
     }
 
+    vm->vm_template.remove("CONTEXT",attrs);
+
     // ------------------------------------------------------------------------
     // Set a name if the VM has not got one and VM_ID
     // ------------------------------------------------------------------------
+    
     vm->get_template_attribute("NAME",name);
+
     if ( name.empty() == true )
     {
         ostringstream oss;
@@ -200,13 +204,13 @@ int VirtualMachinePool::allocate (
 
         vm->vm_template.set(attr);
     }
-    vm->name = name;
 
-    vm->vm_template.remove("CONTEXT",attrs);
+    vm->name = name;
 
     // ------------------------------------------------------------------------
     // Insert the Object in the pool
     // ------------------------------------------------------------------------
+    
     *oid = PoolSQL::allocate(vm);
 
     if ( *oid == -1 )
@@ -217,6 +221,7 @@ int VirtualMachinePool::allocate (
     // ------------------------------------------------------------------------
     // Insert parsed context in the VM template and clean-up
     // ------------------------------------------------------------------------
+    
     if ((num_attr = (int) attrs.size()) > 0)
     {
         generate_context(*oid,attrs[0]);

@@ -20,12 +20,12 @@ module OpenNebula
         #
         def VirtualNetwork.build_xml(pe_id=nil)
             if pe_id
-                vn_xml = "<VNET><VNID>#{pe_id}</VNID></VNET>"
+                vn_xml = "<VNET><ID>#{pe_id}</ID></VNET>"
             else
                 vn_xml = "<VNET></VNET>"
             end
 
-            initialize_xml(vn_xml)
+            XMLUtilsElement.initialize_xml(vn_xml)
         end
 
         # Class constructor

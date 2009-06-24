@@ -100,8 +100,8 @@ module OpenNebula
             rc = @client.call(xml_method,@pe_id)
 
             if !OpenNebula.is_error?(rc)
-                @xml=initialize_xml(rc)
-                rc  = nil
+                @xml = XMLUtilsElement::initialize_xml(rc)
+                rc   = nil
                 
                 @pe_id = self['ID'].to_i if self['ID']
                 @name  = self['NAME'] if self['NAME']
