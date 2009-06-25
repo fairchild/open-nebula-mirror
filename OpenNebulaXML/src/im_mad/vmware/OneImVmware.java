@@ -121,7 +121,7 @@ class OneImVmware extends Thread
                           
                           GetProperty gP;
                           boolean     rf;
-                          String      response = "";
+                          String      response = "HYPERVISOR=vmware";
                        
                           try
                           {
