@@ -527,8 +527,6 @@ int DispatchManager::restart(int vid)
         LifeCycleManager *  lcm = nd.get_lcm();
 
         lcm->trigger(LifeCycleManager::RESTART,vid);
-
-        return 0;
     }
     else
     {
