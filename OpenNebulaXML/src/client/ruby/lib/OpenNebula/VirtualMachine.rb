@@ -16,7 +16,8 @@ module OpenNebula
         VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED}
         
         LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
-            SAVE_MIGRATE PROLOG_MIGRATE EPILOG_STOP EPILOG SHUTDOWN CANCEL}
+            SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG SHUTDOWN CANCEL
+            FAILURE DELETE UNKNOWN}
 
         SHORT_VM_STATES={
             "INIT"      => "init",
@@ -38,10 +39,14 @@ module OpenNebula
             "SAVE_SUSPEND"  => "save",
             "SAVE_MIGRATE"  => "save",
             "PROLOG_MIGRATE"=> "migr",
+            "PROLOG_RESUME" => "prol",
             "EPILOG_STOP"   => "epil",
             "EPILOG"        => "epil",
             "SHUTDOWN"      => "shut",
-            "CANCEL"        => "shut"
+            "CANCEL"        => "shut",
+            "FAILURE"       => "fail",
+            "DELETE"        => "dele",
+            "UNKNOWN"       => "unkn"
         }
 
         # Creates a VirtualMachine description with just its identifier
