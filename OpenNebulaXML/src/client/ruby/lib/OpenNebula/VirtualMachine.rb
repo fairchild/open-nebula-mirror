@@ -58,7 +58,7 @@ module OpenNebula
         #
         def VirtualMachine.build_xml(pe_id=nil)
             if pe_id
-                vm_xml = "<VM><VID>#{pe_id}</VID></VM>"
+                vm_xml = "<VM><ID>#{pe_id}</ID></VM>"
             else
                 vm_xml = "<VM></VM>"
             end
@@ -90,7 +90,7 @@ module OpenNebula
         def deploy(host_id)
             return Error.new('ID not defined') if !@pe_id
 
-            rc = @client.call(VM_METHODS[:allocate], @pe_id, host_id)
+            rc = @client.call(VM_METHODS[:deploy], @pe_id, host_id.to_i)
             rc = nil if !OpenNebula.is_error?(rc)
         
             return rc
