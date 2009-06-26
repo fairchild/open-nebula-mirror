@@ -248,7 +248,8 @@ int VirtualMachinePool::get_running(
     string          where;
 
     os << "state == " << VirtualMachine::ACTIVE
-    << " and lcm_state == " << VirtualMachine::RUNNING;
+       << " and ( lcm_state == " << VirtualMachine::RUNNING
+       << " or lcm_state == " << VirtualMachine::UNKNOWN << " )";
 
     where = os.str();
 

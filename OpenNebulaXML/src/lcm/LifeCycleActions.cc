@@ -479,7 +479,8 @@ void  LifeCycleManager::restart_action(int vid)
     }
     
     if (vm->get_state() == VirtualMachine::ACTIVE &&
-        vm->get_lcm_state() == VirtualMachine::UNKNOWN)
+        (vm->get_lcm_state() == VirtualMachine::UNKNOWN ||
+         vm->get_lcm_state() == VirtualMachine::BOOT))
     {
         Nebula&                 nd = Nebula::instance();
         VirtualMachineManager * vmm = nd.get_vmm();
@@ -487,12 +488,19 @@ void  LifeCycleManager::restart_action(int vid)
         //----------------------------------------------------
         //       RE-START THE VM IN THE SAME HOST
         //----------------------------------------------------
+       
+        if (vm->get_lcm_state() == VirtualMachine::BOOT)
+        {
+            vm->log("LCM", Log::INFO, "Sending BOOT command to VM again");
+        }
+        else
+        {
+            vm->set_state(VirtualMachine::BOOT);
         
-        vm->set_state(VirtualMachine::BOOT);
-        
-        vmpool->update(vm);
+            vmpool->update(vm);
 
-        vm->log("LCM", Log::INFO, "New VM state is BOOT");
+            vm->log("LCM", Log::INFO, "New VM state is BOOT");
+        }
         
         //----------------------------------------------------
         

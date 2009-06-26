@@ -520,8 +520,9 @@ int DispatchManager::restart(int vid)
     oss << "Restarting VM " << vid;
     Nebula::log("DiM",Log::DEBUG,oss);
 
-    if (vm->get_state() == VirtualMachine::ACTIVE &&
-        vm->get_lcm_state() == VirtualMachine::UNKNOWN )
+    if (vm->get_state() == VirtualMachine::ACTIVE && 
+        (vm->get_lcm_state() == VirtualMachine::UNKNOWN ||
+         vm->get_lcm_state() == VirtualMachine::BOOT))
     {
         Nebula&             nd  = Nebula::instance();
         LifeCycleManager *  lcm = nd.get_lcm();
