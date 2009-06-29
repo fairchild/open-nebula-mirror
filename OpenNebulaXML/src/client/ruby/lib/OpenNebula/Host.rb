@@ -36,7 +36,7 @@ module OpenNebula
                 host_xml = "<HOST></HOST>"
             end
 
-            XMLUtilsElement.initialize_xml(host_xml)
+            XMLUtilsElement.initialize_xml(host_xml, 'HOST')
         end
 
         #######################################################################
@@ -46,14 +46,14 @@ module OpenNebula
             super(xml,client)
 
             @client = client
-            @pe_id  = self['HID'].to_i if self['HID']
+            @pe_id  = self['ID'].to_i if self['ID']
         end
 
         #######################################################################
         # XML-RPC Methods for the Host
         #######################################################################
         def info()
-            super(HOST_METHODS[:info])
+            super(HOST_METHODS[:info], 'HOST')
         end
 
         def allocate(hostname,im,vmm,tm)

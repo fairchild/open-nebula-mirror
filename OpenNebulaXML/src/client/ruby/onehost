@@ -245,13 +245,26 @@ when "show"
     
     host=OpenNebula::Host.new_with_id(host_id, get_one_client)
     
-    result=host.info(host_id)
+    result=host.info
     if is_successful?(result)
-        pp host
+        #puts host.template_str
     else
         puts "Error: "+result.message
         exit -1
     end
+    
+    str="%-15s: %-20s"
+    
+    puts str % ["ID", host[:id]]
+    puts str % ["NAME", host[:name]]
+    puts str % ["STATE", host.state_str]
+    puts str % ["IM_MAD", host[:im_mad]]
+    puts str % ["VM_MAD", host[:vm_mad]]
+    puts str % ["TM_MAD", host[:tm_mad]]
+    puts str % ["MAX MEM", host['host_share/max_mem']]
+    puts str % ["USED MEM", host['host_share/used_mem']]
+    puts str % ["MAX CPU", host['host_share/max_cpu']]
+    puts str % ["USED CPU", host['host_share/used_cpu']]
     
 when "delete"
     check_parameters("delete", 1)

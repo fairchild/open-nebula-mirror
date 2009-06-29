@@ -205,17 +205,12 @@ class VmShow
         else
             result=[true, ""]
             header_vm_small
-            
-            #require 'perftools'
-            #PerfTools::CpuProfiler.start("google_profile") do
-                        
+
             if options
                 puts @table.data_str(@vmpool, options)
             else
                 puts @table.data_str(@vmpool)
             end
-            
-            #end
             
             result
         end
@@ -580,8 +575,44 @@ when "delete"
 
 when "show"
     # TODO: change this to the new API
-     check_parameters("get_info", 1)
-     vm_id=get_vm_id(vm, ARGV[0])
+    check_parameters("get_info", 1)
+    vm_id=get_vm_id(ARGV[0])
+
+    vm=OpenNebula::VirtualMachine.new_with_id(vm_id, get_one_client)
+    vm.info
+
+    str="%-15s: %-20s"
+
+    puts str % ["ID", vm[:id]]
+    puts str % ["NAME", vm[:name]]
+    puts str % ["STATE", vm.state_str]
+    puts str % ["LCM_STATE", vm.lcm_state_str]
+    
+    value=vm[:stime].to_i
+    if value==0
+        value='-'
+    else
+        value=Time.at(value).strftime("%m/%d %H:%M:%S")
+    end
+    puts str % ["START TIME", value]
+
+    value=vm[:etime].to_i
+    if value==0
+        value='-'
+    else
+        value=Time.at(value).strftime("%m/%d %H:%M:%S")
+    end
+    puts str % ["END TIME", value]
+    
+    value=vm[:deploy_id]
+    puts str % ["DEPLOY ID:", value=="" ? "-" : value]
+
+    puts
+    puts "....: Template :...."
+    puts vm.template_str
+     
+     
+=begin
      result = res = vm.get_info(vm_id)
      if res[0]
          res[1].gsub!(/^\n/, '')
@@ -615,7 +646,8 @@ when "show"
          
          command_exit 0
      end
-        
+=end
+
 else
     onevm_opts.print_help
     exit -1
