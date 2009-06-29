@@ -63,7 +63,7 @@ module OpenNebula
                 vm_xml = "<VM></VM>"
             end
             
-            XMLUtilsElement.initialize_xml(vm_xml)
+            XMLUtilsElement.initialize_xml(vm_xml, 'VM')
         end
 
         #######################################################################
@@ -71,8 +71,9 @@ module OpenNebula
         #######################################################################
         def initialize(xml, client)
             super(xml,client)
-
-            @client = client
+            
+            @element_name = "VM"
+            @client       = client
         end
 
         #######################################################################
@@ -80,7 +81,7 @@ module OpenNebula
         #######################################################################
 
         def info()
-            super(VM_METHODS[:info])
+            super(VM_METHODS[:info], 'VM')
         end
 
         def allocate(description)

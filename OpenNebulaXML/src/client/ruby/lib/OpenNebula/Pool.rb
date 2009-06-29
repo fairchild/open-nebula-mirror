@@ -41,7 +41,7 @@ module OpenNebula
             rc = @client.call(xml_method,*args)
 
             if !OpenNebula.is_error?(rc)
-                @xml = XMLUtilsElement::initialize_xml(rc)
+                @xml = initialize_xml(rc)
                 rc   = nil
             end
             
@@ -74,7 +74,7 @@ module OpenNebula
     protected
         # node:: _XML_is a XML element that represents the Pool element 
         # client:: _Client_ represents a XML-RPC connection
-        def initialize(node,client)
+        def initialize(node, client)
             @xml    = node
             @client = client
 
@@ -93,14 +93,15 @@ module OpenNebula
         # Calls to the corresponding info method to retreive the element
         # detailed information in XML format
         # xml_method:: _String_ the name of the XML-RPC method
+        # root_element:: _String_ Base XML element
         # [return] nil in case of success or an Error object 
-        def info(xml_method)
+        def info(xml_method, root_element)
             return Error.new('ID not defined') if !@pe_id
 
             rc = @client.call(xml_method,@pe_id)
 
             if !OpenNebula.is_error?(rc)
-                @xml = XMLUtilsElement::initialize_xml(rc)
+                @xml = XMLUtilsElement::initialize_xml(rc, root_element)
                 rc   = nil
                 
                 @pe_id = self['ID'].to_i if self['ID']
