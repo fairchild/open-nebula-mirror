@@ -25,7 +25,7 @@ module OpenNebula
                 user_xml = "<USER></USER>"
             end
 
-            XMLUtilsElement.initialize_xml(user_xml)
+            XMLUtilsElement.initialize_xml(user_xml, 'USER')
         end
 
         # ---------------------------------------------------------------------
@@ -41,7 +41,7 @@ module OpenNebula
         # XML-RPC Methods for the User Object
         # ---------------------------------------------------------------------
         def info()
-            super(USER_METHODS[:info])
+            super(USER_METHODS[:info], 'USER')
         end
 
         def allocate(username, password)
