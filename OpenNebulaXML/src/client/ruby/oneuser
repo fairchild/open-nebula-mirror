@@ -165,7 +165,8 @@ when "create"
     check_parameters("create", 2)
     user=OpenNebula::User.new(
         OpenNebula::User.build_xml, get_one_client)
-    result=user.allocate(ARGV[0],ARGV[1])
+    sha_password = Digest::SHA1.hexdigest(ARGV[1])
+    result=user.allocate(ARGV[0],sha_password)
     if !OpenNebula.is_error?(result)
         puts "UID: " + user.id.to_s if ops[:verbose]
         exit 0
