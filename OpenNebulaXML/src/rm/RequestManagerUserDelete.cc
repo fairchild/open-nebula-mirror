@@ -42,6 +42,12 @@ void RequestManager::UserDelete::execute(
     // Get the parameters
     session = xmlrpc_c::value_string(paramList.getString(0));
     uid     = xmlrpc_c::value_int(paramList.getInt(1));
+
+    // oneadmin cannot be deleted
+    if ( uid == 0 )
+    {
+        goto error_oneadmin_deletion;
+    }
     
     // Only oneadmin can delete users
     rc = UserDelete::upool->authenticate(session);
@@ -76,6 +82,10 @@ void RequestManager::UserDelete::execute(
      delete arrayresult; // and get rid of the original
 
     return;
+
+error_oneadmin_deletion:
+    oss << "User oneadmin cannot be deleted";
+    goto error_common;
 
 error_authenticate:
     oss << "User not authorized to add new users";

@@ -126,9 +126,6 @@ Commands:
 * create (Creates a new user)
     oneuser create username password
     
-* show (Gets info from a user)
-    oneuser show <uid>
-    
 * delete (Removes a user)
     oneuser delete <uid>
     
@@ -172,21 +169,11 @@ when "create"
         exit 0
     end
     
-when "show"
-    check_parameters("show", 1)
-    user=OpenNebula::User.new(
-        OpenNebula::User.build_xml(ARGV[0]), get_one_client)
-    result=user.info
-    if !OpenNebula.is_error?(result)
-        pp user
-        exit 0
-    end
-    
 when "delete"
     check_parameters("delete", 1)
     user=OpenNebula::User.new(
-        OpenNebula::User.build_xml, get_one_client)
-    result=user.delete(ARGV[0])
+        OpenNebula::User.build_xml(ARGV[0]), get_one_client)
+    result=user.delete
     if !OpenNebula.is_error?(result)
         puts "User deleted" if ops[:verbose]
         exit 0
