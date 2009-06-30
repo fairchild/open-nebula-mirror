@@ -86,7 +86,7 @@ public:
 
         if ( index != known_users.end() )
         {
-            return get((int)index->second,true);
+            return get((int)index->second,lock);
         }
 
         return 0;

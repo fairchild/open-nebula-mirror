@@ -66,7 +66,6 @@ void RequestManager::UserAllocate::execute(
     }
     
     // Now let's add the user
-        
     rc = UserAllocate::upool->allocate(&uid,username,password,true);
     
     if ( rc != 0 )                             
