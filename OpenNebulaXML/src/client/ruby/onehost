@@ -265,7 +265,12 @@ when "show"
     puts str % ["USED MEM", host['host_share/used_mem']]
     puts str % ["MAX CPU", host['host_share/max_cpu']]
     puts str % ["USED CPU", host['host_share/used_cpu']]
+    puts str % ["RUNNING VMS", host['host_share/running_vms']]
     
+    puts
+    puts "....: Template :...."
+    puts host.template_str
+
 when "delete"
     check_parameters("delete", 1)
     host_id=get_host_id(ARGV[0])
