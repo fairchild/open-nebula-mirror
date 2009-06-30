@@ -35,6 +35,8 @@ void RequestManager::UserAllocate::execute(
     int                 rc;     
     ostringstream       oss;
 
+    User              * user;
+
     /*   -- RPC specific vars --  */
     vector<xmlrpc_c::value> arrayData;
     xmlrpc_c::value_array * arrayresult;
@@ -53,6 +55,14 @@ void RequestManager::UserAllocate::execute(
     if ( rc != 0 )                             
     {                                            
         goto error_authenticate;                     
+    }
+
+    // Let's make sure that the user doesn't exist in the database
+    user = UserAllocate::upool->get(username,false);
+
+    if (user != 0 )
+    {
+        goto error_duplicate;
     }
     
     // Now let's add the user
@@ -80,6 +90,11 @@ error_authenticate:
     oss << "User not authorized to add new users";
     goto error_common;
     
+error_duplicate:
+    oss << "Existing user, cannot duplicate";
+    goto error_common;
+
+
 error_allocate:
     oss << "Error allocating user";
     goto error_common;

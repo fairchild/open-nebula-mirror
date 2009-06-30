@@ -74,7 +74,7 @@ public:
      *  it is loaded from the DB
      *    @param username
      *    @param lock locks the User mutex
-     *    @return a pointer to the Host, 0 if the User could not be loaded
+     *    @return a pointer to the User, 0 if the User could not be loaded
      */
     User * get(
         string  username,
