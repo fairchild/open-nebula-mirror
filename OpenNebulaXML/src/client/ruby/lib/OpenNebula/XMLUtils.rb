@@ -43,24 +43,36 @@ module OpenNebula
             end
         end
         
-        def template_str
+        def template_str(indent=true)
+            template_like_str('TEMPLATE', indent)
+        end
+            
+        def template_like_str(root_element, indent=true)
             if NOKOGIRI
-                xml_template=@xml.xpath('TEMPLATE').to_s
+                xml_template=@xml.xpath(root_element).to_s
                 rexml=REXML::Document.new(xml_template).root
             else
-                rexml=@xml.elements['TEMPLATE']
+                rexml=@xml.elements[root_element]
+            end
+            
+            if indent
+                ind_enter="\n"
+                ind_tab='  '
+            else
+                ind_enter=''
+                ind_tab=' '
             end
             
             str=rexml.collect {|n|
                 if n.class==REXML::Element
                     str_line=""
                     if n.has_elements?
-                        str_line<<n.name+"=[\n"
+                        str_line<<n.name+"=["+ind_enter
                         str_line<<n.collect {|n2|
                             if n2.class==REXML::Element
-                                '  '+n2.name+"="+n2.text
+                                ind_tab+n2.name+"="+n2.text
                             end
-                        }.compact.join(",\n")
+                        }.compact.join(","+ind_enter)
                         str_line<<" ]"
                     else
                         str_line<<n.name+"="+n.text

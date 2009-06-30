@@ -191,11 +191,23 @@ when "create"
 when "show"
     check_parameters("show", 1)
     vn_id=get_vn_id(ARGV[0])
-    result=vn.info(vn_id)
-    if result[0]
-        puts result[1]
+    vn=OpenNebula::VirtualNetwork.new_with_id(vn_id, get_one_client)
+    result=vn.info
+    if is_successful?(result)
+        puts "ID: "+vn.id.to_s
+        puts
+        puts "....: Template :...."
+        puts
+        
+        puts vn.template_str(false)
+        
+        puts
+        puts "Leases info"
+        puts
+        
+        puts vn.template_like_str('/VNET/LEASES', false)
     else
-        puts "Error: "+result[1]
+        puts "Error: "+result.message
         exit -1
     end
     

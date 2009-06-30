@@ -25,7 +25,7 @@ module OpenNebula
                 vn_xml = "<VNET></VNET>"
             end
 
-            XMLUtilsElement.initialize_xml(vn_xml)
+            XMLUtilsElement.initialize_xml(vn_xml, 'VNET')
         end
 
         # Class constructor
@@ -40,7 +40,7 @@ module OpenNebula
         #######################################################################
         
         def info()
-            super(VN_METHODS[:info])
+            super(VN_METHODS[:info], 'VNET')
         end
 
         def allocate(description)
