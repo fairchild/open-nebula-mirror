@@ -275,6 +275,10 @@ def get_vn_id(name)
     get_entity_id(name, OpenNebula::VirtualNetworkPool)
 end
 
+def get_user_id(name)
+    get_entity_id(name, OpenNebula::UserPool)
+end
+
 def str_running_time(data)
     stime=Time.at(data["stime"].to_i)
     if data["etime"]=="0"
