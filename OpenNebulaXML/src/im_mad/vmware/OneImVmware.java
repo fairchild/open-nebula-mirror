@@ -144,15 +144,15 @@ class OneImVmware extends Thread
                                      Integer.parseInt(gP.getObjectProperty("hardware.memorySize").toString().trim());
                               totalMemory /= 1024;   
                               
-                              response = response + "TOTALMEMORY=" + totalMemory;
+                              response = response + ",TOTALMEMORY=" + totalMemory;
                        
                               int numCpus = 
                                      Integer.parseInt(gP.getObjectProperty("hardware.cpuInfo.numCpuCores").
                                                       toString().trim());
                               numCpus *= 100;
-                              response = response + " TOTALCPU=" + numCpus;
+                              response = response + ",TOTALCPU=" + numCpus;
                               
-                              response = response + " MODELNAME=\"" 
+                              response = response + ",MODELNAME=\"" 
                                                   + gP.getObjectProperty("hardware.systemInfo.model")
                                                   + "\"";
                               
@@ -161,7 +161,7 @@ class OneImVmware extends Thread
                               // From hz to Mhz
                               cpuSpeed/=1000000;
                        
-                              response = response + " CPUSPEED=" + (int)cpuSpeed;
+                              response = response + ",CPUSPEED=" + (int)cpuSpeed;
                         
                         
                           // Dynamic Information
@@ -170,27 +170,27 @@ class OneImVmware extends Thread
                               if (!rf) throw new Exception();
                               // Convert from 1/10000 to 1/100
                               int usedCpu = (int)(gP.getMeasure()/100);
-                              response = response + " USEDCPU="+usedCpu;
+                              response = response + ",USEDCPU="+usedCpu;
                               
-                              response = response + " FREECPU="+(100-usedCpu);
+                              response = response + ",FREECPU="+(100-usedCpu);
                        
                              // MEM 
                               rf = gP.getPerformanceCounter("mem.usage.average", 60);
                               if (!rf) throw new Exception();
                               // Convert from percentage to actual value
                               int usedMemory = (int)(totalMemory * (gP.getMeasure()/100))/100;
-                              response = response + " USEDMEMORY=" + usedMemory;
+                              response = response + ",USEDMEMORY=" + usedMemory;
         
-                              response = response + " FREEMEMORY=" + (totalMemory-usedMemory);
+                              response = response + ",FREEMEMORY=" + (totalMemory-usedMemory);
                               
                              // NET
                               rf = gP.getPerformanceCounter("net.transmitted.average", 60);
                               if (!rf) throw new Exception();
-                              response = response + " NETTX=" + (int)gP.getMeasure();
+                              response = response + ",NETTX=" + (int)gP.getMeasure();
         
                               rf = gP.getPerformanceCounter("net.received.average", 60);
                               if (!rf) throw new Exception();
-                              response = response + " NETRX=" + (int)gP.getMeasure();
+                              response = response + ",NETRX=" + (int)gP.getMeasure();
                        
                               // Send the actual response
                               System.err.println("MONITOR SUCCESS " + hid_str + " " + response);    
