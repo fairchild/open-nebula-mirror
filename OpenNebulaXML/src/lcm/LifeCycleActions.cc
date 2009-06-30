@@ -519,3 +519,60 @@ error:
     vm->log("LCM", Log::ERROR, "restart_action, VM in a wrong state.");
     vm->unlock();
 }
+
+void  LifeCycleManager::delete_action(int vid)
+{
+    VirtualMachine *    vm;
+
+    vm = vmpool->get(vid,true);
+    
+    if ( vm == 0 )
+    {
+        return;
+    }
+
+    switch ( vm->get_lcm_state() )
+    {
+        case VirtualMachine::LCM_INIT:
+        break;
+        case VirtualMachine::PROLOG:
+        break;
+        case VirtualMachine::BOOT:
+        break;
+        case VirtualMachine::RUNNING:
+        break;
+        case VirtualMachine::MIGRATE:
+        break;
+        case VirtualMachine::SAVE_STOP:
+        break;
+        case VirtualMachine::SAVE_SUSPEND:
+        break;
+        case VirtualMachine::SAVE_MIGRATE:
+        break;
+        case VirtualMachine::PROLOG_MIGRATE:
+        break;
+        case VirtualMachine::PROLOG_RESUME:
+        break;
+        case VirtualMachine::EPILOG_STOP:
+        break;
+        case VirtualMachine::EPILOG:
+        break;
+        case VirtualMachine::SHUTDOWN:
+        break;
+        case VirtualMachine::CANCEL:
+        break;
+        case VirtualMachine::FAILURE:
+        break;
+        case VirtualMachine::DELETE:
+        break;
+        case VirtualMachine::UNKNOWN:
+        break;
+        default:
+        break;
+    }
+
+    vm->unlock();
+
+    return;
+}
+

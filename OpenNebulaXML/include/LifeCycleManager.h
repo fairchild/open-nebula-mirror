@@ -186,6 +186,8 @@ private:
 
     void restart_action(int vid);
 
+    void delete_action(int vid);
+
     void timer_action();        
 };
 
