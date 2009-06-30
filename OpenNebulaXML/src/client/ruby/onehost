@@ -199,24 +199,20 @@ EOT
 
 end
 
-def command_exit(code)
-    $host.close_db
-    exit(code)
-end
-
 # Returns true if there are non DONE VM's in a host, false otherwise
-def vms_in_host?(host)
-    sql_statement="select history.vid,history.hid,history.seq,vm_pool.state"+
-        " from history,vm_pool where vm_pool.oid=history.vid and"+
-        " vm_pool.state<>6 and history.hid=#{host} group by vid"
+def vms_in_host?(host_id)
 
-    result=$host.get_db.db.execute(sql_statement)
+    host = OpenNebula::Host.new_with_id(host_id,get_one_client)
 
-    if result.length>0
-        true
-    else
-        false
+    rc = host.info
+
+    if OpenNebula::is_error?(rc)
+        puts rc.message
+        exit -1
     end
+    
+    host['host_shares/running_vms'].to_i
+
 end
 
 
@@ -274,18 +270,29 @@ when "show"
 when "delete"
     check_parameters("delete", 1)
     host_id=get_host_id(ARGV[0])
-    if vms_in_host?(host_id)
+    
+    host = OpenNebula::Host.new_with_id(host_id,get_one_client)
+
+    rc = host.info
+
+    if OpenNebula::is_error?(rc)
+        puts rc.message
+        exit -1
+    end
+
+    if host['host_shares/running_vms'].to_i != 0
         puts "Host still has associated VMs. It will be disabled instead."
-        result=host.disable(host_id)
-        if result[0]
+        result=host.disable
+        if is_successful?(result)
             puts "Host disabled" if ops[:verbose]
-            command_exit 0
+            exit 0
         end
     else
-        result=host.delete(host_id)
-        if result[0]
+        pp host
+        result=host.delete
+        if is_successful?(result)
             puts "Host deleted" if ops[:verbose]
-            command_exit 0
+            exit 0
         end
     end
     

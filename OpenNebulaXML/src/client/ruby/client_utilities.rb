@@ -239,7 +239,7 @@ def get_entity_id(name, pool_class)
     return name if name.match(/^[0123456789]+$/)
 
     # TODO: get vm's from the actual user
-    pool=pool_class.new(get_one_client, 0)
+    pool=pool_class.new(get_one_client)
     result=pool.info
 
     # TODO: Check for errors
