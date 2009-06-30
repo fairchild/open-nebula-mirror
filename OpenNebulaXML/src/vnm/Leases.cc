@@ -231,7 +231,7 @@ string& Leases::Lease::to_xml(string& str) const
     os << 
         "<LEASE>" <<
             "<IP>"<< ip << "</IP>" <<
-            "<MAC>" << mac << "</MAC" <<
+            "<MAC>" << mac << "</MAC>" <<
             "<USED>" << used << "</USED>" <<
             "<VID>" << vid << "</VID>" <<
         "</LEASE>";
