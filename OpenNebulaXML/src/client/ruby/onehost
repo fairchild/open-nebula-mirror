@@ -249,22 +249,32 @@ when "show"
         exit -1
     end
     
-    str="%-15s: %-20s"
+    str    = "%-22s: %-20s"
+    str_h1 = "%-80s"
     
+    print_header(str_h1, "HOST #{host_id} INFORMATION", true)
+
     puts str % ["ID", host[:id]]
     puts str % ["NAME", host[:name]]
     puts str % ["STATE", host.state_str]
     puts str % ["IM_MAD", host[:im_mad]]
     puts str % ["VM_MAD", host[:vm_mad]]
     puts str % ["TM_MAD", host[:tm_mad]]
-    puts str % ["MAX MEM", host['host_share/max_mem']]
-    puts str % ["USED MEM", host['host_share/used_mem']]
-    puts str % ["MAX CPU", host['host_share/max_cpu']]
-    puts str % ["USED CPU", host['host_share/used_cpu']]
-    puts str % ["RUNNING VMS", host['host_share/running_vms']]
-    
     puts
-    puts "....: Template :...."
+
+    print_header(str_h1, "HOST SHARES", false)
+    
+    puts str % ["MAX MEM", host['host_share/max_mem']]
+    puts str % ["USED MEM (REAL)", host['host_share/used_mem']]
+    puts str % ["USED MEM (ALLOCATED)", host['host_share/mem_usage']]
+    puts str % ["MAX CPU", host['host_share/max_cpu']]
+    puts str % ["USED CPU (REAL)", host['host_share/used_cpu']]
+    puts str % ["USED CPU (ALLOCATED)", host['host_share/cpu_usage']]
+    puts str % ["RUNNING VMS", host['host_share/running_vms']]
+    puts
+
+    print_header(str_h1, "MONITORING INFORMATION", false)
+
     puts host.template_str
 
 when "delete"

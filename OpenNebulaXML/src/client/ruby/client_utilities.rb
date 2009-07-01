@@ -46,7 +46,14 @@ def scr_move(x,y)
     print "\33[#{x};#{y}H"
 end
 
-
+# Print header
+def print_header(format_str, str, underline)
+    scr_bold
+    scr_underline if underline
+    print format_str % str 
+    scr_restore
+    puts
+end
 
 ##################################
 # Class show configurable tables #
