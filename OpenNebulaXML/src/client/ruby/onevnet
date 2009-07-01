@@ -194,16 +194,17 @@ when "show"
     vn=OpenNebula::VirtualNetwork.new_with_id(vn_id, get_one_client)
     result=vn.info
     if is_successful?(result)
+        str_h1="%-80s"
+        print_header(str_h1,"VIRTUAL NETWORK #{vn.id.to_s} INFORMATION",true)
+        
         puts "ID: "+vn.id.to_s
         puts
-        puts "....: Template :...."
-        puts
+        print_header(str_h1,"VIRTUAL NETWORK TEMPLATE",false)
         
         puts vn.template_str(false)
         
         puts
-        puts "Leases info"
-        puts
+        print_header(str_h1,"LEASES INFORMATION",false)
         
         puts vn.template_like_str('/VNET/LEASES', false)
     else

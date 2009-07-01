@@ -178,7 +178,9 @@ class VmShow
     end
 
     def print_vm_long(data)
+        
         str="%-10s: %-20s"
+        
         puts str % ["ID", data["oid"]]
         puts str % ["NAME", data["deploy_id"]]
         puts str % ["STATE", ONE::VM_STATE[data["state"].to_i]]
@@ -186,7 +188,7 @@ class VmShow
         puts str % ["MEMORY", data["memory"]]
         puts str % ["CPU", data["cpu"]]
         puts
-        puts "Template"
+        
         str="    %-20s: %-20s"
         data.each {|key,value|
             puts str % [key, value] if !%w{oid deploy_id state lcm_state memory cpu template_id}.include? key
@@ -213,24 +215,6 @@ class VmShow
             end
             
             result
-        end
-    end
-    
-    def list_long(id)
-        res=@vm.get(:where => "oid="+id)
-
-        if res && res[0] && res[1] && res[1].length>0
-            result=[true, ""]
-            res[1].each {|row|
-                print_vm_long(row)
-            }
-            result
-        else
-            if res[0]
-                [false, "VM not found"]
-            else
-                result=res
-            end
         end
     end
     
@@ -524,8 +508,9 @@ when "resume"
 
 when "list"
     vmlist=VmShow.new(get_one_client)
+    pp ARGV[0] if ARGV[0]
     ops[:columns]=ops[:list] if ops[:list]
-    result=vmlist.list_short(ops)
+    result=vmlist.list_short(ops, filter_flag)
     vmlist.close
     
 when "top"
@@ -582,6 +567,9 @@ when "show"
     vm.info
 
     str="%-15s: %-20s"
+    str_h1="%-80s"
+
+    print_header(str_h1, "VIRTUAL MACHINE #{vm[:id]} INFORMATION", true)
 
     puts str % ["ID", vm[:id]]
     puts str % ["NAME", vm[:name]]
@@ -608,7 +596,9 @@ when "show"
     puts str % ["DEPLOY ID:", value=="" ? "-" : value]
 
     puts
-    puts "....: Template :...."
+    
+    print_header(str_h1,"VIRTUAL MACHINE TEMPLATE",false)
+    
     puts vm.template_str
      
      
