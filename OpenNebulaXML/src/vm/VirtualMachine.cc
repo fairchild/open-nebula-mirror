@@ -277,14 +277,30 @@ int VirtualMachine::insert(SqliteDB * db)
     string              value;
     ostringstream       oss;
 
-    oss.str("");
-
+    // -----------------------------------------------------------------------
+    // Set a name if the VM has not got one and VM_ID
+    // ------------------------------------------------------------------------
     oss << oid;
     value = oss.str();
 
     attr = new SingleAttribute("VMID",value);
 
     vm_template.set(attr);
+    
+    
+    get_template_attribute("NAME",name);
+
+    if ( name.empty() == true )
+    {
+        oss.str("");
+        oss << "one-" << oid;
+        name = oss.str();
+
+        attr = new SingleAttribute("NAME",name);
+        vm_template.set(attr);
+    }
+
+    this->name = name;
 
     // ------------------------------------------------------------------------
     // Get network leases
