@@ -204,6 +204,8 @@ class VmShow
 
         if OpenNebula.is_error?(res)
             result=res
+            puts res.message
+            exit -1
         else
             result=[true, ""]
             header_vm_small
@@ -529,7 +531,7 @@ when "list"
     vmlist.close
     
 when "top"
-    vmlist=VmShow.new(vm)
+    vmlist=VmShow.new(get_one_client)
     ops[:columns]=ops[:list] if ops[:list]
     result=vmlist.top(ops)
     vmlist.close
