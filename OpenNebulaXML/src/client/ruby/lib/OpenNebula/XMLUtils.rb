@@ -67,15 +67,16 @@ module OpenNebula
                 if n.class==REXML::Element
                     str_line=""
                     if n.has_elements?
-                        str_line<<n.name+"=["+ind_enter
-                        str_line<<n.collect {|n2|
+                        str_line << n.name << "=[" << ind_enter
+
+                        str_line << n.collect {|n2|
                             if n2.class==REXML::Element
                                 ind_tab+n2.name+"="+n2.text
                             end
                         }.compact.join(","+ind_enter)
                         str_line<<" ]"
                     else
-                        str_line<<n.name+"="+n.text
+                        str_line<<n.name << "=" << n.text.to_s
                     end
                     str_line
                 end
