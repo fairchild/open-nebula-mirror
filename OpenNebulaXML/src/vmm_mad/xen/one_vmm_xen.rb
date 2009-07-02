@@ -130,7 +130,7 @@ function gdm {
     sudo xm list | grep '#{deploy_id}\\>'
 }
 
-sudo xm shutdown #{deploy_id} || exit -1
+#{XEN[:shutdown]} #{deploy_id} || exit -1
 
 OUT=$(gdm)
 
@@ -142,7 +142,7 @@ done
 OUT=$(gdm)
 
 if [ -n "$OUT" ]; then
-    sudo xm destroy '#{deploy_id}'
+    #{XEN[:cancel]} '#{deploy_id}'
 fi
 sleep 2
 EOS
