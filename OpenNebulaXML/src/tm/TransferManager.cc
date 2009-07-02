@@ -109,6 +109,10 @@ void TransferManager::trigger(Actions action, int _vid)
         aname = "CHECKPOINT";
         break;
 
+    case DRIVER_CANCEL:
+        aname = "DRIVER_CANCEL";
+        break;
+
     case FINALIZE:
         aname = ACTION_FINALIZE;
         break;
@@ -168,6 +172,10 @@ void TransferManager::do_action(const string &action, void * arg)
     else if (action == "CHECKPOINT")
     {
         checkpoint_action(vid);
+    }
+    else if (action == "DRIVER_CANCEL")
+    {
+        driver_cancel_action(vid);
     }
     else if (action == ACTION_FINALIZE)
     {
@@ -947,6 +955,70 @@ error_common:
     vm->unlock();
     return;
 }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void TransferManager::driver_cancel_action(int vid)
+{
+    ofstream        xfr;
+    ostringstream   os;
+    string          xfr_name;
+
+    VirtualMachine *    vm;
+
+    const TransferManagerDriver * tm_md;
+
+    // ------------------------------------------------------------------------
+    // Get the Driver for this host
+    // ------------------------------------------------------------------------
+
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0)
+    {
+        return;
+    }
+
+    if (!vm->hasHistory())
+    {
+        goto error_history;
+    }
+
+    tm_md = get(vm->get_uid(),vm->get_tm_mad());
+
+    if ( tm_md == 0 )
+    {
+        goto error_driver;
+    }
+
+    // ------------------------------------------------------------------------
+    // Cancel the current operation
+    // ------------------------------------------------------------------------
+    
+    tm_md->driver_cancel(vid);
+
+    vm->unlock();
+
+    return;
+
+error_history:
+    os.str("");
+    os << "driver_cancel, VM " << vid << " has no history";
+    goto error_common;
+
+error_driver:
+    os.str("");
+    os << "driver_cancel, error getting driver " << vm->get_vmm_mad();
+    goto error_common;
+
+error_common:
+    vm->log("TM", Log::ERROR, os);
+
+    vm->unlock();
+    return;
+}
+
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 

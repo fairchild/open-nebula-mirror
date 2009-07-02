@@ -55,6 +55,7 @@ public:
         EPILOG_DELETE,
         EPILOG_DELETE_PREVIOUS,
         CHECKPOINT,
+        DRIVER_CANCEL,
         FINALIZE
     };
 
@@ -203,6 +204,11 @@ private:
      *  This function starts the epilog sequence
      */
     void checkpoint_action(int vid);
+
+    /**
+     * This function cancels the operation being performed by the driver
+     */
+    void driver_cancel_action(int vid);
 };
 
 #endif /*TRANSFER_MANAGER_H*/

@@ -52,6 +52,7 @@ public:
         RESTORE,
         POLL,
         TIMER,
+        DRIVER_CANCEL,
         FINALIZE
     };
 
@@ -226,6 +227,12 @@ private:
      *  This function is executed periodically to poll the running VMs
      */
     void timer_action();
+
+    /**
+     *  This function cancels the current driver operation
+     */
+    void driver_cancel_action(
+        int vid);
 };
 
 #endif /*VIRTUAL_MACHINE_MANAGER_H*/

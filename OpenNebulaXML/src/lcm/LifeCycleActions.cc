@@ -542,12 +542,15 @@ void  LifeCycleManager::delete_action(int vid)
         return;
     }
 
-    int cpu,mem,disk;
+    int    cpu;
+    int    mem;
+    int    disk;
     time_t the_time = time(0);
+
     Nebula& nd = Nebula::instance();
 
-    TransferManager * tm = nd.get_tm();
-    DispatchManager * dm = nd.get_dm();
+    TransferManager *       tm  = nd.get_tm();
+    DispatchManager *       dm  = nd.get_dm();
     VirtualMachineManager * vmm = nd.get_vmm();
 
     vm->set_state(VirtualMachine::DELETE);
@@ -566,7 +569,7 @@ void  LifeCycleManager::delete_action(int vid)
             vm->set_prolog_etime(the_time);
             vmpool->update_history(vm);
 
-            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::DRIVER_CANCEL,vid);
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
         case VirtualMachine::BOOT:
@@ -577,7 +580,7 @@ void  LifeCycleManager::delete_action(int vid)
             vm->set_running_etime(the_time);
             vmpool->update_history(vm);
 
-            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
             vmm->trigger(VirtualMachineManager::CANCEL,vid);
 
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
@@ -594,7 +597,7 @@ void  LifeCycleManager::delete_action(int vid)
         
             hpool->del_capacity(vm->get_previous_hid(),cpu,mem,disk);        
 
-            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
 
             vmm->trigger(VirtualMachineManager::CANCEL,vid);
             //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
@@ -606,7 +609,7 @@ void  LifeCycleManager::delete_action(int vid)
             vm->set_running_etime(the_time);
             vmpool->update_history(vm);
 
-            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
             vmm->trigger(VirtualMachineManager::CANCEL,vid);
 
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
@@ -622,7 +625,7 @@ void  LifeCycleManager::delete_action(int vid)
         
             hpool->del_capacity(vm->get_previous_hid(),cpu,mem,disk);        
 
-            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
             //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
 
             tm->trigger(TransferManager::EPILOG_DELETE_PREVIOUS,vid);
@@ -631,7 +634,7 @@ void  LifeCycleManager::delete_action(int vid)
             vm->set_prolog_etime(the_time);
             vmpool->update_history(vm);
 
-            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::DRIVER_CANCEL,vid);
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
             tm->trigger(TransferManager::EPILOG_DELETE_PREVIOUS,vid);
         break;
@@ -640,7 +643,7 @@ void  LifeCycleManager::delete_action(int vid)
             vm->set_epilog_etime(the_time);
             vmpool->update_history(vm);
 
-            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::DRIVER_CANCEL,vid);
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
         default: //FAILURE,LCM_INIT,DELETE

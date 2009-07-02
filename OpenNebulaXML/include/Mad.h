@@ -80,7 +80,7 @@ protected:
      *  Send a DRIVER_CANCEL command to the driver
      *    @param oid identifies the action (that associated with oid)
      */
-    void driver_cancel (const int oid)
+    void driver_cancel (const int oid) const
     {
         ostringstream os;
 
