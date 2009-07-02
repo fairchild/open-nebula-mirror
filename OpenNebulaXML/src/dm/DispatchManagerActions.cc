@@ -554,8 +554,9 @@ error:
 int DispatchManager::finalize(
     int vid)
 {
-    VirtualMachine *    vm;
-    ostringstream       oss;
+    VirtualMachine * vm;
+    ostringstream    oss;
+    VirtualMachine::VmState state;
 
     vm = vmpool->get(vid,true);
 
@@ -564,35 +565,46 @@ int DispatchManager::finalize(
         return -1;
     }
 
-    if (vm->get_state() != VirtualMachine::ACTIVE &&
-        vm->get_state() != VirtualMachine::DONE    )
+    state = vm->get_state();
+
+    oss << "Finalizing VM " << vid;
+    Nebula::log("DiM",Log::DEBUG,oss);
+
+    Nebula&            nd  = Nebula::instance();
+    TransferManager *  tm  = nd.get_tm();
+    LifeCycleManager * lcm = nd.get_lcm();
+
+    switch (state)
     {
-        oss << "Finalizing VM " << vid;
-        Nebula::log("DiM",Log::DEBUG,oss);
+        case VirtualMachine::SUSPENDED:
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
 
-        vm->set_state(VirtualMachine::LCM_INIT);
+        case VirtualMachine::INIT:
+        case VirtualMachine::PENDING:
+        case VirtualMachine::HOLD:
+        case VirtualMachine::STOPPED:
+        case VirtualMachine::FAILED:
+            vm->set_exit_time(time(0));
 
-        vm->set_state(VirtualMachine::DONE);
+            vm->set_state(VirtualMachine::LCM_INIT);
+            vm->set_state(VirtualMachine::DONE);
+            vmpool->update(vm);
 
-        vm->set_exit_time(time(0));
+            vm->release_network_leases();
 
-        vmpool->update(vm);
+            vm->log("DiM", Log::INFO, "New VM state is DONE.");
+            vmpool->remove(vm);
+        break;
 
-        vm->log("DiM", Log::INFO, "New VM state is DONE.");
-
-        vm->release_network_leases();
-
-        vmpool->remove(vm);
-
-        return 0;
+        case VirtualMachine::ACTIVE:
+            lcm->trigger(LifeCycleManager::DELETE,vid);
+            vm->unlock();
+        break;
+        case VirtualMachine::DONE:
+        break;
     }
 
-    oss.str("");
-    oss << "Could not finalize VM " << vid << ", wrong state.";
-    Nebula::log("DiM",Log::ERROR,oss);
 
-    vm->unlock();
-
-    return -2;
+    return 0;
 }
 

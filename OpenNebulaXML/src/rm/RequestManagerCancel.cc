@@ -69,7 +69,7 @@ void RequestManager::VirtualMachineCancel::execute(
         goto error_authenticate;                     
     }
     
-    //Deploy the VM
+    //Cancel the VM
     
     dm->cancel(vid);
     
