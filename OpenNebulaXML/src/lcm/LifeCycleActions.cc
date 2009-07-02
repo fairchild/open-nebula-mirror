@@ -522,7 +522,8 @@ error:
 
 void  LifeCycleManager::delete_action(int vid)
 {
-    VirtualMachine *    vm;
+    VirtualMachine * vm;
+
 
     vm = vmpool->get(vid,true);
     
@@ -531,45 +532,122 @@ void  LifeCycleManager::delete_action(int vid)
         return;
     }
 
-    switch ( vm->get_lcm_state() )
+    VirtualMachine::LcmState state = vm->get_lcm_state();
+
+    if ((state == VirtualMachine::LCM_INIT) ||
+        (state == VirtualMachine::DELETE) ||
+        (state == VirtualMachine::FAILURE))
     {
-        case VirtualMachine::LCM_INIT:
-        break;
+        vm->unlock();
+        return;
+    }
+
+    int cpu,mem,disk;
+    time_t the_time = time(0);
+    Nebula& nd = Nebula::instance();
+
+    TransferManager * tm = nd.get_tm();
+    DispatchManager * dm = nd.get_dm();
+    VirtualMachineManager * vmm = nd.get_vmm();
+
+    vm->set_state(VirtualMachine::DELETE);
+    vmpool->update(vm);
+
+    vm->set_etime(the_time);
+    vm->set_reason(History::USER);
+
+    vm->get_requirements(cpu,mem,disk);
+    hpool->del_capacity(vm->get_hid(),cpu,mem,disk);
+
+    switch (state)
+    {
         case VirtualMachine::PROLOG:
+        case VirtualMachine::PROLOG_RESUME:
+            vm->set_prolog_etime(the_time);
+            vmpool->update_history(vm);
+
+            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
         case VirtualMachine::BOOT:
-        break;
         case VirtualMachine::RUNNING:
+        case VirtualMachine::UNKNOWN:
+        case VirtualMachine::SHUTDOWN:
+        case VirtualMachine::CANCEL:
+            vm->set_running_etime(the_time);
+            vmpool->update_history(vm);
+
+            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::CANCEL,vid);
+
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
+        
         case VirtualMachine::MIGRATE:
+            vm->set_running_etime(the_time);
+            vmpool->update_history(vm);
+
+            vm->set_previous_etime(the_time);
+            vm->set_previous_running_etime(the_time);
+            vm->set_previous_reason(History::USER);
+            vmpool->update_previous_history(vm);
+        
+            hpool->del_capacity(vm->get_previous_hid(),cpu,mem,disk);        
+
+            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+
+            vmm->trigger(VirtualMachineManager::CANCEL,vid);
+            //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
+
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
         case VirtualMachine::SAVE_STOP:
-        break;
         case VirtualMachine::SAVE_SUSPEND:
+            vm->set_running_etime(the_time);
+            vmpool->update_history(vm);
+
+            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            vmm->trigger(VirtualMachineManager::CANCEL,vid);
+
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
         case VirtualMachine::SAVE_MIGRATE:
+            vm->set_running_etime(the_time);
+            vmpool->update_history(vm);
+
+            vm->set_previous_etime(the_time);
+            vm->set_previous_running_etime(the_time);
+            vm->set_previous_reason(History::USER);
+            vmpool->update_previous_history(vm);
+        
+            hpool->del_capacity(vm->get_previous_hid(),cpu,mem,disk);        
+
+            //vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
+            //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
+
+            tm->trigger(TransferManager::EPILOG_DELETE_PREVIOUS,vid);
         break;
         case VirtualMachine::PROLOG_MIGRATE:
-        break;
-        case VirtualMachine::PROLOG_RESUME:
+            vm->set_prolog_etime(the_time);
+            vmpool->update_history(vm);
+
+            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
+            tm->trigger(TransferManager::EPILOG_DELETE_PREVIOUS,vid);
         break;
         case VirtualMachine::EPILOG_STOP:
-        break;
         case VirtualMachine::EPILOG:
+            vm->set_epilog_etime(the_time);
+            vmpool->update_history(vm);
+
+            //tm->trigger(TransferManager::DRIVER_CANCEL,vid);
+            tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
-        case VirtualMachine::SHUTDOWN:
-        break;
-        case VirtualMachine::CANCEL:
-        break;
-        case VirtualMachine::FAILURE:
-        break;
-        case VirtualMachine::DELETE:
-        break;
-        case VirtualMachine::UNKNOWN:
-        break;
-        default:
+        default: //FAILURE,LCM_INIT,DELETE
         break;
     }
+
+    dm->trigger(DispatchManager::DONE,vid);
 
     vm->unlock();
 
