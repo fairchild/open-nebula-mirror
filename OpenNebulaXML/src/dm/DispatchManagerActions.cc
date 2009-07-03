@@ -601,6 +601,7 @@ int DispatchManager::finalize(
             vm->unlock();
         break;
         case VirtualMachine::DONE:
+            vm->unlock();
         break;
     }
 
