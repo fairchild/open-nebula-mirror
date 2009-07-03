@@ -48,6 +48,7 @@ public:
         SAVE,
         SHUTDOWN,
         CANCEL,
+        CANCEL_PREVIOUS,
         MIGRATE,
         RESTORE,
         POLL,
@@ -200,6 +201,14 @@ private:
      *    @param vid the id of the VM.
      */
     void cancel_action(
+        int vid);
+
+    /**
+     *  Cancels a VM (in the previous host) when a CANCEL action is received.
+     *  Note that the domain-id is the last one returned by a boot action
+     *    @param vid the id of the VM.
+     */
+    void cancel_previous_action(
         int vid);
 
     /**

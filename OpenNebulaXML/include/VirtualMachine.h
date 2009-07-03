@@ -260,6 +260,7 @@ public:
     {
         return (previous_history!=0);
     };
+
     /**
      *  Returns the VMM driver name for the current host. The hasHistory()
      *  function MUST be called before this one.
@@ -268,6 +269,16 @@ public:
     const string & get_vmm_mad() const
     {
         return history->vmm_mad_name;
+    };
+
+    /**
+     *  Returns the VMM driver name for the previous host. The hasPreviousHistory()
+     *  function MUST be called before this one.
+     *    @return the VMM mad name
+     */
+    const string & get_previous_vmm_mad() const
+    {
+        return previous_history->vmm_mad_name;
     };
 
     /**

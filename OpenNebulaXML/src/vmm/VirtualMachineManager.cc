@@ -122,6 +122,10 @@ void VirtualMachineManager::trigger(Actions action, int _vid)
         aname = "CANCEL";
         break;
 
+    case CANCEL_PREVIOUS:
+        aname = "CANCEL_PREVIOUS";
+        break;
+
     case MIGRATE:
         aname = "MIGRATE";
         break;
@@ -185,6 +189,10 @@ void VirtualMachineManager::do_action(const string &action, void * arg)
     else if (action == "CANCEL")
     {
         cancel_action(vid);
+    }
+    else if (action == "CANCEL_PREVIOUS")
+    {
+        cancel_previous_action(vid);
     }
     else if (action == "MIGRATE")
     {
@@ -494,6 +502,61 @@ error_common:
     vm->log("VMM", Log::ERROR, os);
 
     vm->unlock();
+    return;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void VirtualMachineManager::cancel_previous_action(
+    int vid)
+{
+    VirtualMachine * vm;
+    ostringstream    os;
+
+    const VirtualMachineManagerDriver * vmd;
+
+    // Get the VM from the pool
+    vm = vmpool->get(vid,true);
+
+    if (vm == 0)
+    {
+        return;
+    }
+
+    if (!vm->hasHistory() || !vm->hasPreviousHistory())
+    {
+        goto error_history;
+    }
+
+    // Get the driver for this VM
+    vmd = get(vm->get_uid(),vm->get_previous_vmm_mad());
+
+    if ( vmd == 0 )
+    {
+        goto error_driver;
+    }
+
+    // Invoke driver method
+    vmd->cancel(vid,vm->get_previous_hostname(),vm->get_deploy_id());
+
+    vm->unlock();
+    return;
+
+error_history:
+    os.str("");
+    os << "cancel_previous_action, VM has no history";
+    goto error_common;
+
+error_driver:
+    os.str("");
+    os << "cancel_previous_action, error getting driver " << vm->get_vmm_mad();
+    goto error_common;
+
+error_common:
+    vm->log("VMM", Log::ERROR, os);
+    vm->unlock();
+
     return;
 }
 

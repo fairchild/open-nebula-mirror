@@ -600,7 +600,7 @@ void  LifeCycleManager::delete_action(int vid)
             vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
 
             vmm->trigger(VirtualMachineManager::CANCEL,vid);
-            //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
+            vmm->trigger(VirtualMachineManager::CANCEL_PREVIOUS,vid);
 
             tm->trigger(TransferManager::EPILOG_DELETE,vid);
         break;
@@ -626,7 +626,7 @@ void  LifeCycleManager::delete_action(int vid)
             hpool->del_capacity(vm->get_previous_hid(),cpu,mem,disk);        
 
             vmm->trigger(VirtualMachineManager::DRIVER_CANCEL,vid);
-            //vmm->trigger(VirtualMachineManager::DESTROY_PREVIOUS,vid);
+            vmm->trigger(VirtualMachineManager::CANCEL_PREVIOUS,vid);
 
             tm->trigger(TransferManager::EPILOG_DELETE_PREVIOUS,vid);
         break;

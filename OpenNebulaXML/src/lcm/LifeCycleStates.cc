@@ -649,6 +649,12 @@ void  LifeCycleManager::cancel_failure_action(int vid)
         return;
     }
     
+    if (vm->get_lcm_state() != VirtualMachine::CANCEL) 
+    {
+        vm->unlock();
+        return;
+    }
+
     //----------------------------------------------------
     //    RUNNING STATE FROM CANCEL
     //----------------------------------------------------
