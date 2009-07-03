@@ -157,9 +157,8 @@ PoolObjectSQL * PoolSQL::get(
     bool    olock)
 {
     map<int,PoolObjectSQL *>::iterator  index;
-    map<int,PoolObjectSQL *>::iterator  index_chk;
-    PoolObjectSQL *  objectsql;
-    int              rc;
+    PoolObjectSQL *                     objectsql;
+    int                                 rc;
 
     lock();
 
@@ -167,24 +166,12 @@ PoolObjectSQL * PoolSQL::get(
 
     if ( index != pool.end() )
     {        
-        unlock();
-
         if ( olock == true )
         {
             index->second->lock();
-
-            lock();
-
-            index_chk = pool.find(oid);
-
-            if ((index_chk == pool.end()) || (index->second != index_chk->second))
-            {
-                unlock();
-                return 0;
-            }
-
-            unlock();
         }
+
+        unlock();
 
         return index->second;
     }
@@ -207,28 +194,16 @@ PoolObjectSQL * PoolSQL::get(
 
         pool.insert(make_pair(objectsql->oid,objectsql));
 
-        oid_queue.push(objectsql->oid);
-
-        if ( pool.size() > MAX_POOL_SIZE )
-        {
-            replace();
-        }
-
-        unlock();
-
         if ( olock == true )
         {
             objectsql->lock();
         }
 
-        lock();
+        oid_queue.push(objectsql->oid);
 
-        index_chk = pool.find(oid);
-
-        if ((index_chk == pool.end()) || (index_chk->second != objectsql))
+        if ( pool.size() > MAX_POOL_SIZE )
         {
-            unlock();
-            return 0;
+            replace();
         }
 
         unlock();
@@ -292,13 +267,14 @@ void PoolSQL::remove(PoolObjectSQL * obj)
     
     if ( index != pool.end())
     {
+        delete obj;
+        
         lock();
         
         pool.erase(index);
         
         unlock();
        
-        delete obj;
     }
 }
 
