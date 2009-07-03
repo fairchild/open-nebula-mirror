@@ -102,7 +102,7 @@ public:
     };
     
     
-    /** Drops a user from the cache & DB, the user mutex MUST BE locked
+    /** Drops a user from the DB, the user mutex MUST BE locked
      *    @param user pointer to User
      */
     int drop(User * user)
@@ -112,7 +112,6 @@ public:
     	if ( rc == 0)
     	{
             known_users.erase(user->get_username());
-            remove(static_cast<PoolObjectSQL *>(user)); 
     	}
         
         return rc;

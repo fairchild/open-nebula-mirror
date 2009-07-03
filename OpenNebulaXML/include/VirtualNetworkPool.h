@@ -110,14 +110,7 @@ public:
      */
     int drop(VirtualNetwork * vn)
     {
-    	int rc = vn->drop(db);
-    	
-    	if ( rc == 0)
-    	{
-    		remove(static_cast<PoolObjectSQL *>(vn));	
-    	}
-        
-        return rc;
+    	return vn->drop(db);
     };
     
     /**

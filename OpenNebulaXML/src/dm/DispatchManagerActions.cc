@@ -593,18 +593,16 @@ int DispatchManager::finalize(
             vm->release_network_leases();
 
             vm->log("DiM", Log::INFO, "New VM state is DONE.");
-            vmpool->remove(vm);
         break;
 
         case VirtualMachine::ACTIVE:
             lcm->trigger(LifeCycleManager::DELETE,vid);
-            vm->unlock();
         break;
         case VirtualMachine::DONE:
-            vm->unlock();
         break;
     }
 
+    vm->unlock();
 
     return 0;
 }

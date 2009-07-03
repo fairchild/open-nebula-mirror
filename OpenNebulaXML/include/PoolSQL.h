@@ -106,14 +106,6 @@ public:
         
         return rc;
     };
-
-    /**
-     *  Removes an object from the pool cache. The object mutex MUST be locked.
-     *  The resources of the object are freed, but its record is kept in the DB.
-     *    @param objsql a pointer to the object
-     */
-    void remove(
-        PoolObjectSQL * objsql);
         
     /**
      *  Removes all the elements from the pool

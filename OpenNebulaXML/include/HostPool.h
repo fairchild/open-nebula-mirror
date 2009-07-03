@@ -77,19 +77,12 @@ public:
     };
     
     
-    /** Drops a host from the cache & DB, the host mutex MUST BE locked
+    /** Drops a host from the DB, the host mutex MUST BE locked
      *    @param host pointer to Host
      */
     int drop(Host * host)
     {
-    	int rc = host->drop(db);
-    	
-    	if ( rc == 0)
-    	{
-    		remove(static_cast<PoolObjectSQL *>(host));	
-    	}
-        
-        return rc;
+    	return host->drop(db);
     };
 
     /**
