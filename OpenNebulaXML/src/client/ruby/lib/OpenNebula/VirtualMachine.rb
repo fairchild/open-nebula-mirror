@@ -136,7 +136,7 @@ module OpenNebula
         def migrate(host_id)
             return Error.new('ID not defined') if !@pe_id
 
-            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id, false)
+            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id.to_i, false)
             rc = nil if !OpenNebula.is_error?(rc)
         
             return rc
@@ -145,7 +145,7 @@ module OpenNebula
         def live_migrate(host_id)
             return Error.new('ID not defined') if !@pe_id
 
-            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id, true)
+            rc = @client.call(VM_METHODS[:migrate], @pe_id, host_id.to_i, true)
             rc = nil if !OpenNebula.is_error?(rc)
             
             return rc
