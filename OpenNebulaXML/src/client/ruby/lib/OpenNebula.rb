@@ -51,6 +51,13 @@ module OpenNebula
     # xml-rpc calls.
     # -------------------------------------------------------------------------
     class Client
+        begin
+            require 'xmlparser'
+            XMLPARSER=true
+        rescue LoadError
+            XMLPARSER=false
+        end
+        
         def initialize(secret=nil, endpoint=nil)
             if secret
                 one_secret = secret
@@ -72,7 +79,9 @@ module OpenNebula
 
         def call(action, *args)
             server=XMLRPC::Client.new2(@one_endpoint)
-            server.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
+            if XMLPARSER
+                server.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
+            end
 
             begin
                 response = server.call("one."+action, @one_auth, *args)
