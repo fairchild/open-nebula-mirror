@@ -293,13 +293,7 @@ error_file:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -376,13 +370,7 @@ error_previous_history:
     os << "save_action, VM has no previous history";
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::SAVE_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -435,13 +423,7 @@ error_driver:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::SHUTDOWN_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -494,13 +476,7 @@ error_driver:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::CANCEL_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -556,7 +532,6 @@ error_driver:
 error_common:
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
-
     return;
 }
 
@@ -622,13 +597,7 @@ error_previous_history:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -684,13 +653,7 @@ error_driver:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -743,13 +706,7 @@ error_driver:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::CANCEL_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -803,13 +760,7 @@ error_driver:
     goto error_common;
 
 error_common:
-    Nebula              &ne = Nebula::instance();
-    LifeCycleManager *  lcm = ne.get_lcm();
-
-    lcm->trigger(LifeCycleManager::CANCEL_FAILURE, vid);
-
     vm->log("VMM", Log::ERROR, os);
-
     vm->unlock();
     return;
 }
@@ -949,6 +900,5 @@ void VirtualMachineManager::load_mads(int uid)
 
             Nebula::log("VMM",Log::INFO,oss);
         }
-
     }
 }
