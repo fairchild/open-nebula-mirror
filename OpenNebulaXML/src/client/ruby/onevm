@@ -423,7 +423,7 @@ when "livemigrate"
     
     vm=OpenNebula::VirtualMachine.new_with_id(vm_id, get_one_client)
     
-    result=vm.livemigrate(host_id)
+    result=vm.live_migrate(host_id)
     if is_successful?(result)
         puts "Migrating VM" if ops[:verbose]
         exit 0
