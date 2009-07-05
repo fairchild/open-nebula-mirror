@@ -293,6 +293,11 @@ error_file:
     goto error_common;
 
 error_common:
+    Nebula              &ne = Nebula::instance();
+    LifeCycleManager *  lcm = ne.get_lcm();
+
+    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -370,6 +375,11 @@ error_previous_history:
     os << "save_action, VM has no previous history";
 
 error_common:
+    Nebula              &ne = Nebula::instance();
+    LifeCycleManager *  lcm = ne.get_lcm();
+
+    lcm->trigger(LifeCycleManager::SAVE_FAILURE, vid);
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -420,9 +430,13 @@ error_history:
 error_driver:
     os.str("");
     os << "shutdown_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
+    Nebula              &ne = Nebula::instance();
+    LifeCycleManager *  lcm = ne.get_lcm();
+
+    lcm->trigger(LifeCycleManager::SHUTDOWN_FAILURE, vid);
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -434,9 +448,10 @@ error_common:
 void VirtualMachineManager::cancel_action(
     int vid)
 {
-    VirtualMachine *                vm;
+    VirtualMachine * vm;
+    ostringstream    os;
+
     const VirtualMachineManagerDriver *   vmd;
-    ostringstream                       os;
 
     // Get the VM from the pool
     vm = vmpool->get(vid,true);
@@ -476,6 +491,14 @@ error_driver:
     goto error_common;
 
 error_common:
+    if ( vm->get_lcm_state() == VirtualMachine::CANCEL ) //not in DELETE
+    {
+        Nebula              &ne = Nebula::instance();
+        LifeCycleManager *  lcm = ne.get_lcm();
+
+        lcm->trigger(LifeCycleManager::CANCEL_FAILURE, vid);
+    }
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -527,7 +550,6 @@ error_history:
 error_driver:
     os.str("");
     os << "cancel_previous_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     vm->log("VMM", Log::ERROR, os);
@@ -594,9 +616,13 @@ error_driver:
 error_previous_history:
     os.str("");
     os << "migrate_action, error VM has no previous history";
-    goto error_common;
 
 error_common:
+    Nebula              &ne = Nebula::instance();
+    LifeCycleManager *  lcm = ne.get_lcm();
+
+    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -650,9 +676,13 @@ error_history:
 error_driver:
     os.str("");
     os << "restore_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
+    Nebula              &ne = Nebula::instance();
+    LifeCycleManager *  lcm = ne.get_lcm();
+
+    lcm->trigger(LifeCycleManager::DEPLOY_FAILURE, vid);
+
     vm->log("VMM", Log::ERROR, os);
     vm->unlock();
     return;
@@ -703,7 +733,6 @@ error_history:
 error_driver:
     os.str("");
     os << "poll_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     vm->log("VMM", Log::ERROR, os);
@@ -757,7 +786,6 @@ error_history:
 error_driver:
     os.str("");
     os << "driver_cancel_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     vm->log("VMM", Log::ERROR, os);

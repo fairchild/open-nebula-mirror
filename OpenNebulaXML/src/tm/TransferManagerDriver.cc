@@ -100,11 +100,10 @@ void TransferManagerDriver::protocol(
          vm->get_lcm_state() == VirtualMachine::LCM_INIT )
     {
         os.str("");
-        os << "Message: " << message << ", from TM but VM is DONE or FAILED.";
+        os << "Ignored: " << message;
         vm->log("TM",Log::WARNING,os);
 
         vm->unlock();
-
         return;
     }
 

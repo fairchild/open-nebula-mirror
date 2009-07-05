@@ -286,11 +286,10 @@ void VirtualMachineManagerDriver::protocol(
          vm->get_lcm_state() == VirtualMachine::LCM_INIT )
     {
         os.str("");
-        os << "Message: " << message << ", from VMM but VM is DONE or FAILED.";
+        os << "Ignored: " << message;
         vm->log("VMM",Log::WARNING,os);
 
         vm->unlock();
-
         return;
     }
 

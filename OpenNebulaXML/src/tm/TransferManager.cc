@@ -241,7 +241,8 @@ void TransferManager::prolog_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".prolog";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -380,7 +381,7 @@ void TransferManager::prolog_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -398,7 +399,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "prolog, could not open file: " << vm->get_transfer_file();
+    os << "prolog, could not open file: " << xfr_name;
     goto error_common;
 
 error_driver:
@@ -427,6 +428,7 @@ void TransferManager::prolog_migr_action(int vid)
 {
     ofstream        xfr;
     ostringstream   os;
+    string          xfr_name;
 
     VirtualMachine *    vm;
     Nebula&             nd = Nebula::instance();
@@ -457,7 +459,8 @@ void TransferManager::prolog_migr_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".migrate";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -474,7 +477,7 @@ void TransferManager::prolog_migr_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -487,7 +490,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "prolog_migr, could not open file: " << vm->get_transfer_file();
+    os << "prolog_migr, could not open file: " << xfr_name;
     goto error_common;
 
 error_driver:
@@ -501,8 +504,6 @@ error_common:
 
     vm->unlock();
     return;
-
-    (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_SUCCESS,vid);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -512,6 +513,7 @@ void TransferManager::prolog_resume_action(int vid)
 {
     ofstream        xfr;
     ostringstream   os;
+    string          xfr_name;
 
     VirtualMachine *    vm;
     Nebula&             nd = Nebula::instance();
@@ -542,7 +544,8 @@ void TransferManager::prolog_resume_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".resume";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -559,7 +562,7 @@ void TransferManager::prolog_resume_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -572,7 +575,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "prolog_resume, could not open file: " << vm->get_transfer_file();
+    os << "prolog_resume, could not open file: " << xfr_name;
     goto error_common;
 
 error_driver:
@@ -632,7 +635,8 @@ void TransferManager::epilog_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".epilog";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -676,7 +680,7 @@ void TransferManager::epilog_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -689,7 +693,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "epilog, could not open file: " << vm->get_transfer_file();
+    os << "epilog, could not open file: " << xfr_name;
     goto error_common;
 
 error_driver:
@@ -712,6 +716,7 @@ void TransferManager::epilog_stop_action(int vid)
 {
     ofstream        xfr;
     ostringstream   os;
+    string          xfr_name;
 
     VirtualMachine *    vm;
     Nebula&             nd = Nebula::instance();
@@ -742,7 +747,8 @@ void TransferManager::epilog_stop_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".stop";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -759,7 +765,7 @@ void TransferManager::epilog_stop_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -772,13 +778,12 @@ error_history:
 
 error_file:
     os.str("");
-    os << "epilog_stop, could not open file: " << vm->get_transfer_file();
+    os << "epilog_stop, could not open file: " << xfr_name;
     goto error_common;
 
 error_driver:
     os.str("");
     os << "epilog_stop, error getting driver " << vm->get_tm_mad();
-    goto error_common;
 
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::EPILOG_FAILURE,vid);
@@ -824,8 +829,9 @@ void TransferManager::epilog_delete_action(int vid)
     {
         goto error_driver;
     }
-
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    
+    xfr_name = vm->get_transfer_file() + ".delete";
+    xfr.open(xfr_name.c_str(), ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -840,7 +846,7 @@ void TransferManager::epilog_delete_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -853,7 +859,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "epilog_delete, could not open file: " << vm->get_transfer_file();
+    os << "epilog_delete, could not open file: " << xfr_name;
     os << ". You may need to manually clean " << vm->get_hostname() 
        << ":" << vm->get_remote_dir();
     goto error_common;
@@ -863,12 +869,11 @@ error_driver:
     os << "epilog_delete, error getting driver " << vm->get_vmm_mad();
     os << ". You may need to manually clean " << vm->get_hostname() 
        << ":" << vm->get_remote_dir();
-    goto error_common;
 
 error_common:
     vm->log("TM", Log::ERROR, os);
-
     vm->unlock();
+
     return;
 }
 
@@ -908,7 +913,8 @@ void TransferManager::epilog_delete_previous_action(int vid)
         goto error_driver;
     }
 
-    xfr.open(vm->get_transfer_file().c_str(), ios::out | ios::trunc);
+    xfr_name = vm->get_transfer_file() + ".delete_prev";
+    xfr.open(xfr_name.c_str(),ios::out | ios::trunc);
 
     if (xfr.fail() == true)
     {
@@ -924,7 +930,7 @@ void TransferManager::epilog_delete_previous_action(int vid)
 
     xfr.close();
 
-    tm_md->transfer(vid,vm->get_transfer_file());
+    tm_md->transfer(vid,xfr_name);
 
     vm->unlock();
 
@@ -937,7 +943,7 @@ error_history:
 
 error_file:
     os.str("");
-    os << "epilog_delete, could not open file: " << vm->get_transfer_file();
+    os << "epilog_delete, could not open file: " << xfr_name;
     os << ". You may need to manually clean " << vm->get_previous_hostname() 
        << ":" << vm->get_remote_dir();
     goto error_common;
@@ -947,12 +953,11 @@ error_driver:
     os << "epilog_delete, error getting driver " << vm->get_vmm_mad();
     os << ". You may need to manually clean " << vm->get_previous_hostname() 
        << ":" << vm->get_remote_dir();
-    goto error_common;
 
 error_common:
     vm->log("TM", Log::ERROR, os);
-
     vm->unlock();
+
     return;
 }
 
@@ -1010,12 +1015,11 @@ error_history:
 error_driver:
     os.str("");
     os << "driver_cancel, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     vm->log("TM", Log::ERROR, os);
-
     vm->unlock();
+
     return;
 }
 
