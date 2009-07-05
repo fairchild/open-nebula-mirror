@@ -459,7 +459,10 @@ void  LifeCycleManager::prolog_success_action(int vid)
     }
     else
     {
-        goto error;
+        vm->log("LCM",Log::ERROR,"prolog_success_action, VM in a wrong state");        
+        vm->unlock();
+
+        return;
     }
 
     //----------------------------------------------------
@@ -485,10 +488,6 @@ void  LifeCycleManager::prolog_success_action(int vid)
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM",Log::ERROR,"prolog_success_action, VM in a wrong state");        
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -546,7 +545,10 @@ void  LifeCycleManager::epilog_success_action(int vid)
     }
     else
     {
-        goto error;
+        vm->log("LCM",Log::ERROR,"epilog_success_action, VM in a wrong state");
+        vm->unlock();
+
+        return;
     }
     
     vm->set_epilog_etime(the_time);
@@ -566,10 +568,6 @@ void  LifeCycleManager::epilog_success_action(int vid)
     vm->unlock();
     
     return;
-        
-error:
-    vm->log("LCM",Log::ERROR,"epilog_success_action, VM in a wrong state");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -801,5 +799,4 @@ void  LifeCycleManager::failure_action(VirtualMachine * vm)
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-
 

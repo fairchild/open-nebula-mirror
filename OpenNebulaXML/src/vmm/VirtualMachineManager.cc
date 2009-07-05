@@ -290,7 +290,6 @@ error_driver:
 error_file:
     os.str("");
     os << "deploy_action, error generating deployment file: " << vm->get_deployment_file();
-    goto error_common;
 
 error_common:
     Nebula              &ne = Nebula::instance();
@@ -488,7 +487,6 @@ error_history:
 error_driver:
     os.str("");
     os << "cancel_action, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     if ( vm->get_lcm_state() == VirtualMachine::CANCEL ) //not in DELETE

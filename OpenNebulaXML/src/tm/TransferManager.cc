@@ -411,7 +411,6 @@ error_empty_disk:
     os.str("");
     os << "prolog, undefined source disk image in VM template";
     xfr.close();
-    goto error_common;
 
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
@@ -496,7 +495,6 @@ error_file:
 error_driver:
     os.str("");
     os << "prolog_migr, error getting driver " << vm->get_tm_mad();
-    goto error_common;
 
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
@@ -581,7 +579,6 @@ error_file:
 error_driver:
     os.str("");
     os << "prolog_resume, error getting driver " << vm->get_tm_mad();
-    goto error_common;
 
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::PROLOG_FAILURE,vid);
@@ -699,7 +696,6 @@ error_file:
 error_driver:
     os.str("");
     os << "epilog, error getting driver " << vm->get_vmm_mad();
-    goto error_common;
 
 error_common:
     (nd.get_lcm())->trigger(LifeCycleManager::EPILOG_FAILURE,vid);

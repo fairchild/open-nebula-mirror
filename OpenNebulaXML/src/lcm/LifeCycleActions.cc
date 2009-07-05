@@ -78,16 +78,12 @@ void  LifeCycleManager::deploy_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "deploy_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "deploy_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -126,16 +122,12 @@ void  LifeCycleManager::suspend_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "suspend_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "suspend_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -174,16 +166,12 @@ void  LifeCycleManager::stop_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "stop_action, VM in a wrong state.");  
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "stop_action, VM in a wrong state.");  
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -231,16 +219,12 @@ void  LifeCycleManager::migrate_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "migrate_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "migrate_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -289,19 +273,12 @@ void  LifeCycleManager::live_migrate_action(int vid)
     }
     else
     {
-        os << "VM not in a suitable state to migrate";
-        vm->log("LCM", Log::ERROR, os);
-
-        goto error; 
+        vm->log("LCM", Log::ERROR, "live_migrate_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "live_migrate_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -340,16 +317,12 @@ void  LifeCycleManager::shutdown_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "shutdown_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "shutdown_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -404,16 +377,12 @@ void  LifeCycleManager::restore_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "restore_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "restore_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -452,16 +421,12 @@ void  LifeCycleManager::cancel_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "cancel_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "cancel_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -508,16 +473,12 @@ void  LifeCycleManager::restart_action(int vid)
     }
     else
     {
-        goto error; 
+        vm->log("LCM", Log::ERROR, "restart_action, VM in a wrong state.");
     }
     
     vm->unlock();
     
     return;
-    
-error:
-    vm->log("LCM", Log::ERROR, "restart_action, VM in a wrong state.");
-    vm->unlock();
 }
 
 /* -------------------------------------------------------------------------- */
