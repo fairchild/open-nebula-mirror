@@ -583,9 +583,9 @@ int DispatchManager::finalize(
         case VirtualMachine::PENDING:
         case VirtualMachine::HOLD:
         case VirtualMachine::STOPPED:
-        case VirtualMachine::FAILED:
             vm->set_exit_time(time(0));
 
+        case VirtualMachine::FAILED:
             vm->set_state(VirtualMachine::LCM_INIT);
             vm->set_state(VirtualMachine::DONE);
             vmpool->update(vm);
