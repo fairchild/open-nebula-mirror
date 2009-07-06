@@ -481,11 +481,12 @@ int VirtualMachine::dump(SqliteDB * db, ostringstream& oss, const string& where)
         << " LEFT OUTER JOIN (SELECT *,MAX(seq) FROM "
         << History::table << " GROUP BY vid) AS " << History::table
         << " ON " << VirtualMachine::table << ".oid = "
-        << History::table << ".vid";
+        << History::table << ".vid WHERE " << VirtualMachine::table
+        << ".state != " << VirtualMachine::DONE;
 
     if ( !where.empty() )
     {
-        cmd << " WHERE " << where;
+        cmd << " AND " << where;
     }
     
     rc = db->exec(cmd,vm_dump_cb,(void *) &oss);
