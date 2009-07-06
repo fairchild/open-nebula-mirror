@@ -84,6 +84,16 @@ module OpenNebula
             
             str
         end
+
+        def to_xml
+            if NOKOGIRI
+                @xml.to_xml
+            else
+                str = ""
+                REXML::Formatters::Pretty.new(1).write(@xml,str)
+                str
+            end
+        end
     end
         
     ###########################################################################
@@ -116,6 +126,16 @@ module OpenNebula
                     "#{@element_name}") {|pelem|
                     block.call self.factory(pelem)
                 }
+            end
+        end
+
+        def to_xml
+            if NOKOGIRI
+                @xml.to_xml
+            else
+                str = ""
+                REXML::Formatters::Pretty.new(1).write(@xml,str)
+                str
             end
         end
     end
