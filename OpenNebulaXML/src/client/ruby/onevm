@@ -52,6 +52,14 @@ ShowTableVM={
             d.name
         }
     },
+    :username => {
+        :name => "USER",
+        :desc => "Name of the owner",
+        :size => 8,
+        :proc => lambda {|d,e| 
+            d["USERNAME"]
+        }
+    },
     :stat => {
         :name => "STAT",
         :desc => "Actual status of the VM",
@@ -89,7 +97,7 @@ ShowTableVM={
         :proc => lambda {|d,e| str_running_time(d) }
     },
     
-    :default => [:id, :name, :stat, :cpu, :mem, :hostname, :time]
+    :default => [:id, :username, :name, :stat, :cpu, :mem, :hostname, :time]
 }
 
 ShowTableHistory={
@@ -200,7 +208,7 @@ class VmShow
     
     def list_short(options=nil)
         res=@vmpool.info()
-        
+
         if options
             @table.columns=options[:columns] if options[:columns]
         end
@@ -210,13 +218,21 @@ class VmShow
             puts res.message
             exit -1
         else
+
+            if options[:filter_flag]
+                vms=@vmpool.select{|element|
+                    element['USERNAME']==options[:filter_flag]  }
+            else
+                vms=@vmpool
+            end
+
             result=[true, ""]
             header_vm_small
 
             if options
-                puts @table.data_str(@vmpool, options)
+                puts @table.data_str(vms, options)
             else
-                puts @table.data_str(@vmpool)
+                puts @table.data_str(vms)
             end
             
             result
@@ -562,7 +578,9 @@ when "list"
                 filter_flag="-1"
             else
                 if !ARGV[0].match(/^[0123456789]+$/)
-                    filter_flag=get_user_id(ARGV[0])
+                    filter_flag="-2"
+                    ops[:filter_flag]=ARGV[0]
+
                 else
                     filter_flag=ARGV[0]
                 end
