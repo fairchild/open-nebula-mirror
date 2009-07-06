@@ -420,15 +420,16 @@ int VirtualMachine::unmarshall(ostringstream& oss,
         (!values[CPU])||
         (!values[NET_TX])||
         (!values[NET_RX])||
-        (num != LIMIT + History::LIMIT + 1 ))
+        (num != LIMIT + History::LIMIT + 2 ))
     {
         return -1;
     }
 
     oss <<
         "<VM>" <<
-            "<ID>"      << values[OID]      << "</ID>"      <<
+            "<ID>"       << values[OID]      << "</ID>"       <<
             "<UID>"      << values[UID]      << "</UID>"      <<
+            "<USERNAME>" << values[LIMIT]     << "</USERNAME>"<<
             "<NAME>"     << values[NAME]     << "</NAME>"     << 
             "<LAST_POLL>"<< values[LAST_POLL]<< "</LAST_POLL>"<<
             "<STATE>"    << values[STATE]    << "</STATE>"    <<
@@ -441,7 +442,7 @@ int VirtualMachine::unmarshall(ostringstream& oss,
             "<NET_TX>"   << values[NET_TX]   << "</NET_TX>"   <<
             "<NET_RX>"   << values[NET_RX]   << "</NET_RX>";
 
-	History::unmarshall(oss,num - LIMIT - 1, names + LIMIT, values + LIMIT);
+	History::unmarshall(oss, num-LIMIT-2, names+LIMIT+1, values+LIMIT+1);
 	
     oss << "</VM>";
 
@@ -477,12 +478,15 @@ int VirtualMachine::dump(SqliteDB * db, ostringstream& oss, const string& where)
     ostringstream   cmd;
 
     cmd << "SELECT " << VirtualMachine::table << ".*, "
-        << History::table << ".* FROM " << VirtualMachine::table
+        << "user_pool.user_name, " << History::table << ".* FROM " 
+        << VirtualMachine::table
         << " LEFT OUTER JOIN (SELECT *,MAX(seq) FROM "
         << History::table << " GROUP BY vid) AS " << History::table
         << " ON " << VirtualMachine::table << ".oid = "
-        << History::table << ".vid WHERE " << VirtualMachine::table
-        << ".state != " << VirtualMachine::DONE;
+        << History::table << ".vid LEFT OUTER JOIN (SELECT oid,user_name FROM "
+        << "user_pool) AS user_pool ON "
+        << VirtualMachine::table << ".uid = user_pool.oid WHERE " 
+        << VirtualMachine::table << ".state != " << VirtualMachine::DONE;
 
     if ( !where.empty() )
     {

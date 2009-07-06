@@ -239,19 +239,20 @@ int VirtualNetwork::unmarshall(ostringstream& oss,
         (!values[TYPE])  ||
         (!values[BRIDGE])||                 
         (!values[LIMIT]) ||
-        (num != LIMIT + 1 ))
+        (num != LIMIT + 2 ))
     {
         return -1;
     }
 
     oss <<
         "<VNET>" <<
-            "<ID>"    << values[OID]   << "</ID>"    <<
-            "<UID>"   << values[UID]   << "</UID>"   <<
-            "<NAME>"  << values[NAME]  << "</NAME>"  <<
-            "<TYPE>"  << values[TYPE]  << "</TYPE>"  <<
-            "<BRIDGE>"<< values[BRIDGE]<< "</BRIDGE>"<<
-            "<TOTAL_LEASES>" << values[LIMIT] << "</TOTAL_LEASES>" <<
+            "<ID>"       << values[OID]     << "</ID>"        <<
+            "<UID>"      << values[UID]     << "</UID>"       <<
+            "<USERNAME>" << values[LIMIT+1]  << "</USERNAME>" <<
+            "<NAME>"     << values[NAME]    << "</NAME>"      <<
+            "<TYPE>"     << values[TYPE]    << "</TYPE>"      <<
+            "<BRIDGE>"   << values[BRIDGE]  << "</BRIDGE>"    <<
+            "<TOTAL_LEASES>" << values[LIMIT]<< "</TOTAL_LEASES>" <<
         "</VNET>";
 
     return 0;
@@ -285,10 +286,13 @@ int VirtualNetwork::dump(SqliteDB * db, ostringstream& oss, const string& where)
     ostringstream   cmd;
 
     cmd << "SELECT " << VirtualNetwork::table << ".*,COUNT("
-        << Leases::table << ".used) FROM " << VirtualNetwork::table
+        << Leases::table << ".used), user_pool.user_name FROM " 
+        << VirtualNetwork::table
         << " LEFT OUTER JOIN " << Leases::table << " ON "
         << VirtualNetwork::table << ".oid = " <<  Leases::table << ".oid"
-        << " AND " << Leases::table << ".used = 1";
+        << " AND " << Leases::table << ".used = 1"
+        << " LEFT OUTER JOIN (SELECT oid,user_name FROM user_pool) "
+        << " AS user_pool ON "<< VirtualNetwork::table << ".uid = user_pool.oid";
        
     if ( !where.empty() )
     {
