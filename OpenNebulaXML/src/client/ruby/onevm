@@ -98,7 +98,7 @@ ShowTableHistory={
         :name => "ID",
         :desc => "ONE identifier for the VM",
         :size => 4,
-        :proc => lambda {|d,e| d["oid"] }
+        :proc => lambda {|d,e| d["id"] }
     },
     :seq => {
         :name => "SEQ",
@@ -138,13 +138,19 @@ ShowTableHistory={
         :name => "TIME",
         :desc => "Total time",
         :size => 11,
-        :proc => lambda {|d,e| e[:vm].str_running_time(d) }
+        :proc => lambda {|d,e|
+            #e[:vm].str_running_time(d)
+            d["time"]
+        }
     },
     :reason => {
         :name => "REASON",
         :desc => "Reason for state change",
         :size => "6",
-        :proc => lambda {|d,e| e[:vm].get_reason(d) }
+        :proc => lambda {|d,e|
+            #e[:vm].get_reason(d)
+            d["reason"]
+        }
     },
     
     :default => [:id, :seq, :hostname, :stime, :etime, :time, :reason]
@@ -237,47 +243,71 @@ class VmShow
         end
         result
     end
+
+    def get_vm_history(vm)
+        {
+            'id'        => vm.id,
+            'seq'       => vm['history/seq'],
+            'host_name' => vm['history/hostname'],
+            'stime'     => vm['history/stime'],
+            'etime'     => vm['history/etime'],
+            'time'      => str_running_time(vm),
+            'reason'    => vm['history/reason']
+        }
+    end
+
+    def get_vms_history(vms)
+        vms.collect do |vmid|
+            vm=OpenNebula::VirtualMachine.new_with_id(vmid, get_one_client)
+            result=vm.info
+
+            if is_error?(result)
+                puts "Error: "+result.message
+                exit -1
+            end
+
+            get_vm_history(vm)
+        end
+    end
     
-    def list_vm_history(id, options=nil)
-        res=@vm.get_history(id)
+    def list_vm_history(vm, options=nil)
+        #res=@vm.get_history(id)
         if options
             @table_history.columns=options[:columns] if options[:columns]
         end
 
-        if res[0]
-            result=[true, ""]
-            header_history_small
-            
-            if options
-                puts @table_history.data_str(res[1], options)
-            else
-                puts @table_history.data_str(res[1])
-            end
-            
-            result
+        header_history_small
+        
+        if options
+            puts @table_history.data_str([vm], options)
         else
-            result=res
+            puts @table_history.data_str([vm])
         end
     end
     
     def list_vm_history_array(ids, options=nil)
-        res=[false, "No VMs found"]
-        ids.each {|id|
-            vm_id=get_vm_id(@vm, id)
-            puts "History for VM #{id}"
+        get_vms_history(ids).each {|vm|
+            puts "History for VM #{vm['id']}"
             puts
-            res=list_vm_history(vm_id, options)
+            list_vm_history(vm, options)
             puts
         }
-        res
     end
     
     def list_vm_history_all(options=nil)
-        res=@vm.get
-        res[1].each {|vm|
-            list_vm_history_array(vm["oid"], options)
+        result=@vmpool.info
+
+        if is_error?(result)
+            puts "Error: "+result.message
+            exit -1
+        end
+
+        @vmpool.each {|vm|
+            puts "History for VM #{vm.id}"
+            puts
+            list_vm_history(get_vm_history(vm), options)
+            puts
         }
-        res
     end
 end
 
@@ -572,10 +602,10 @@ when "show_db"
     
 when "history"
     # TODO: change this to new API
-    vmlist=VmShow.new(vm)
+    vmlist=VmShow.new(get_one_client)
     ops[:columns]=ops[:list] if ops[:list]
     if ARGV[0]
-        ids=ARGV.collect {|arg| get_vm_id(vm, arg)}
+        ids=ARGV.collect {|arg| get_vm_id(arg)}
         ids=ids.flatten.compact
         result=vmlist.list_vm_history_array(ids)
     else
