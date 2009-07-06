@@ -79,7 +79,6 @@ ShowTableVM={
         :desc => "Machine where the VM is running",
         :size => 15,
         :proc => lambda {|d,e|
-            #e[:vm].get_history_host(d["oid"])
             d["HISTORY/HOSTNAME"]
         }
     },
@@ -139,7 +138,6 @@ ShowTableHistory={
         :desc => "Total time",
         :size => 11,
         :proc => lambda {|d,e|
-            #e[:vm].str_running_time(d)
             d["time"]
         }
     },
@@ -148,8 +146,7 @@ ShowTableHistory={
         :desc => "Reason for state change",
         :size => "6",
         :proc => lambda {|d,e|
-            #e[:vm].get_reason(d)
-            d["reason"]
+            OpenNebula::VirtualMachine.get_reason(d["reason"])
         }
     },
     

@@ -16,8 +16,8 @@ module OpenNebula
         VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED}
         
         LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
-            SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG SHUTDOWN CANCEL
-            FAILURE DELETE UNKNOWN}
+            SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG
+            SHUTDOWN CANCEL FAILURE DELETE UNKNOWN}
 
         SHORT_VM_STATES={
             "INIT"      => "init",
@@ -49,6 +49,16 @@ module OpenNebula
             "UNKNOWN"       => "unkn"
         }
 
+        MIGRATE_REASON=%w{NONE ERROR STOP_RESUME USER CANCEL}
+
+        SHORT_MIGRATE_REASON={
+            "NONE"          => "none",
+            "ERROR"         => "erro",
+            "STOP_RESUME"   => "stop",
+            "USER"          => "user",
+            "CANCEL"        => "canc"
+        }
+
         # Creates a VirtualMachine description with just its identifier
         # this method should be used to create plain VirtualMachine objects.
         # +id+ the id of the vm
@@ -64,6 +74,13 @@ module OpenNebula
             end
             
             XMLUtilsElement.initialize_xml(vm_xml, 'VM')
+        end
+
+        def VirtualMachine.get_reason(reason)
+            reason=MIGRATE_REASON[reason.to_i]
+            reason_str=SHORT_MIGRATE_REASON[reason]
+
+            reason_str
         end
 
         #######################################################################
