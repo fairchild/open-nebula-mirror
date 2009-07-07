@@ -101,7 +101,6 @@ module OpenNebula
             rc = @client.call(xml_method,@pe_id)
 
             if !OpenNebula.is_error?(rc)
-                pp rc
                 @xml = XMLUtilsElement::initialize_xml(rc, root_element)
                 rc   = nil
                 

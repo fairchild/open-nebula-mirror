@@ -302,7 +302,6 @@ when "delete"
             exit 0
         end
     else
-        pp host
         result=host.delete
         if is_successful?(result)
             puts "Host deleted" if ops[:verbose]
