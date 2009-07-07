@@ -20,6 +20,22 @@ include OpenNebula
 CONFIG=OcaConfiguration.new('oca.conf')
 AUTH="#{CONFIG[:user]}:#{CONFIG[:password]}"
 
+INSTANCE_TYPES=Hash.new
+
+pp CONFIG
+
+if CONFIG[:vm_type].kind_of?(Array)
+    # Multiple instance types
+    CONFIG[:vm_type].each {|type|
+        INSTANCE_TYPES[type['NAME']]=type
+    }
+else
+    # When only one instance type is defined
+    INSTANCE_TYPES[CONFIG[:vm_type]['NAME']]=CONFIG[:vm_type]
+end
+
+pp INSTANCE_TYPES
+
 set :host, CONFIG[:server]
 set :port, CONFIG[:port]
 
@@ -130,7 +146,14 @@ def run_instances(params)
     @vm_info[:img_path]=image.path
     @vm_info[:img_id]=image_id
     
-    template=ERB.new(File.read('templates/m1.small.erb'))
+    instance_type_name=params['InstanceType']
+    instance_type=INSTANCE_TYPES[instance_type_name]
+    
+    halt 400, "Bad instance type" if !instance_type
+    
+    @vm_info[:instance_type]=instance_type_name
+    
+    template=ERB.new(File.read("templates/#{instance_type['TEMPLATE']}"))
     template_text=template.result(binding)
     
     pp template_text
