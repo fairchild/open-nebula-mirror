@@ -8,17 +8,20 @@ $: << './lib'
 
 require 'OpenNebula'
 require 'repo_manager'
+require 'OcaConfiguration'
 
 require 'pp'
 
 include OpenNebula
 
 
-CONFIG=YAML.load_file('config.yml')
-AUTH="#{CONFIG['user']}:#{CONFIG['password']}"
 
-set :host, CONFIG['server']
-set :port, CONFIG['port']
+
+CONFIG=OcaConfiguration.new('oca.conf')
+AUTH="#{CONFIG[:user]}:#{CONFIG[:password]}"
+
+set :host, CONFIG[:server]
+set :port, CONFIG[:port]
 
 
 EC2_STATES={
@@ -86,7 +89,7 @@ def authenticate(params)
     halt 401, "User does not exist" if !user
     
     signature_params=params.reject {|key,value| key=='Signature' }
-    canonical=EC2.canonical_string(signature_params, CONFIG['server'])
+    canonical=EC2.canonical_string(signature_params, CONFIG[:server])
     signature=EC2.encode(user[:password], canonical, false)
     
     halt 401, "Bad password" if params['Signature']!=signature
