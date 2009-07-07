@@ -216,23 +216,28 @@ when "show"
     vn=OpenNebula::VirtualNetwork.new_with_id(vn_id, get_one_client)
     result=vn.info
     if is_successful?(result)
-        str_h1="%-80s"
-        str="%-10s: %-20s"
-        print_header(str_h1,"VIRTUAL NETWORK #{vn.id.to_s} INFORMATION",true)
+        if !ops[:xml]
+            str_h1="%-80s"
+            str="%-10s: %-20s"
+            print_header(str_h1,
+                "VIRTUAL NETWORK #{vn.id.to_s} INFORMATION",true)
         
-        puts str % ["ID: ",vn.id.to_s]
-        puts str % ["UID: ",vn["UID"]]
-        puts
-        print_header(str_h1,"VIRTUAL NETWORK TEMPLATE",false)
-        
-        puts vn.template_str(false)
-        
-        leases_str = vn.template_like_str('/VNET/LEASES', false)
-  
-        if !leases_str.empty?
+            puts str % ["ID: ",vn.id.to_s]
+            puts str % ["UID: ",vn["UID"]]
             puts
-            print_header(str_h1,"LEASES INFORMATION",false)
-            puts leases_str
+            print_header(str_h1,"VIRTUAL NETWORK TEMPLATE",false)
+        
+            puts vn.template_str(false)
+        
+            leases_str = vn.template_like_str('/VNET/LEASES', false)
+  
+            if !leases_str.empty?
+                puts
+                print_header(str_h1,"LEASES INFORMATION",false)
+                puts leases_str
+            end
+        else
+            puts vn.to_xml
         end
     else
         puts "Error: "+result.message
@@ -265,14 +270,21 @@ when "list"
                     filter_flag=ARGV[0]
                 end
             end
-     else
-         filter_flag="-2"
-     end
+    else
+        filter_flag="-2"
+    end
 
-    vnlist=VNShow.new(filter_flag)
-    ops[:columns]=ops[:list] if ops[:list]
-    result=vnlist.list_short(ops)
-    vnlist.close
+    if !ops[:xml]
+        vnlist=VNShow.new(filter_flag)
+        ops[:columns]=ops[:list] if ops[:list]
+        result=vnlist.list_short(ops)
+        vnlist.close
+    else
+        vnpool=OpenNebula::VirtualNetworkPool.new(get_one_client,
+            filter_flag.to_i)
+        vnpool.info
+        puts vnpool.to_xml
+    end
     
 else
     onevn_opts.print_help

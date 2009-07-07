@@ -181,10 +181,16 @@ when "delete"
     end
     
 when "list"
-    uplist=UPShow.new
-    ops[:columns]=ops[:list] if ops[:list]
-    result=uplist.list_short(ops)
-    uplist.close
+    if !ops[:xml]
+        uplist=UPShow.new
+        ops[:columns]=ops[:list] if ops[:list]
+        result=uplist.list_short(ops)
+        uplist.close
+    else
+        userpool=OpenNebula::UserPool.new(get_one_client)
+        userpool.info
+        puts userpool.to_xml
+    end
     
 else
     oneup_opts.print_help
