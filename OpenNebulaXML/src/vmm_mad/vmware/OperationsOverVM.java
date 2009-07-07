@@ -106,11 +106,46 @@ public class OperationsOverVM
         }
     }
     
-    public boolean save(String vmName, String checkpointName)
+    public boolean deregisterVM(String vmName) 
+    {
+
+        try
+        { 
+            ManagedObjectReference taskmor = null;   
+            
+            ManagedObjectReference  virtualMachine 
+               = cb.getServiceUtil().getDecendentMoRef(null, "VirtualMachine", vmName);
+            
+            taskmor = cb.getConnection().getService().destroy_Task(virtualMachine);
+            
+            // Wait for successful deregistering
+            if (taskmor != null) 
+            {
+                Object[] result = 
+                cb.getServiceUtil().waitForValues(
+                   taskmor, new String[] { "info.state", "info.error" }, 
+                   new String[] { "state" }, 
+                   new Object[][] { new Object[] { 
+                      TaskInfoState.success, TaskInfoState.error } 
+                   }
+                );
+
+                return result[0].equals(TaskInfoState.success);
+            }
+            else
+                return false;
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error deregistering VirtualMachine [" + vmName + "]. Reason:" + e.getMessage());
+            return false;
+        }
+    }
+    
+    public boolean save(String vmName)
     {   
         // first, create the checkpoint
-        
-        if(!createCheckpoint(vmName,checkpointName))
+        if(!createCheckpoint(vmName))
         {
             return false;
         }
@@ -135,7 +170,7 @@ public class OperationsOverVM
         }
     } 
     
-    public boolean createCheckpoint(String vmName, String checkpointName)
+    public boolean createCheckpoint(String vmName)
     {
         try
         {
@@ -143,9 +178,9 @@ public class OperationsOverVM
                = cb.getServiceUtil().getDecendentMoRef(null, "VirtualMachine", vmName);  
             ManagedObjectReference taskMor 
                = cb.getConnection().getService().createSnapshot_Task(
-                                               virtualMachine, checkpointName,
+                                               virtualMachine, vmName + ".checkpoint",
                                                "This checkpoint corresponds to filename = " + 
-                                               checkpointName, false, false);
+                                               vmName + ".checkpoint", false, false);
             String res = cb.getServiceUtil().waitForTask(taskMor);
         
             if(res.equalsIgnoreCase("sucess"))  // sic
@@ -164,7 +199,7 @@ public class OperationsOverVM
         }
     }
     
-    public boolean restoreCheckpoint(String vmName, String checkpointName)
+    public boolean restoreCheckpoint(String vmName)
     {
        
         try
@@ -200,11 +235,11 @@ public class OperationsOverVM
                 throw new Exception("No Snapshots Tree found for VirtualMachine : " + vmName);
              }
              
-             snapmor = traverseSnapshotInTree(snapTree, checkpointName);
+             snapmor = traverseSnapshotInTree(snapTree, vmName + ".checkpoint");
              
              if (snapmor == null) 
              {
-                throw new Exception("No Snapshot named " + checkpointName + 
+                throw new Exception("No Snapshot named " + vmName + ".checkpoint" + 
                                     " found for VirtualMachine : " + vmName);
              }
              
@@ -251,7 +286,9 @@ public class OperationsOverVM
          }
 
          return snapmor;
-      }
+   }
+
+
 
 
     OperationsOverVM(String[] args, String hostName) throws Exception
@@ -266,6 +303,7 @@ public class OperationsOverVM
          argsWithHost[args.length]      = "--url";
          argsWithHost[args.length + 1 ] = "https://" + hostName + ":443/sdk";
 
+         //argsWithHost[args.length + 1 ] = "https://localhost:8008/sdk";
 
          cb = AppUtil.initialize("DeployVM", null, argsWithHost);
          cb.connect();

@@ -107,15 +107,7 @@ class OneImVmware extends Thread
                        hid_str       = str_split[1];
                        hostToMonitor = str_split[2];
                      
-                     // Perform the action
-                       if (action.equals("INIT"))
-                           init();
-                       else if (action.equals("FINALIZE"))
-                       {
-                           finalize_mad();
-                           fin = true;
-                       }
-                       else if (action.equals("MONITOR"))
+                       if (action.equals("MONITOR"))
                        {
                           // Let's gather data from the host
                           
@@ -134,6 +126,8 @@ class OneImVmware extends Thread
                               
                               argsWithHost[arguments.length]      = "--url";
                               argsWithHost[arguments.length + 1 ] = "https://" + hostToMonitor + ":443/sdk";
+
+ //                             argsWithHost[arguments.length + 1 ] = "https://localhost:8008/sdk";
                               gP = new GetProperty(argsWithHost, "HostSystem", hostToMonitor);
                                               
                               // Now it's time to build the response gathering the properties needed

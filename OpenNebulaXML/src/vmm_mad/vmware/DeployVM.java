@@ -198,7 +198,7 @@ public class DeployVM
          // Memory
          
          sharesInfo.setLevel(SharesLevel.custom);          
-         sharesInfo.setShares(Integer.parseInt(pXML.getMemory()));
+         sharesInfo.setShares(Integer.parseInt(pXML.getMemory())*1024);
          
          raInfo.setShares(sharesInfo);
          
@@ -405,7 +405,8 @@ public class DeployVM
         argsWithHost[args.length]      = "--url";
         argsWithHost[args.length + 1 ] = "https://" + hostName + ":443/sdk";
 
-        
+        //argsWithHost[args.length + 1 ] = "https://localhost:8008/sdk";
+
 
         cb = AppUtil.initialize("DeployVM", null, argsWithHost);
         cb.connect();
@@ -440,6 +441,7 @@ public class DeployVM
         argsWithHost[args.length]      = "--url";
         argsWithHost[args.length + 1 ] = "https://" + hostName + ":443/sdk";
         
+        //argsWithHost[args.length + 1 ] = "https://localhost:8008/sdk";
 
         cb = AppUtil.initialize("DeployVM", null, argsWithHost);
         cb.connect();

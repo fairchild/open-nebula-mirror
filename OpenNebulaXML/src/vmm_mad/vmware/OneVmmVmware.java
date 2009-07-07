@@ -123,7 +123,7 @@ class OneVmmVmware extends Thread
             {
                 if (action.equals("DEPLOY"))
                 {                           
-                    if (str_split.length != 4)
+                    if (str_split.length != 5)
                     {   
                        System.out.println("FAILURE Wrong number of arguments for DEPLOY action. Number args = [" +
                                               str_split.length + "].");
@@ -140,7 +140,9 @@ class OneVmmVmware extends Thread
                         fileName       = str_split[3];
                                           
                         try
-                        {    
+                        {   
+                            fileName = fileName.replace("/images", "");
+
                             // let's read the XML file and extract needed info
                             ParseXML pXML = new ParseXML(fileName);
 
@@ -198,7 +200,7 @@ class OneVmmVmware extends Thread
                              synchronized (System.err)
                              {
                                  System.err.println("DEPLOY FAILURE " + vid_str + " Failed deploying VM in host " + 
-                                                    hostName + ". Please check the VM log.");
+                                                    hostName + ".");
                              }
                          } // catch
            		    } // else if (str_split.length != 4)
@@ -247,6 +249,16 @@ class OneVmmVmware extends Thread
                                                     hostName);
                              }
                          }
+
+                         if(!oVM.deregisterVM(vmName))
+                         {
+                             synchronized (System.err)
+                             {
+                                 System.err.println(action + " FAILURE " + vid_str + " Failed deregistering of " +vmName
+                                                    + " in host " + hostName +".");
+                             }
+                             continue;
+                         }
                          else
                          {
                              synchronized (System.err)
@@ -293,7 +305,7 @@ class OneVmmVmware extends Thread
                              continue;
                          }
                          
-                         if(!oVM.save(vmName,checkpointName))
+                         if(!oVM.save(vmName))
                          {
                              synchronized (System.err)
                              {
@@ -346,7 +358,7 @@ class OneVmmVmware extends Thread
                              continue;
                          }
                          
-                         if(!oVM.createCheckpoint(vmName,checkpointName))
+                         if(!oVM.createCheckpoint(vmName))
                          {
                              synchronized (System.err)
                              {
@@ -382,8 +394,7 @@ class OneVmmVmware extends Thread
                      {              
                          vid_str               = str_split[1];
                          hostName              = str_split[2];  
-                         String checkpointName = str_split[3];
-                         
+                         String vmName         = str_split[3];
                          boolean result;
                          
                          try
@@ -400,7 +411,7 @@ class OneVmmVmware extends Thread
                              }
                          }
                          
-                         if(!oVM.restoreCheckpoint("one-"+vid_str,checkpointName))
+                         if(!oVM.restoreCheckpoint(vmName))
                          {
                              synchronized (System.err)
                              {
@@ -410,12 +421,33 @@ class OneVmmVmware extends Thread
                          }
                          else
                          {
-                             synchronized (System.err)
+                             try
                              {
-                                 System.err.println(action + " SUCCESS " + vid_str);                             
+                                 if(!oVM.powerOn(vmName))
+                                 {
+                                      System.err.println(action + " FAILURE " + vid_str + " Failed restoring VM in host " + 
+                                                        hostName);
+                                 }
+                                 else
+                                 {
+                                     synchronized (System.err)
+                                     {
+                                         System.err.println(action + " SUCCESS " + vid_str);                             
+                                     }
+                                 }
                              }
+                             catch(Exception e)
+                             {
+                                 synchronized (System.err)
+                                 {
+                                     System.err.println(action + " FAILURE " + vid_str + " Failed connection to host " +
+                                                        hostName +". Reason: " + e.getMessage());
+                                     continue;
+                                 }
+                              }
+                     
                          }
-                         
+
                          continue;
                      }
                  } // if (action.equals("RESTORE"))
@@ -461,9 +493,7 @@ class OneVmmVmware extends Thread
                          
                          // First, checkpoint the running virtual machine
                          
-                         String checkpointName = "one-migrate-" + vid_str;
-                         
-                         if(!oVM.save(vmName,checkpointName))
+                         if(!oVM.save(vmName))
                          {
                              synchronized (System.err)
                              {
@@ -521,7 +551,7 @@ class OneVmmVmware extends Thread
                          
                          // Restore the virtual machine checkpoint
                          
-                         if(!oVM.restoreCheckpoint(vmName,checkpointName))
+                         if(!oVM.restoreCheckpoint(vmName))
                          {
                              synchronized (System.err)
                              {
