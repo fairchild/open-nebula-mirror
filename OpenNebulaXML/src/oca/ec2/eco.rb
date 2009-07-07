@@ -18,6 +18,33 @@ SECRET_ACCESS_KEY = 'opennebula'
 SERVER = '127.0.0.1'
 PORT = 4567
 
+EC2_STATES={
+    :pending => {:code => 0, :name => 'pending'},
+    :running => {:code => 16, :name => 'running'},
+    :shutdown => {:code => 32, :name => 'shutting-down'},
+    :terminated => {:code => 48, :name => 'terminated'}
+}
+
+ONE_STATES={
+    'init' => :pending,
+    'pend' => :pending,
+    'hold' => :pending,
+    'stop' => :pending,
+    'susp' => :pending,
+    'done' => :terminated,
+    'fail' => :terminated,
+    'prol' => :pend,
+    'boot' => :running,
+    'runn' => :running,
+    'migr' => :running,
+    'save' => :pend,
+    'epil' => :shutdown,
+    'shut' => :shutdown,
+    'fail' => :terminated,
+    'dele' => :terminated,
+    'unkn' => :terminated
+}
+
 $repoman=RepoManager.new
 
 def get_one_client
@@ -40,6 +67,14 @@ def get_user(name)
     }
     
     user
+end
+
+def render_state(vm)
+    one_state=vm.status
+    ec2_state=EC2_STATES[ONE_STATES[one_state]]
+    
+    "<code>#{ec2_state[:code]}</code> 
+    <name>#{ec2_state[:name]}</name>"
 end
 
 def authenticate(params)
@@ -208,8 +243,7 @@ __END__
           <instanceId><%= vm.id %></instanceId> 
           <imageId><%= vm.id %></imageId> 
           <instanceState> 
-            <code>0</code> 
-            <name>running</name> 
+              <%= render_state(vm) %>
           </instanceState> 
           <privateDnsName>10-251-50-132.ec2.internal</privateDnsName> 
           <dnsName>ec2-72-44-33-4.compute-1.amazonaws.com</dnsName> 
