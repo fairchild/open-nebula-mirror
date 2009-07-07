@@ -13,10 +13,13 @@ require 'pp'
 
 include OpenNebula
 
-ACCESS_KEY_ID = 'jfontan'
-SECRET_ACCESS_KEY = 'opennebula'
-SERVER = '127.0.0.1'
-PORT = 4567
+
+CONFIG=YAML.load_file('config.yml')
+AUTH="#{CONFIG['user']}:#{CONFIG['password']}"
+
+set :host, CONFIG['server']
+set :port, CONFIG['port']
+
 
 EC2_STATES={
     :pending => {:code => 0, :name => 'pending'},
@@ -48,7 +51,7 @@ ONE_STATES={
 $repoman=RepoManager.new
 
 def get_one_client
-    Client.new('jfontan:opennebula')
+    Client.new(AUTH)
 end
 
 def get_user(name)
@@ -58,7 +61,6 @@ def get_user(name)
     user_pool.info
     user_pool.each{|u|
         if u.name==name
-            puts "yeah!"
             user=Hash.new
             user[:id]=u.id
             user[:name]=u.name
@@ -81,12 +83,10 @@ def authenticate(params)
     user_name=params['AWSAccessKeyId']
     user=get_user(user_name)
     
-    return true
-    
     halt 401, "User does not exist" if !user
     
     signature_params=params.reject {|key,value| key=='Signature' }
-    canonical=EC2.canonical_string(signature_params, SERVER)
+    canonical=EC2.canonical_string(signature_params, CONFIG['server'])
     signature=EC2.encode(user[:password], canonical, false)
     
     halt 401, "Bad password" if params['Signature']!=signature
