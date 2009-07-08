@@ -52,7 +52,7 @@ class OneVmmVmware extends Thread
         {
             debug_flag=false;
         }
-        
+
         OneVmmVmware omv = new OneVmmVmware(args, debug_flag);
         omv.loop();
     }
@@ -147,7 +147,12 @@ class OneVmmVmware extends Thread
                             ParseXML pXML = new ParseXML(fileName);
 
                             // First, register the VM
-                            DeployVM dVM = new DeployVM(arguments, hostName, vid_str, pXML);
+                            DeployVM dVM = new DeployVM(arguments, 
+                                                        hostName, 
+                                                        vid_str, 
+                                                        pXML,
+                                                        System.getProperty("datastore"),
+                                                        System.getProperty("datacenter"));
 
                             if(!dVM.registerVirtualMachine())
                             {
@@ -520,7 +525,11 @@ class OneVmmVmware extends Thread
                          try
                          {
                              oVM = new OperationsOverVM(arguments,destHostName);
-                             dVM = new DeployVM(arguments, destHostName, vmName);
+                             dVM = new DeployVM(arguments, 
+                                                destHostName, 
+                                                vmName,
+                                                System.getProperty("datastore"),
+                                                System.getProperty("datacenter"));
                              
                              if(!dVM.registerVirtualMachine())
                              {
@@ -586,49 +595,55 @@ class OneVmmVmware extends Thread
                      else
                      {
                          vid_str               = str_split[1];
-                         hostName       = str_split[2];  
+                         hostName              = str_split[2];  
                          String vmName         = str_split[3];
                          
-                         // First, create the checkpoint
+                         String                pollInfo;
                          
                          try
-                         {
-                             oVM = new OperationsOverVM(arguments,hostName);
+                         {  
+
+                             String[] argsWithHost = new String[arguments.length+2];
+
+                             for(int i=0;i<arguments.length;i++)
+                             {
+                                 argsWithHost[i] = arguments[i];
+                             }
+
+                             argsWithHost[arguments.length]      = "--url";
+                             //argsWithHost[arguments.length + 1 ] = "https://" + hostName + ":443/sdk";
+
+                             argsWithHost[arguments.length + 1 ] = "https://localhost:8008/sdk";
+                            
+                             GetProperty gPHost = new GetProperty(argsWithHost, "HostSystem", hostName);
+                             GetProperty gpVM   = new GetProperty(argsWithHost, "VirtualMachine", vmName);
+
+                             String hostCPUMhz = gPHost.getObjectProperty("summary.hardware.cpuMhz").toString();
+  
+                             String vmCPUMhz = 
+                                  gpVM.getObjectProperty("summary.quickStats.overallCpuUsage").toString();       
+                             
+                             String vmMEMMb  = 
+                                  gpVM.getObjectProperty("summary.quickStats.guestMemoryUsage").toString();
+
+                                   
+                             int hostCPUMhz_i = Integer.parseInt(hostCPUMhz);      
+                             int vmCPUMhz_i   = Integer.parseInt(vmCPUMhz);      
+                             int vmCPUperc    = (vmCPUMhz_i / hostCPUMhz_i) * 100;
+                             
+                             pollInfo = "STATE=a USEDMEMORY=" + vmMEMMb + " USEDCPU=" + vmCPUperc;
+                             
                          }
                          catch(Exception e)
-                         {
-                             synchronized (System.err)
-                             {
-                                 System.err.println(action + " FAILURE " + vid_str + " Failed connection to host " +
-                                                    hostName +". Reason: " + e.getMessage());
-                                 if(debug)
-                                 {
-                                     e.printStackTrace(); 
-                                 }
-                             }
-                             continue;
+                         {                             
+                             pollInfo = "STATE=-";
                          }
-                         
-                         // Poll the VM
-                         String pollInfo = oVM.pollVM(vmName);  
-                         
-                         if(pollInfo.equals("Error"))
+
+                         synchronized (System.err)
                          {
-                             synchronized (System.err)
-                             {
-                                 System.err.println(action + " FAILURE " + vid_str + " Error polling VM."); 
-                             }
+                             System.err.println(action + " SUCCESS " + vid_str + " " + pollInfo);                             
                          }
-                         else
-                         {
-                             synchronized (System.err)
-                             {
-                                 System.err.println(action + " SUCCESS " + vid_str + " " + pollInfo);                             
-                             }
-                         }
-                         
-                        // System.err.println(action + " SUCCESS " + vid_str + "USEDCPU=1 USEDMEMORY=256");
-                         
+                        
                          continue;
                      }                
                  } // if (action.equals("POLL"))     

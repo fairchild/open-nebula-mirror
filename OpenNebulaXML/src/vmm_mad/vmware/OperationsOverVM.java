@@ -106,11 +106,6 @@ public class OperationsOverVM
         }
     }
 
-    public String pollVM(String vmName)
-    {
-         return "Error";
-    }
-    
     public boolean deregisterVM(String vmName) 
     {
 
@@ -284,7 +279,7 @@ public class OperationsOverVM
 
     OperationsOverVM(String[] args, String hostName) throws Exception
     {
-        String[] argsWithHost = new String[args.length+2];
+         String[] argsWithHost = new String[args.length+2];
 
          for(int i=0;i<args.length;i++)
          {
@@ -299,9 +294,8 @@ public class OperationsOverVM
          cb = AppUtil.initialize("DeployVM", null, argsWithHost);
          cb.connect();
         
-        // TODO get this dynamically
-        datastoreName  = "datastore1";
-        datacenterName = "ha-datacenter";                                    
+         datastoreName  = System.getProperty("VMWARE_DATASTORE");
+         datacenterName = System.getProperty("VMWARE_DATACENTER");
     }
 
 }
