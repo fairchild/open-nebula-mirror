@@ -523,6 +523,7 @@ when "stop"
     
 when "cancel"
     check_parameters("cancel", 1)
+    vm_id=get_vm_id(ARGV[0])
     
     vm=OpenNebula::VirtualMachine.new_with_id(vm_id, get_one_client)
     
