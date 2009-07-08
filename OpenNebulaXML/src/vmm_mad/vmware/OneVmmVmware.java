@@ -610,24 +610,24 @@ class OneVmmVmware extends Thread
                          }
                          
                          // Poll the VM
-                                              
-             /*            if(!oVM.pollVM(vmName,checkpointName))
+                         String pollInfo = oVM.pollVM(vmName);  
+                         
+                         if(pollInfo.equals("Error"))
                          {
                              synchronized (System.err)
                              {
-                                 System.err.println(action + " FAILURE " + vid_str + " Failed restoring VM [" + 
-                                                    vmName + "] in host " +  destHostName);
+                                 System.err.println(action + " FAILURE " + vid_str + " Error polling VM."); 
                              }
                          }
                          else
                          {
                              synchronized (System.err)
                              {
-                                 System.err.println(action + " SUCCESS " + vid_str);                             
+                                 System.err.println(action + " SUCCESS " + vid_str + " " + pollInfo);                             
                              }
-                         }*/
+                         }
                          
-                         System.err.println(action + " SUCCESS " + vid_str + "USEDCPU=1 USEDMEMORY=256");
+                        // System.err.println(action + " SUCCESS " + vid_str + "USEDCPU=1 USEDMEMORY=256");
                          
                          continue;
                      }                

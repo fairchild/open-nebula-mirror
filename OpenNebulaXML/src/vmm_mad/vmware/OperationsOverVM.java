@@ -105,35 +105,29 @@ public class OperationsOverVM
             return false;
         }
     }
+
+    public String pollVM(String vmName)
+    {
+         return "Error";
+    }
     
     public boolean deregisterVM(String vmName) 
     {
 
         try
         { 
-            ManagedObjectReference taskmor = null;   
-            
             ManagedObjectReference  virtualMachine 
                = cb.getServiceUtil().getDecendentMoRef(null, "VirtualMachine", vmName);
             
-            taskmor = cb.getConnection().getService().destroy_Task(virtualMachine);
+            cb.getConnection().getService().unregisterVM(virtualMachine);
             
-            // Wait for successful deregistering
-            if (taskmor != null) 
-            {
-                Object[] result = 
-                cb.getServiceUtil().waitForValues(
-                   taskmor, new String[] { "info.state", "info.error" }, 
-                   new String[] { "state" }, 
-                   new Object[][] { new Object[] { 
-                      TaskInfoState.success, TaskInfoState.error } 
-                   }
-                );
-
-                return result[0].equals(TaskInfoState.success);
-            }
-            else
-                return false;
+            return true;
+        }
+        catch(InvalidPowerState e)
+        {
+            System.out.println("Error deregistering Virtual Machine [" + vmName + "]. Reason: " 
+                               + "[InvalidPowerState] " + e .getMessage());
+            return false;
         }
         catch(Exception e)
         {
@@ -286,10 +280,7 @@ public class OperationsOverVM
          }
 
          return snapmor;
-   }
-
-
-
+    }
 
     OperationsOverVM(String[] args, String hostName) throws Exception
     {
@@ -301,9 +292,9 @@ public class OperationsOverVM
          }
 
          argsWithHost[args.length]      = "--url";
-         argsWithHost[args.length + 1 ] = "https://" + hostName + ":443/sdk";
+         //argsWithHost[args.length + 1 ] = "https://" + hostName + ":443/sdk";
 
-         //argsWithHost[args.length + 1 ] = "https://localhost:8008/sdk";
+         argsWithHost[args.length + 1 ] = "https://localhost:8008/sdk";
 
          cb = AppUtil.initialize("DeployVM", null, argsWithHost);
          cb.connect();
