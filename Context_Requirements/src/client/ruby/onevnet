@@ -1,0 +1,301 @@
+#!/usr/bin/env ruby
+
+# -------------------------------------------------------------------------- #
+# Copyright 2002-2009, Distributed Systems Architecture Group, Universidad   #
+# Complutense de Madrid (dsa-research.org)                                   #
+#                                                                            #
+# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# not use this file except in compliance with the License. You may obtain    #
+# a copy of the License at                                                   #
+#                                                                            #
+# http://www.apache.org/licenses/LICENSE-2.0                                 #
+#                                                                            #
+# Unless required by applicable law or agreed to in writing, software        #
+# distributed under the License is distributed on an "AS IS" BASIS,          #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+# See the License for the specific language governing permissions and        #
+# limitations under the License.                                             #
+#--------------------------------------------------------------------------- #
+
+ONE_LOCATION=ENV["ONE_LOCATION"]
+
+if !ONE_LOCATION
+    RUBY_LIB_LOCATION="/usr/lib/one/ruby"
+else
+    RUBY_LIB_LOCATION=ONE_LOCATION+"/lib/ruby"
+end
+
+$: << RUBY_LIB_LOCATION
+
+
+require 'OpenNebula'
+require 'client_utilities'
+require 'command_parse'
+
+
+ShowTableVN={
+    :id => {
+        :name => "ID",
+        :desc => "ONE identifier for virtual network",
+        :size => 4,
+        :proc => lambda {|d,e| d.id }
+    },
+    :name => {
+        :name => "NAME",
+        :desc => "name of the virtual network",
+        :size => 15,
+        :left => true,
+        :proc => lambda {|d,e| d.name }
+    },
+    :user => {
+        :name => "USER",
+        :desc => "Username of the virtual network owner",
+        :size => 8,
+        :left => true,
+        :proc => lambda {|d,e| d["USERNAME"] }
+    },
+    :type => {
+        :name => "TYPE",
+        :desc => "NType of virtual network",
+        :size => 6,
+        :proc => lambda {|d,e| 
+                          if(d["type"] == "0")
+                              return "Ranged"
+                          else
+                              if (d["type"] == "1")
+                                  return "Fixed"
+                              end
+                          end
+                      }
+    },
+    :size => {
+        :name => "SIZE",
+        :desc => "Number of hosts (free + used) in the virtual network",
+        :size => 6,
+        :proc => lambda {|d,e| d["SIZE"] }
+    },
+    :bridge => {
+        :name => "BRIDGE",
+        :desc => "Bridge associated to the virtual network",
+        :size => 6,
+        :proc => lambda {|d,e| d["bridge"] }
+    },
+    :totalleases => {
+        :name => "#LEASES",
+        :desc => "Number of this virtual network's given leases",
+        :size => 7,
+        :proc => lambda {|d,e| d["TOTAL_LEASES"] }
+    },
+
+    :default => [:id, :user, :name, :type, :bridge, :totalleases]
+}
+
+class VNShow
+    def initialize(filter_flag="-2")
+        @vnpool=OpenNebula::VirtualNetworkPool.new(get_one_client,
+            filter_flag.to_i)
+        @table=ShowTable.new(ShowTableVN)
+    end
+    
+    def header_vn_small
+        scr_bold
+        scr_underline
+        print @table.header_str
+        scr_restore
+        puts ""
+    end
+    
+    def list_short(options=nil)
+        res=@vnpool.info
+        if options
+            @table.columns=options[:columns] if options[:columns]
+        end
+
+        if OpenNebula.is_error?(res)
+            result=res
+        else
+            result=res
+            header_vn_small
+            if options[:filter_flag]
+                 vns=@vnpool.select{|element|
+                         element["USERNAME"]==options[:filter_flag]
+                         }
+            else
+                 vns=@vnpool
+            end
+            puts @table.data_str(vns, options)
+            result
+        end
+    end
+    
+    def top(options=nil)
+        delay=1
+        delay=options[:delay] if options && options[:delay]
+        
+        result=nil
+        
+        begin
+            while true
+                scr_cls
+                scr_move(0,0)
+                result=list_short(options)
+                sleep delay
+            end
+        rescue Exception
+        end
+        result
+    end
+end
+
+class OneVNParse < CommandParse
+    
+    COMMANDS_HELP=<<-EOT
+Commands:
+
+* create (Creates a new virtual network)
+    onevnet create <template>
+    
+    template is a filename where the virtual network is described
+    
+* show (Gets info from a virtual network)
+    onevnet show <network_id>
+    
+* delete (Removes a virtual network)
+    onevnet delete <network_id>
+    
+* list (Lists virtual networks in the pool)
+    onevnet list <filter_flag>
+        where filter_flag can be
+            a, all   --> all the known VNs
+            m, mine  --> the VNs belonging to the user in ONE_AUTH
+            uid      --> VNs of the user identified by this uid
+            user --> VNs of the user identified by the username
+EOT
+
+    def text_commands
+        COMMANDS_HELP
+    end
+
+    def text_command_name
+        "onevnet"
+    end
+
+    def list_options
+        table=ShowTable.new(ShowTableVN)
+        table.print_help
+    end
+
+end
+
+onevn_opts=OneVNParse.new
+onevn_opts.parse(ARGV)
+ops=onevn_opts.options
+
+result=[false, "Unknown error"]
+
+command=ARGV.shift
+
+case command
+when "create"
+    check_parameters("create", 1)
+    vn=OpenNebula::VirtualNetwork.new(
+        OpenNebula::VirtualNetwork.build_xml, get_one_client)
+    template=File.read(ARGV[0])
+    result=vn.allocate(template)
+    if !OpenNebula.is_error?(result)
+        puts "ID: " + vn.id.to_s if ops[:verbose]
+        exit 0
+    end
+    
+when "show"
+    check_parameters("show", 1)
+    args=expand_args(ARGV)
+
+    args.each do |param|
+        vn_id=get_vn_id(param)
+        vn=OpenNebula::VirtualNetwork.new_with_id(vn_id, get_one_client)
+        result=vn.info
+        if is_successful?(result)
+            if !ops[:xml]
+                str_h1="%-80s"
+                str="%-10s: %-20s"
+                print_header(str_h1,
+                    "VIRTUAL NETWORK #{vn.id.to_s} INFORMATION",true)
+        
+                puts str % ["ID: ",vn.id.to_s]
+                puts str % ["UID: ",vn["UID"]]
+                puts
+                print_header(str_h1,"VIRTUAL NETWORK TEMPLATE",false)
+        
+                puts vn.template_str(false)
+        
+                leases_str = vn.template_like_str('/VNET/LEASES', false)
+  
+                if !leases_str.empty?
+                    puts
+                    print_header(str_h1,"LEASES INFORMATION",false)
+                    puts leases_str
+                end
+            else
+                puts vn.to_xml
+            end
+        else
+            puts "Error: "+result.message
+            break
+        end
+    end
+    
+when "delete"
+    check_parameters("delete", 1)
+    args=expand_args(ARGV)
+
+    args.each do |param|
+        vn_id=get_vn_id(param)
+        vn=OpenNebula::VirtualNetwork.new(
+            OpenNebula::VirtualNetwork.build_xml(vn_id), get_one_client)
+        result=vn.delete
+        if !OpenNebula.is_error?(result)
+            puts "Virtual Network deleted" if ops[:verbose]
+            break
+        end
+    end
+    
+when "list"
+    if ARGV[0]
+        case ARGV[0]
+        when "a", "all"
+            filter_flag="-2"
+        when "m", "mine"
+            filter_flag="-1"
+        else
+            if !ARGV[0].match(/^[0123456789]+$/)
+                filter_flag="-2"
+                ops[:filter_flag]=ARGV[0]
+            else
+                filter_flag=ARGV[0]
+            end
+        end
+    else
+        filter_flag="-2"
+    end
+
+    if !ops[:xml]
+        vnlist=VNShow.new(filter_flag)
+        ops[:columns]=ops[:list] if ops[:list]
+        result=vnlist.list_short(ops)
+    else
+        vnpool=OpenNebula::VirtualNetworkPool.new(get_one_client,
+            filter_flag.to_i)
+        vnpool.info
+        puts vnpool.to_xml
+    end
+    
+else
+    onevn_opts.print_help
+    exit -1
+end
+
+if OpenNebula.is_error?(result)
+    puts "Error: " + result.message
+    exit -1
+end
